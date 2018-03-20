@@ -1,5 +1,0 @@
-1:(input (#1:(and #2:(or a a) (not a))))
-2:(and (#2) 1 0)
-3:(or (a) 2)
-4:(and ((not a)) 1 1)
-5:(resolution () 4 3)

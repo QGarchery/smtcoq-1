@@ -1,4 +1,0 @@
-1:(input ((not #1:(or a (not a)))))
-2:(not_or ((not a)) 1 0)
-3:(not_or (a) 1 1)
-4:(resolution () 3 2)
