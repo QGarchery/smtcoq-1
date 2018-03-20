@@ -43,7 +43,7 @@ Lemma sat2:
     (v 1 || v 2 || v 3) &&
     (negb (v 1) || negb (v 2) || negb (v 3)) &&
     (negb (v 1) || v 2) &&
-    (negb (v 2) || v 3) && 
+    (negb (v 2) || v 3) &&
     (negb (v 3) || v 1)  = false.
 Proof.
   zchaff.
@@ -130,7 +130,6 @@ Eval compute in (f' (true || false)).
 Goal forall (a b : Z) (P : Z -> bool) (f : Z -> Z),
   (negb (Zeq_bool (f a) b)) || (negb (P (f a))) || (P b).
 Proof.
-  verit.
   intros.
   destruct_with_eqn (P (f a)).
   destruct_with_eqn (Zeq_bool (f a) b).
@@ -138,7 +137,7 @@ Proof.
    rewrite <- Zeq_is_eq_bool in Heqb1.
    now rewrite Heqb1 in Heqb0.
   +auto.
-  +apply orb_true_iff; left; apply orb_true_iff; right; now simpl. 
+  +apply orb_true_iff; left; apply orb_true_iff; right; now simpl.
    (* verit. *)
 Qed.
 
@@ -181,20 +180,20 @@ Lemma comp f g (x1 x2 x3 : Z) :
 Proof.
   verit.
 Qed.
-      
+
 
 Lemma irrelf_ltb :
   forall a b c,
   (Z.ltb a b) &&
   (Z.ltb b c) &&
   (Z.ltb c a) = false.
-  
+
 Proof.
   verit.
-Qed.  
+Qed.
 
 Lemma un_menteur (a b c d : Z) dit:
-  negb ((Zeq_bool (dit a) c) &&                                 
+  negb ((Zeq_bool (dit a) c) &&
         (Zeq_bool (dit b) d) &&
         (Zeq_bool a d || Zeq_bool b c) &&
         (Zeq_bool a c || Zeq_bool a d) &&
@@ -203,7 +202,7 @@ Lemma un_menteur (a b c d : Z) dit:
 
 Proof.
   verit.
-Qed.  
+Qed.
 
 Lemma un_menteur_prop (a b c d : Z) dit:
   (dit a = c) ->
@@ -220,7 +219,7 @@ Proof.
   rewrite H4 in H0.
   rewrite H0 in H.
   intuition.
-Qed.  
+Qed.
 
 
 Lemma sat2_gen a1 a2 a3:
@@ -228,7 +227,7 @@ Lemma sat2_gen a1 a2 a3:
     (v a1 || v a2 || v a3) &&
     (negb (v a1) || negb (v a2) || negb (v a3)) &&
     (negb (v a1) || v a2) &&
-    (negb (v a2) || v a3) && 
+    (negb (v a2) || v a3) &&
     (negb (v a3) || v a1)  = false.
 
 Proof.
