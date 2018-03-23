@@ -13,31 +13,6 @@ Zchaff_Checker "sat.cnf" "sat.log".
 Zchaff_Theorem sat "sat.cnf" "sat.log".
 Check sat.
 
-(* Lemma stat2prop : *)
-(*   forall v, *)
-(*     (~(v 1 /\ v 2 \/ v 3) /\ *)
-(*     ((v 1) \/ (v 2) \/ ~ (v 3)) /\ *)
-(*     (~ (v 1) \/ v 2) /\ *)
-(*     (~ (v 2) \/ v 3) /\  *)
-(*     (~ (v 3) \/ v 1)). *)
-
-
-(* Lemma stat2prop : *)
-(*   forall v, *)
-(*     ~ ~ ~((v 1 \/ v 2 \/ v 3) /\ *)
-(*     (~ (v 1) \/ ~ (v 2) \/ ~ (v 3)) /\ *)
-(*     (~ (v 1) \/ v 2) /\ *)
-(*     (~ (v 2) \/ v 3) /\  *)
-(*     (~ (v 3) \/ v 1)). *)
-
-(* Proof. *)
-(*   intros. *)
-(*   assert (H1 := H 1). *)
-(*   assert (H2 := H 2). *)
-(*   assert (H3 := H 3). *)
-(*   intuition. *)
-(* Qed. *)
-
 Lemma sat2:
   forall v : int -> bool,
     (v 1 || v 2 || v 3) &&
@@ -88,43 +63,22 @@ Proof.
 Qed.
 
 About positive.
-Print N.
+(* Print N. *)
 
-Print Z.
-Check (-5)%Z.
-Check 5%N.
+(* Print Z. *)
+(* Check (-5)%Z. *)
+(* Check 5%N. *)
 
-Print eq.
+(* Print eq. *)
 
 (* Set Printing All. *)
 
-Print Zeq_bool.
-Print Z.compare.
+(* Print Zeq_bool. *)
+(* Print Z.compare. *)
 
-SearchAbout Zeq_bool.
-About Zeq_bool.
-Print Zeq_bool.
-
-
-
-
-
-(* Goal forall (a b : Z) (P : Z -> Prop) (f : Z -> Z), *)
-(*   ((f a) = b) -> P (f a) -> P b. *)
-
-(* Goal forall (a b : Z) (P : Z -> Prop) (f : Z -> Z), *)
-(*   ((f a) <> b) \/ ~(P (f a)) \/ P b. *)
-
-
-Inductive form := | True | False | Or : form -> form -> form.
-
-Definition f' : bool -> form :=
-  fun b => match b with
-           | true => True
-           | false => False end.
-
-Eval compute in (f' (true || false)).
-
+(* SearchAbout Zeq_bool. *)
+(* About Zeq_bool. *)
+(* Print Zeq_bool. *)
 
 
 Goal forall (a b : Z) (P : Z -> bool) (f : Z -> Z),
