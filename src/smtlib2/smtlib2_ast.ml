@@ -78,6 +78,7 @@ and term =
 type command =
   | CSetLogic of loc * symbol
   | CSetOption of loc * an_option
+
   | CSetInfo of loc * attribute
   | CDeclareSort of loc * symbol * string
   | CDefineSort of loc * symbol * (loc * symbol list) * sort

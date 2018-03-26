@@ -64,6 +64,8 @@ type uop =
    | UO_Zpos 
    | UO_Zneg
    | UO_Zopp
+   | UO_Fora of string
+
 
 type bop = 
    | BO_Zplus

@@ -18,17 +18,17 @@ open Util
 open SmtMisc
 open CoqTerms
 
-module type ATOM = 
-  sig 
+module type ATOM =
+  sig
 
-    type t 
+    type t
     val index : t -> int
 
     val equal : t -> t -> bool
 
     val is_bool_type : t -> bool
 
-  end 
+  end
 
 
 type fop =
@@ -42,14 +42,14 @@ type fop =
   | Fite
   | Fnot2 of int
 
-type ('a,'f) gen_pform = 
+type ('a,'f) gen_pform =
   | Fatom of 'a
   | Fapp of fop * 'f array
 
 
 module type FORM =
-  sig 
-    type hatom 
+  sig
+    type hatom
     type t
     type pform = (hatom, t) gen_pform
 
@@ -70,18 +70,18 @@ module type FORM =
 
       (* Building formula from positive formula *)
       exception NotWellTyped of pform
-      type reify 
-      val create : unit -> reify 
+      type reify
+      val create : unit -> reify
       val clear : reify -> unit
       val get : reify -> pform -> t
-      
-      (** Give a coq term, build the corresponding formula *)  
+
+      (** Give a coq term, build the corresponding formula *)
       val of_coq : (Term.constr -> hatom) -> reify -> Term.constr -> t
-   
+
       (** Flattening of [Fand] and [For], removing of [Fnot2]  *)
       val flatten : reify -> t -> t
-
-      (** Producing Coq terms *) 
+                                    
+      (** Producing Coq terms *)
 
       val to_coq : t -> Term.constr
 
@@ -89,33 +89,33 @@ module type FORM =
 
       val to_array : reify -> 'a -> (pform -> 'a) -> int * 'a array
       val interp_tbl : reify -> Term.constr * Term.constr
-      val nvars : reify -> int 
-      (** Producing a Coq term corresponding to the interpretation 
+      val nvars : reify -> int
+      (** Producing a Coq term corresponding to the interpretation
           of a formula *)
       (** [interp_atom] map [hatom] to coq term, it is better if it produce
           shared terms. *)
-      val interp_to_coq : 
-	  (hatom -> Term.constr) -> (int, Term.constr) Hashtbl.t -> 
+      val interp_to_coq :
+	  (hatom -> Term.constr) -> (int, Term.constr) Hashtbl.t ->
 	    t -> Term.constr
   end
 
 module Make (Atom:ATOM) =
-  struct 
+  struct
 
-    type hatom = Atom.t 
+    type hatom = Atom.t
 
     type pform = (Atom.t, t) gen_pform
- 
+
     and hpform = pform gen_hashed
-	  
-    and t = 
+
+    and t =
       | Pos of hpform
-      | Neg of hpform 
+      | Neg of hpform
 
     let pform_true = Fapp (Ftrue,[||])
     let pform_false = Fapp (Ffalse,[||])
 
-    let equal h1 h2 = 
+    let equal h1 h2 =
       match h1, h2 with
       | Pos hp1, Pos hp2 -> hp1.index == hp2.index
       | Neg hp1, Neg hp2 -> hp1.index == hp2.index
@@ -132,11 +132,11 @@ module Make (Atom:ATOM) =
     let neg = function
       | Pos hp -> Neg hp
       | Neg hp -> Pos hp
-	    
+
     let is_pos = function
       | Pos _ -> true
       | _ -> false
-	    
+
     let is_neg = function
       | Neg _ -> true
       | _ -> false
@@ -144,7 +144,6 @@ module Make (Atom:ATOM) =
     let pform = function
       | Pos hp -> hp.hval
       | Neg hp -> hp.hval
-
 
     let rec to_smt atom_to_smt fmt = function
       | Pos hp -> to_smt_pform atom_to_smt fmt hp.hval
@@ -175,57 +174,57 @@ module Make (Atom:ATOM) =
 
 
     module HashedForm =
-      struct 
-	
+      struct
+
 	type t = pform
-	      
-	let equal pf1 pf2 = 
+
+	let equal pf1 pf2 =
 	  match pf1, pf2 with
 	  | Fatom ha1, Fatom ha2 -> Atom.equal ha1 ha2
 	  | Fapp(op1,args1), Fapp(op2,args2) ->
-	      op1 = op2 && 
+	      op1 = op2 &&
 	      Array.length args1 == Array.length args2 &&
-	      (try 
+	      (try
 		for i = 0 to Array.length args1 - 1 do
-		  if not (equal args1.(i) args2.(i)) then raise Not_found 
+		  if not (equal args1.(i) args2.(i)) then raise Not_found
 		done;
 		true
 	      with Not_found -> false)
 	  | _, _ -> false
 
-	let hash pf = 
+	let hash pf =
 	  match pf with
-	  | Fatom ha1 -> Atom.index ha1 * 2 
-	  | Fapp(op, args) -> 
+	  | Fatom ha1 -> Atom.index ha1 * 2
+	  | Fapp(op, args) ->
 	      let hash_args =
 		match Array.length args with
 		| 0 -> 0
 		| 1 -> to_lit args.(0)
 		| 2 -> (to_lit args.(1)) lsl 2 + to_lit args.(0)
-		| _ -> 
+		| _ ->
 		    (to_lit args.(2)) lsl 4 + (to_lit args.(1)) lsl 2 +
 		      to_lit args.(0) in
 	      (hash_args * 10 + Hashtbl.hash op) * 2 + 1
-		
+
       end
 
     module HashForm = Hashtbl.Make (HashedForm)
 
     type reify = {
 	mutable count : int;
-                tbl : t HashForm.t 
-      }  
+                tbl : t HashForm.t
+      }
 
     exception NotWellTyped of pform
-   	
-    let check pf = 
+
+    let check pf =
       match pf with
       | Fatom ha ->  if not (Atom.is_bool_type ha) then raise (NotWellTyped pf)
       | Fapp (op, args) ->
 	  match op with
-	  | Ftrue | Ffalse -> 
+	  | Ftrue | Ffalse ->
 	      if Array.length args <> 0 then raise (NotWellTyped pf)
-	  | Fnot2 _ -> 
+	  | Fnot2 _ ->
 	      if Array.length args <> 1 then raise (NotWellTyped pf)
 	  | Fand | For -> ()
 	  | Fxor | Fimp | Fiff ->
@@ -241,8 +240,8 @@ module Make (Atom:ATOM) =
       res
 
     let create () =
-      let reify = 
-	{ count = 0; 
+      let reify =
+	{ count = 0;
 	  tbl =  HashForm.create 17 } in
       let _ = declare reify pform_true in
       let _ = declare reify pform_false in
@@ -256,12 +255,12 @@ module Make (Atom:ATOM) =
       ()
 
     let get reify pf =
-      try HashForm.find reify.tbl pf 
+      try HashForm.find reify.tbl pf
       with Not_found -> declare reify pf
 
 
-    (** Given a coq term, build the corresponding formula *)  
-    type coq_cst = 
+    (** Given a coq term, build the corresponding formula *)
+    type coq_cst =
       | CCtrue
       | CCfalse
       | CCnot
@@ -283,7 +282,7 @@ module Make (Atom:ATOM) =
     let op_tbl () =
       let tbl = ConstrHashtbl.create 29 in
       let add (c1,c2) = ConstrHashtbl.add tbl (Lazy.force c1) c2 in
-      List.iter add 
+      List.iter add
 	[
 	 ctrue,CCtrue; cfalse,CCfalse;
 	 candb,CCand; corb,CCor; cxorb,CCxor; cimplb,CCimp; cnegb,CCnot;
@@ -296,7 +295,7 @@ module Make (Atom:ATOM) =
 
     let of_coq atom_of_coq reify c =
       let op_tbl = Lazy.force op_tbl in
-      let get_cst c = 
+      let get_cst c =
 	try ConstrHashtbl.find op_tbl c with Not_found -> CCunknown in
       let rec mk_hform h =
 	let c, args = Term.decompose_app h in
@@ -325,7 +324,7 @@ module Make (Atom:ATOM) =
 		get reify (Fapp(Fite, [|l1;l2;l3|]))
 	    | _ -> Structures.error "SmtForm.Form.of_coq: wrong number of arguments for ifb"
 	    end
-	| _ -> 
+	| _ ->
 	    let a = atom_of_coq  h in
             get reify (Fatom a)
 
@@ -336,41 +335,41 @@ module Make (Atom:ATOM) =
             let l2 = mk_hform b2 in
             get reify (f [|l1; l2|])
 	| _ ->  Structures.error "SmtForm.Form.of_coq: wrong number of arguments"
-	  
+
       and mk_fnot i args =
 	match args with
-	| [t] -> 
+	| [t] ->
 	    let c,args = Term.decompose_app t in
 	    if Term.eq_constr c (Lazy.force cnegb) then
               mk_fnot (i+1) args
-	    else 
+	    else
               let q,r = i lsr 1 , i land 1 in
               let l = mk_hform t in
               let l = if r = 0 then l else neg l in
 	      if q = 0 then l
 	      else get reify (Fapp(Fnot2 q, [|l|]))
 	| _ -> Structures.error "SmtForm.Form.mk_hform: wrong number of arguments for negb"
-	  
-      and mk_fand acc args = 
+
+      and mk_fand acc args =
 	match args with
-	| [t1;t2] -> 
+	| [t1;t2] ->
 	    let l2 = mk_hform t2 in
 	    let c, args = Term.decompose_app t1 in
 	    if Term.eq_constr c (Lazy.force candb) then
               mk_fand (l2::acc) args
-	    else 
+	    else
 	      let l1 = mk_hform t1 in
 	      get reify (Fapp(Fand, Array.of_list  (l1::l2::acc)))
-	| _ -> Structures.error "SmtForm.Form.mk_hform: wrong number of arguments for andb" 
+	| _ -> Structures.error "SmtForm.Form.mk_hform: wrong number of arguments for andb"
 
-      and mk_for acc args = 
+      and mk_for acc args =
 	match args with
-	| [t1;t2] -> 
+	| [t1;t2] ->
 	    let l2 = mk_hform t2 in
 	    let c, args = Term.decompose_app t1 in
 	    if Term.eq_constr c (Lazy.force corb) then
               mk_for (l2::acc) args
-	    else 
+	    else
 	      let l1 = mk_hform t1 in
 	      get reify (Fapp(For, Array.of_list (l1::l2::acc)))
 	| _ -> Structures.error "SmtForm.Form.mk_hform: wrong number of arguments for orb" in
@@ -382,7 +381,7 @@ module Make (Atom:ATOM) =
     let set_sign f f' =
       if is_pos f then f' else neg f'
 
-    let rec flatten reify f = 
+    let rec flatten reify f =
       match pform f with
       | Fatom _ -> f
       | Fapp(Fnot2 _,args) -> set_sign f (flatten reify args.(0))
@@ -414,7 +413,7 @@ module Make (Atom:ATOM) =
 	      flatten_or reify acc args
 	  | _ -> flatten_or reify (flatten reify a :: acc) args
 
-    (** Producing Coq terms *) 
+    (** Producing Coq terms *)
 
     let to_coq hf = mkInt (to_lit hf)
 
@@ -422,9 +421,9 @@ module Make (Atom:ATOM) =
       let cargs = Array.make (Array.length args + 1) (mkInt 0) in
       Array.iteri (fun i hf -> cargs.(i) <- to_coq hf) args;
       Structures.mkArray (Lazy.force cint, cargs)
-	
+
     let pf_to_coq = function
-      | Fatom a -> mklApp cFatom [|mkInt (Atom.index a)|]	
+      | Fatom a -> mklApp cFatom [|mkInt (Atom.index a)|]
       | Fapp(op,args) ->
         match op with
 	| Ftrue -> Lazy.force cFtrue
@@ -464,17 +463,17 @@ module Make (Atom:ATOM) =
     (** [interp_atom] map [Atom.t] to coq term, it is better if it produce
 	shared terms. *)
     let interp_to_coq interp_atom form_tbl f =
-      let rec interp_form f = 
+      let rec interp_form f =
 	let l = to_lit f in
-	try Hashtbl.find form_tbl l 
+	try Hashtbl.find form_tbl l
 	with Not_found ->
-	  if is_neg f then 
+	  if is_neg f then
 	    let pc = interp_form (neg f) in
 	    let nc = mklApp cnegb [|pc|] in
 	    Hashtbl.add form_tbl l nc;
 	    nc
 	  else
-	    let pc = 
+	    let pc =
 	      match pform f with
 	      | Fatom a -> interp_atom a
 	      | Fapp(op, args) ->
@@ -484,35 +483,28 @@ module Make (Atom:ATOM) =
 		  | Fand -> interp_args candb args
 		  | For -> interp_args corb args
 		  | Fxor -> interp_args cxorb args
-		  | Fimp -> 
+		  | Fimp ->
 		      let r = ref (interp_form args.(Array.length args - 1)) in
 		      for i = Array.length args - 2 downto 0 do
 			r := mklApp cimplb [|interp_form args.(i); !r|]
 		      done;
 		      !r
 		  | Fiff -> interp_args ceqb args
-		  | Fite -> 
+		  | Fite ->
 		      (* TODO with if here *)
 		      mklApp cifb (Array.map interp_form args)
-		  | Fnot2 n -> 
+		  | Fnot2 n ->
 		      let r = ref (interp_form args.(0)) in
 		      for i = 1 to n do	r := mklApp cnegb [|!r|] done;
-		      !r in 
+		      !r in
 	    Hashtbl.add form_tbl l pc;
 	    pc
       and interp_args op args =
 	let r = ref (interp_form args.(0)) in
 	for i = 1 to Array.length args - 1 do
-	  r := mklApp op [|!r;interp_form args.(i)|] 
+	  r := mklApp op [|!r;interp_form args.(i)|]
 	done;
 	!r in
       interp_form f
 
   end
-	
-
-	  
-
-    
-
-  

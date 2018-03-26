@@ -136,7 +136,14 @@ let make_root ra rf t =
         let s' = string_of_symbol sym in
         Hashtbl.add hlets s' u') l;
       make_root_term t
-    | TermForAllTerm _ -> failwith "Smtlib2_genConstr.make_root_term: ForAll not implemented yet"
+    | TermForAllTerm (_, (_, l), t) ->
+       (match make_root_term t with
+        | Atom a ->
+           Atom (List.fold_left (fun aa (SortedVarSymSort (_, sym, _)) ->
+                     let x = string_of_symbol sym in
+                     (* let name = SmtMisc.mkName x in *)
+                     SmtAtom.Atom.get ra (Auop (UO_Fora x, aa))) a l)
+        | _ -> assert false)
     | TermExistsTerm _ -> failwith "Smtlib2_genConstr.make_root_term: Exists not implemented yet"
     | TermExclimationPt (_,t,_) -> make_root_term t
 
@@ -213,9 +220,8 @@ let make_root ra rf t =
 
   and make_root t =
     match make_root_term t with
-      | Atom h -> Form.get rf (Fatom h)
-      | Form f -> f in
-
+    | Atom h -> Form.get rf (Fatom h)
+    | Form f -> f in
   make_root t
 
 

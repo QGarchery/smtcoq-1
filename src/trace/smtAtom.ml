@@ -128,7 +128,6 @@ module Btype =
       | Tbool -> Lazy.force cbool
       | Tpositive -> Lazy.force cpositive
       | Tindex c -> mklApp cte_carrier [|c.hval|]
-
   end
 
 (** Operators *)
@@ -143,6 +142,7 @@ type uop =
    | UO_Zpos 
    | UO_Zneg
    | UO_Zopp
+   | UO_Fora of string
 
 type bop = 
    | BO_Zplus
@@ -174,6 +174,7 @@ type op =
   | Nop of nop
   | Iop of indexed_op
 
+             
 module Op =
   struct 
     let c_to_coq = function
@@ -194,14 +195,20 @@ module Op =
       | UO_Zpos -> Lazy.force cUO_Zpos 
       | UO_Zneg -> Lazy.force cUO_Zneg
       | UO_Zopp -> Lazy.force cUO_Zopp
+      | _ -> failwith "smtAtom.u_to_coq"
+    (*| UO_Fora x -> Lazy.force cforall *)
 
+                              
     let u_type_of = function 
       | UO_xO | UO_xI -> Tpositive
       | UO_Zpos | UO_Zneg | UO_Zopp -> TZ
+      | _ -> assert false
 
+                                         
     let u_type_arg = function 
       | UO_xO | UO_xI | UO_Zpos | UO_Zneg -> Tpositive
       | UO_Zopp -> TZ
+      | _ -> assert false
 
     let interp_uop = function
       | UO_xO -> Lazy.force cxO
@@ -209,7 +216,8 @@ module Op =
       | UO_Zpos -> Lazy.force cZpos
       | UO_Zneg -> Lazy.force cZneg
       | UO_Zopp -> Lazy.force copp
-
+      | _ -> assert false
+                              
     let eq_tbl = Hashtbl.create 17 
 
     let eq_to_coq t =
@@ -341,6 +349,7 @@ type atom =
   | Anop of nop * hatom array
   | Aapp of indexed_op * hatom array
 
+
 and hatom = atom gen_hashed
 
 (* let pp_acop = function *)
@@ -447,11 +456,12 @@ module Atom =
           | CO_Z0 -> 0)
       | Auop (op,h) ->
         (match op with
-          | UO_xO -> 2*(compute_hint h)
-          | UO_xI -> 2*(compute_hint h) + 1
-          | UO_Zpos -> compute_hint h
-          | UO_Zneg -> - (compute_hint h)
-          | UO_Zopp -> assert false)
+         | UO_xO -> 2*(compute_hint h)
+         | UO_xI -> 2*(compute_hint h) + 1
+         | UO_Zpos -> compute_hint h
+         | UO_Zneg -> - (compute_hint h)
+         | UO_Fora _ -> assert false
+         | UO_Zopp -> assert false)
       | _ -> assert false
 
     and compute_hint h = compute_int (atom h)
@@ -525,8 +535,8 @@ module Atom =
       | Aapp(op,args) ->
 	  let tparams = Op.i_type_args op in
 	  Array.iteri (fun i t -> 
-	    if not (Btype.equal t (type_of args.(i))) then
-		raise (NotWellTyped a)) tparams
+	      if not (Btype.equal t (type_of args.(i))) then
+	        raise (NotWellTyped a)) tparams
 
     type reify_tbl =
         { mutable count : int;
@@ -618,14 +628,14 @@ module Atom =
       and mk_uop op = function
         | [a] -> let h = mk_hatom a in get reify (Auop (op,h))
         | _ -> assert false
-
+                      
       and mk_bop op = function
         | [a1;a2] ->
           let h1 = mk_hatom a1 in
           let h2 = mk_hatom a2 in
           get reify (Abop (op,h1,h2))
         | _ -> assert false
-
+                      
       and mk_unknown c args ty =
         let hargs = Array.of_list (List.map mk_hatom args) in
         let op =
@@ -635,7 +645,6 @@ module Atom =
             let tres = Btype.of_coq rt ty in
             Op.declare ro c targs tres in
         get reify (Aapp (op,hargs)) in
-
        mk_hatom c
 
 
@@ -681,10 +690,10 @@ module Atom =
               | Auop (op,h) -> Term.mkApp (Op.interp_uop op, [|interp_atom h|])
               | Abop (op,h1,h2) -> Term.mkApp (Op.interp_bop op, [|interp_atom h1; interp_atom h2|])
               | Anop (NO_distinct ty as op,ha) ->
-                let cop = Op.interp_nop op in
-                let typ = Op.interp_distinct ty in
-                let cargs = Array.fold_right (fun h l -> mklApp ccons [|typ; interp_atom h; l|]) ha (mklApp cnil [|typ|]) in
-                Term.mkApp (cop,[|cargs|])
+                 let cop = Op.interp_nop op in
+                 let typ = Op.interp_distinct ty in
+                 let cargs = Array.fold_right (fun h l -> mklApp ccons [|typ; interp_atom h; l|]) ha (mklApp cnil [|typ|]) in
+                 Term.mkApp (cop,[|cargs|])
               | Aapp (op,t) -> Term.mkApp (op.hval.op_val, Array.map interp_atom t) in
 	  Hashtbl.add atom_tbl l pc;
 	  pc in
