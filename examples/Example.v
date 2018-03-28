@@ -7,6 +7,20 @@ Require Import SMTCoq.
 Require Import Bool.
 Local Open Scope int63_scope.
 
+
+Lemma un_menteur (a b c d : Z) dit:
+  negb ((Zeq_bool (dit a) c) &&
+        (Zeq_bool (dit b) d) &&
+        (Zeq_bool a d || Zeq_bool b c) &&
+        (Zeq_bool a c || Zeq_bool a d) &&
+        (Zeq_bool b c || Zeq_bool b d)) ||
+  (Zeq_bool a d) = true.
+
+Proof.
+  verit.
+Qed.
+
+
 (* Examples that check ZChaff certificates *)
 
 Zchaff_Checker "sat.cnf" "sat.log".
@@ -83,6 +97,7 @@ About positive.
 
 Goal forall (a b : Z) (P : Z -> bool) (f : Z -> Z),
   (negb (Zeq_bool (f a) b)) || (negb (P (f a))) || (P b).
+
 Proof.
   intros.
   destruct_with_eqn (P (f a)).
@@ -146,17 +161,6 @@ Proof.
   verit.
 Qed.
 
-Lemma un_menteur (a b c d : Z) dit:
-  negb ((Zeq_bool (dit a) c) &&
-        (Zeq_bool (dit b) d) &&
-        (Zeq_bool a d || Zeq_bool b c) &&
-        (Zeq_bool a c || Zeq_bool a d) &&
-        (Zeq_bool b c || Zeq_bool b d)) ||
-  (Zeq_bool a d) = true.
-
-Proof.
-  verit.
-Qed.
 
 Lemma un_menteur_prop (a b c d : Z) dit:
   (dit a = c) ->
@@ -193,3 +197,6 @@ Defined.
 
 Print sat2_gen.
 Check checker_b_correct.
+
+
+

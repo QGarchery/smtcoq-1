@@ -24,7 +24,7 @@ open SmtTrace
 
 exception Sat
 
-type typ = | Inpu | Deep | True | Fals | Andp | Andn | Orp | Orn | Xorp1 | Xorp2 | Xorn1 | Xorn2 | Impp | Impn1 | Impn2 | Equp1 | Equp2 | Equn1 | Equn2 | Itep1 | Itep2 | Iten1 | Iten2 | Eqre | Eqtr | Eqco | Eqcp | Dlge | Lage | Lata | Dlde | Lade | Fins | Eins | Skea | Skaa | Qnts | Qntm | Reso | And | Nor | Or | Nand | Xor1 | Xor2 | Nxor1 | Nxor2 | Imp | Nimp1 | Nimp2 | Equ1 | Equ2 | Nequ1 | Nequ2 | Ite1 | Ite2 | Nite1 | Nite2 | Tpal | Tlap | Tple | Tpne | Tpde | Tpsa | Tpie | Tpma | Tpbr | Tpbe | Tpsc | Tppp | Tpqt | Tpqs | Tpsk | Subp | Hole | Fora
+type typ = | Inpu | Deep | True | Fals | Andp | Andn | Orp | Orn | Xorp1 | Xorp2 | Xorn1 | Xorn2 | Impp | Impn1 | Impn2 | Equp1 | Equp2 | Equn1 | Equn2 | Itep1 | Itep2 | Iten1 | Iten2 | Eqre | Eqtr | Eqco | Eqcp | Dlge | Lage | Lata | Dlde | Lade | Fins | Eins | Skea | Skaa | Qnts | Qntm | Reso | And | Nor | Or | Nand | Xor1 | Xor2 | Nxor1 | Nxor2 | Imp | Nimp1 | Nimp2 | Equ1 | Equ2 | Nequ1 | Nequ2 | Ite1 | Ite2 | Nite1 | Nite2 | Tpal | Tlap | Tple | Tpne | Tpde | Tpsa | Tpie | Tpma | Tpbr | Tpbe | Tpsc | Tppp | Tpqt | Tpqs | Tpsk | Subp | Hole
 
 
 (* About equality *)
@@ -194,17 +194,40 @@ let mkDistinctElim old value =
 
 (* Generating clauses *)
 
+let aliases : (int, int) Hashtbl.t = Hashtbl.create 5
+
 let clauses : (int,Form.t clause) Hashtbl.t = Hashtbl.create 17
-let get_clause id =
+
+let rec find_id alias =
+  let next_alias =
+    try Some (Hashtbl.find aliases alias)
+    with Not_found -> None in
+  match next_alias with
+  | None -> alias
+  | Some al -> find_id al
+    
+let get_clause alias =
+  let id = find_id alias in
   try Hashtbl.find clauses id
   with | Not_found -> failwith ("VeritSyntax.get_clause : clause number "^(string_of_int id)^" not found\n")
 let add_clause id cl = Hashtbl.add clauses id cl
 let clear_clauses () = Hashtbl.clear clauses
+                                     
+let add_alias id ids_params =
+  match ids_params with
+  | [from] -> Hashtbl.add aliases id from
+  | _ -> failwith "tmp has multiple ids_params"
 
+                  
+
+                                                    
+                                                                      
 let mk_clause (id,typ,value,ids_params) =
   let kind =
     match typ with
-    | Fora ->
+    | Tpbr -> add_alias id ids_params; Other SmtCertif.True
+    | Tpqt -> add_alias id ids_params; Other SmtCertif.True
+    | Fins -> 
        (match value with
         | [lemma; inst] -> Other (BuildDef inst)
         | _ -> failwith "unexpected form of forall_inst")
@@ -293,7 +316,6 @@ let mk_clause (id,typ,value,ids_params) =
     | Hole -> Other (SmtCertif.Hole (List.map get_clause ids_params, value))
     (* Not implemented *)
     | Deep -> failwith "VeritSyntax.ml: rule deep_res not implemented yet"
-    | Fins -> failwith "VeritSyntax.ml: rule forall_inst not implemented yet"
     | Eins -> failwith "VeritSyntax.ml: rule exists_inst not implemented yet"
     | Skea -> failwith "VeritSyntax.ml: rule skolem_ex_ax not implemented yet"
     | Skaa -> failwith "VeritSyntax.ml: rule skolem_all_ax not implemented yet"
@@ -302,11 +324,9 @@ let mk_clause (id,typ,value,ids_params) =
     | Tpne -> failwith "VeritSyntax.ml: rule tmp_nary_elim not implemented yet"
     | Tpie -> failwith "VeritSyntax.ml: rule tmp_ite_elim not implemented yet"
     | Tpma -> failwith "VeritSyntax.ml: rule tmp_macrosubst not implemented yet"
-    | Tpbr -> failwith "VeritSyntax.ml: rule tmp_betared not implemented yet"
     | Tpbe -> failwith "VeritSyntax.ml: rule tmp_bfun_elim not implemented yet"
     | Tpsc -> failwith "VeritSyntax.ml: rule tmp_sk_connector not implemented yet"
     | Tppp -> failwith "VeritSyntax.ml: rule tmp_pm_process not implemented yet"
-    | Tpqt -> failwith "VeritSyntax.ml: rule tmp_qnt_tidy not implemented yet"
     | Tpqs -> failwith "VeritSyntax.ml: rule tmp_qnt_simplify not implemented yet"
     | Tpsk -> failwith "VeritSyntax.ml: rule tmp_skolemize not implemented yet"
     | Subp -> failwith "VeritSyntax.ml: rule subproof not implemented yet"

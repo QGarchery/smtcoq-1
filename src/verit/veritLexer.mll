@@ -96,8 +96,7 @@
         "tmp_qnt_simplify", TPQS;
         "tmp_skolemize", TPSK;
         "subproof", SUBP;
-        "hole", HOLE;
-	"forall_inst", FORA]
+        "hole", HOLE]
 }
 
 

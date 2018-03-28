@@ -74,6 +74,7 @@ let import_trace filename first =
     | Parsing.Parse_error -> failwith ("Verit.import_trace: parsing error line "^(string_of_int !line))
 
 
+                                      
 let clear_all () =
   SmtTrace.clear ();
   VeritSyntax.clear ()

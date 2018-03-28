@@ -56,7 +56,7 @@ let cgtb = gen_constant z_modules "gtb"
 (* Je ne comprends pas pourquoi ça fonctionne avec Zeq_bool et pas avec
    Z.eqb *)
  (* let ceqbZ = gen_constant z_modules "eqb" *) 
- let ceqbZ = gen_constant [["Coq";"ZArith";"Zbool"]] "Zeq_bool"
+let ceqbZ = gen_constant [["Coq";"ZArith";"Zbool"]] "Zeq_bool"
 
 (* Booleans *)
 let bool_modules = [["Coq";"Bool";"Bool"]]
