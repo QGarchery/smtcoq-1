@@ -215,22 +215,83 @@ let clear_clauses () = Hashtbl.clear clauses
                                      
 let add_alias id ids_params =
   match ids_params with
-  | [from] -> Hashtbl.add aliases id from
-  | _ -> failwith "tmp has multiple ids_params"
+  | [from] -> let target = find_id from in
+              Hashtbl.add aliases id target
+  | _ -> failwith "ids_params has multiple ids"
 
+type types =
+  QTheorem
+| Forall_inst
+
+let cl_types : (int, types) Hashtbl.t = Hashtbl.create 5
                   
+let add_qt id = Hashtbl.add cl_types id QTheorem
+let add_fins id = Hashtbl.add cl_types id Forall_inst
+let type_of id =
+  try Some (Hashtbl.find cl_types id)
+  with _ -> None
+                              
+let rec find_fins ids_params =
+  match ids_params with
+    [] -> raise Not_found
+  | h :: t -> let id = find_id h in 
+              match type_of id with
+                Some Forall_inst ->
+                id, t
+              | _ -> let (fins_id, rest) = find_fins t in
+                     (fins_id, h::rest)
 
-                                                    
-                                                                      
+
+let rec find_qt ids_params =
+  match ids_params with
+    [] -> raise Not_found
+  | h :: t -> let id = find_id h in 
+              match type_of id with
+                Some QTheorem ->
+                 id, t
+              | _ -> let (qt_id, rest) = find_qt t in
+                     (qt_id, h::rest)
+
+let merge ids_params =
+  try
+    let (fins_id, rest) = find_fins rest in
+    let (qt_id, rest) = find_qt ids_params in
+    fins_id :: rest
+  with Not_found -> ids_params
+                                    
 let mk_clause (id,typ,value,ids_params) =
   let kind =
     match typ with
-    | Tpbr -> add_alias id ids_params; Other SmtCertif.True
-    | Tpqt -> add_alias id ids_params; Other SmtCertif.True
-    | Fins -> 
+    | Tpbr -> add_alias id ids_params;
+              add_qt (find_id id);
+              Other SmtCertif.True
+    | Tpqt -> add_alias id ids_params;
+              add_qt (find_id id);
+              Other SmtCertif.True
+    | Fins ->
        (match value with
-        | [lemma; inst] -> Other (BuildDef inst)
+        | [lemma; inst] -> add_fins id;
+                           Other (BuildDef inst)
         | _ -> failwith "unexpected form of forall_inst")
+    | Or ->
+       (match ids_params with
+        | [id_target] ->
+           begin match type_of id_target with
+           | Some Forall_inst -> add_alias id ids_params;
+                                 Other SmtCertif.True
+           | _ -> Other (ImmBuildDef (get_clause id_target)) end
+        | _ -> assert false)
+    (* Resolution *)
+    | Reso ->
+       let ids_params = merge ids_params in
+       (match ids_params with
+        | cl1::cl2::q ->
+           let res = {rc1 = get_clause cl1; rc2 = get_clause cl2; rtail = List.map get_clause q} in
+           Res res
+        | [fins_id] -> add_alias id ids_params;
+                       Other SmtCertif.True
+        | [] -> assert false)
+
     (* Roots *)
     | Inpu -> Root
     (* Cnf conversion *)
@@ -256,7 +317,7 @@ let mk_clause (id,typ,value,ids_params) =
        (match value with
         | l::_ -> Other (BuildProj (l,1))
         | _ -> assert false)
-    | Nand | Or | Imp | Xor1 | Nxor1 | Equ2 | Nequ2 | Ite1 | Nite1 ->
+    | Nand | Imp | Xor1 | Nxor1 | Equ2 | Nequ2 | Ite1 | Nite1 ->
        (match ids_params with
         | [id] -> Other (ImmBuildDef (get_clause id))
         | _ -> assert false)
@@ -287,13 +348,6 @@ let mk_clause (id,typ,value,ids_params) =
     | Dlde ->
        (match value with
         | l::_ -> Other (LiaDiseq l)
-        | _ -> assert false)
-    (* Resolution *)
-    | Reso ->
-       (match ids_params with
-        | cl1::cl2::q ->
-           let res = {rc1 = get_clause cl1; rc2 = get_clause cl2; rtail = List.map get_clause q} in
-           Res res
         | _ -> assert false)
     (* Simplifications *)
     | Tpal ->
