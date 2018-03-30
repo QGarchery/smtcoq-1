@@ -280,12 +280,13 @@ let to_coq to_lit interp (cstep,
     cImmBuildProj,cImmBuildDef,cImmBuildDef2,  
     cEqTr, cEqCgr, cEqCgrP, 
     cLiaMicromega, cLiaDiseq, cSplArith, cSplDistinctElim,
-    cHole) confl =
+    cHole, cForallInst) confl =
 
   let cuts = ref [] in
 
   let out_f f = to_lit f in
   let out_c c = mkInt (get_pos c) in
+  let out_cl cl = List.fold_right (fun f l -> mklApp ccons [|Lazy.force cint; out_f f; l|]) cl (mklApp cnil [|Lazy.force cint|]) in
   let step_to_coq c =
     match c.kind with
     | Res res -> 
@@ -338,11 +339,14 @@ let to_coq to_lit interp (cstep,
            let ass_ty = interp (prem, concl) in
            cuts := (ass_name, ass_ty)::!cuts;
            let ass_var = Term.mkVar ass_name in
-           let out_cl cl = List.fold_right (fun f l -> mklApp ccons [|Lazy.force cint; out_f f; l|]) cl (mklApp cnil [|Lazy.force cint|]) in
            let prem_id' = List.fold_right (fun c l -> mklApp ccons [|Lazy.force cint; out_c c; l|]) prem_id (mklApp cnil [|Lazy.force cint|]) in
            let prem' = List.fold_right (fun cl l -> mklApp ccons [|Lazy.force cState_C_t; out_cl cl; l|]) prem (mklApp cnil [|Lazy.force cState_C_t|]) in
            let concl' = out_cl concl in
            mklApp cHole [|out_c c; prem_id'; prem'; concl'; ass_var|]
+        | Forall_inst concl ->
+           (* assert false *)
+           let concl' = out_f concl in 
+           mklApp cForallInst [|out_c c; concl'|]
 	end
     | _ -> assert false in
   let step = Lazy.force cstep in

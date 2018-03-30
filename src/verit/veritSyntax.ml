@@ -254,8 +254,8 @@ let rec find_qt ids_params =
 
 let merge ids_params =
   try
-    let (fins_id, rest) = find_fins rest in
-    let (qt_id, rest) = find_qt ids_params in
+    let (fins_id, rest) = find_fins ids_params in
+    let (qt_id, rest) = find_qt rest in
     fins_id :: rest
   with Not_found -> ids_params
                                     
@@ -271,7 +271,7 @@ let mk_clause (id,typ,value,ids_params) =
     | Fins ->
        (match value with
         | [lemma; inst] -> add_fins id;
-                           Other (BuildDef inst)
+                           Other (Forall_inst inst)
         | _ -> failwith "unexpected form of forall_inst")
     | Or ->
        (match ids_params with

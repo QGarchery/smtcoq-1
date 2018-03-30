@@ -7,7 +7,7 @@ val certif_ops :
   Term.constr lazy_t * Term.constr lazy_t * Term.constr lazy_t *
   Term.constr lazy_t * Term.constr lazy_t * Term.constr lazy_t *
   Term.constr lazy_t * Term.constr lazy_t * Term.constr lazy_t *
-  Term.constr lazy_t
+  Term.constr lazy_t * Term.constr lazy_t
 val cCertif : Term.constr lazy_t
 val ccertif : Term.constr lazy_t
 val cchecker : Term.constr lazy_t

@@ -39,7 +39,7 @@ val to_coq :
   Term.constr Lazy.t * Term.constr Lazy.t * Term.constr Lazy.t *
   Term.constr Lazy.t * Term.constr Lazy.t * Term.constr Lazy.t *
   Term.constr Lazy.t * Term.constr Lazy.t * Term.constr Lazy.t *
-  Term.constr Lazy.t ->
+  Term.constr Lazy.t * Term.constr Lazy.t ->
   'a SmtCertif.clause ->
   Term.constr * 'a SmtCertif.clause * (Names.identifier * 'b) list
 module MakeOpt :
