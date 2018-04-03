@@ -201,52 +201,65 @@ let get_clause id =
   with | Not_found -> failwith ("VeritSyntax.get_clause : clause number "^(string_of_int id)^" not found\n")
 let add_clause id cl = Hashtbl.add clauses id cl
 let clear_clauses () = Hashtbl.clear clauses
-                                     
+
+let ref_cl : (int,Form.t clause) Hashtbl.t = Hashtbl.create 17
+
+let add value cl =
+  match value with
+  | [neg_th] -> Hashtbl.add ref_cl (Form.index neg_th) cl
+  | _ -> assert false
+                      
 let rec find_fins ids_params =
   match ids_params with
     [] -> raise Not_found
-  | h :: t -> let cl_target = get_clause h in
-              match (repr cl_target).kind with
-                Other (Forall_inst _) -> h, t
-              | _ -> let (fins_id, rest) = find_fins t in
-                     (fins_id, h::rest)
+  | h :: t -> let cl_target = repr (get_clause h) in
+              match cl_target.kind with
+                Other (Forall_inst (i, _)) -> (i, h), t
+              | _ -> let (fins, rest) = find_fins t in
+                     fins, h::rest
 
-let rec find_root ids_params =
+let rec find_root i ids_params =
   match ids_params with
     [] -> raise Not_found
-  | h :: t -> let cl_target = get_clause h in
-              match (repr cl_target).kind with
-                Root -> h, t
-              | _ -> let (root_id, rest) = find_root t in
-                     (root_id, h::rest)
+  | h :: t -> let h_clause = get_clause h in
+              let i_clause = Hashtbl.find ref_cl i in
+              if eq_clause h_clause i_clause
+              then h, t
+              else let root_id, rest = find_root i t in
+                   root_id, h::rest
 
 let merge ids_params =
   try
-    let (fins_id, rest) = find_fins ids_params in
-    let (root_id, rest) = find_root rest in
+    let (i, fins_id), rest = find_fins ids_params in
+    let root_id, rest = find_root i rest in
     fins_id :: rest
   with Not_found -> ids_params
-                                    
+
+
 let mk_clause (id,typ,value,ids_params) =
   let kind =
     match typ with
     | Tpbr ->
        begin match ids_params with
-       | [id] -> Same (get_clause id)
+       | [id] ->
+          add value (get_clause id);
+          Same (get_clause id)
        | _ -> failwith "unexpected form of tmp_betared" end
     | Tpqt ->
        begin match ids_params with
-       | [id] -> Same (get_clause id)
+       | [id] ->
+          add value (get_clause id);
+          Same (get_clause id)
        | _ -> failwith "unexpected form of tmp_qnt_tidy" end
     | Fins ->
        (match value with
-        | [lemma; inst] -> Other (Forall_inst inst)
+        | [lemma; inst] -> Other (Forall_inst (Form.index lemma, inst))
         | _ -> failwith "unexpected form of forall_inst")
     | Or ->
        (match ids_params with
         | [id_target] ->
            let cl_target = get_clause id_target in
-           begin match (repr cl_target).kind with
+           begin match cl_target.kind with
            | Other (Forall_inst _) -> Same cl_target
            | _ -> Other (ImmBuildDef cl_target) end
         | _ -> assert false)

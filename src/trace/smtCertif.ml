@@ -110,7 +110,7 @@ type 'hform rule =
 
   (* Possibility to introduce "holes" in proofs (that should be filled in Coq) *)
   | Hole of ('hform clause) list * 'hform list
-  | Forall_inst of 'hform
+  | Forall_inst of int * 'hform
 
                                           
 and 'hform clause = {
