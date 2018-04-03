@@ -194,92 +194,61 @@ let mkDistinctElim old value =
 
 (* Generating clauses *)
 
-let aliases : (int, int) Hashtbl.t = Hashtbl.create 5
-
 let clauses : (int,Form.t clause) Hashtbl.t = Hashtbl.create 17
 
-let rec find_id alias =
-  let next_alias =
-    try Some (Hashtbl.find aliases alias)
-    with Not_found -> None in
-  match next_alias with
-  | None -> alias
-  | Some al -> find_id al
-    
-let get_clause alias =
-  let id = find_id alias in
+let get_clause id =
   try Hashtbl.find clauses id
   with | Not_found -> failwith ("VeritSyntax.get_clause : clause number "^(string_of_int id)^" not found\n")
 let add_clause id cl = Hashtbl.add clauses id cl
 let clear_clauses () = Hashtbl.clear clauses
                                      
-let add_alias id ids_params =
-  match ids_params with
-  | [from] -> let target = find_id from in
-              Hashtbl.add aliases id target
-  | _ -> failwith "ids_params has multiple ids"
-
-type types =
-  QTheorem
-| Forall_inst
-
-let cl_types : (int, types) Hashtbl.t = Hashtbl.create 5
-                  
-let add_qt id = Hashtbl.add cl_types id QTheorem
-let add_fins id = Hashtbl.add cl_types id Forall_inst
-let type_of id =
-  try Some (Hashtbl.find cl_types id)
-  with _ -> None
-                              
 let rec find_fins ids_params =
   match ids_params with
     [] -> raise Not_found
-  | h :: t -> let id = find_id h in 
-              match type_of id with
-                Some Forall_inst ->
-                id, t
+  | h :: t -> let cl_target = get_clause h in
+              match (repr cl_target).kind with
+                Other (Forall_inst _) -> h, t
               | _ -> let (fins_id, rest) = find_fins t in
                      (fins_id, h::rest)
 
-
-let rec find_qt ids_params =
+let rec find_root ids_params =
   match ids_params with
     [] -> raise Not_found
-  | h :: t -> let id = find_id h in 
-              match type_of id with
-                Some QTheorem ->
-                 id, t
-              | _ -> let (qt_id, rest) = find_qt t in
-                     (qt_id, h::rest)
+  | h :: t -> let cl_target = get_clause h in
+              match (repr cl_target).kind with
+                Root -> h, t
+              | _ -> let (root_id, rest) = find_root t in
+                     (root_id, h::rest)
 
 let merge ids_params =
   try
     let (fins_id, rest) = find_fins ids_params in
-    let (qt_id, rest) = find_qt rest in
+    let (root_id, rest) = find_root rest in
     fins_id :: rest
   with Not_found -> ids_params
                                     
 let mk_clause (id,typ,value,ids_params) =
   let kind =
     match typ with
-    | Tpbr -> add_alias id ids_params;
-              add_qt (find_id id);
-              Other SmtCertif.True
-    | Tpqt -> add_alias id ids_params;
-              add_qt (find_id id);
-              Other SmtCertif.True
+    | Tpbr ->
+       begin match ids_params with
+       | [id] -> Same (get_clause id)
+       | _ -> failwith "unexpected form of tmp_betared" end
+    | Tpqt ->
+       begin match ids_params with
+       | [id] -> Same (get_clause id)
+       | _ -> failwith "unexpected form of tmp_qnt_tidy" end
     | Fins ->
        (match value with
-        | [lemma; inst] -> add_fins id;
-                           Other (Forall_inst inst)
+        | [lemma; inst] -> Other (Forall_inst inst)
         | _ -> failwith "unexpected form of forall_inst")
     | Or ->
        (match ids_params with
         | [id_target] ->
-           begin match type_of id_target with
-           | Some Forall_inst -> add_alias id ids_params;
-                                 Other SmtCertif.True
-           | _ -> Other (ImmBuildDef (get_clause id_target)) end
+           let cl_target = get_clause id_target in
+           begin match (repr cl_target).kind with
+           | Other (Forall_inst _) -> Same cl_target
+           | _ -> Other (ImmBuildDef cl_target) end
         | _ -> assert false)
     (* Resolution *)
     | Reso ->
@@ -288,8 +257,7 @@ let mk_clause (id,typ,value,ids_params) =
         | cl1::cl2::q ->
            let res = {rc1 = get_clause cl1; rc2 = get_clause cl2; rtail = List.map get_clause q} in
            Res res
-        | [fins_id] -> add_alias id ids_params;
-                       Other SmtCertif.True
+        | [fins_id] -> Same (get_clause fins_id)
         | [] -> assert false)
 
     (* Roots *)

@@ -344,9 +344,20 @@ let to_coq to_lit interp (cstep,
            let concl' = out_cl concl in
            mklApp cHole [|out_c c; prem_id'; prem'; concl'; ass_var|]
         | Forall_inst concl ->
-           (* assert false *)
-           let concl' = out_f concl in 
-           mklApp cForallInst [|out_c c; concl'|]
+           let concl' = out_f concl in
+           let apply_name = Names.id_of_string ("app"^(string_of_int (Hashtbl.hash concl))) in
+           let app_var = Term.mkVar apply_name in
+           let x = Names.id_of_string "x" in
+           let xid = Term.mkVar x in
+           let xtyp = Lazy.force cint in
+           let lemma = Term.mkProd (Names.Name x, xtyp, 
+                                    mklApp ceqbZ
+                                      [|mklApp cgeb
+                                          [|mklApp cmul [|xid; xid|];
+                                            Lazy.force cZ0|];
+                                        Lazy.force ctrue
+                                      |]) in
+           mklApp cForallInst [|out_c c; lemma; concl'; app_var|]
 	end
     | _ -> assert false in
   let step = Lazy.force cstep in
