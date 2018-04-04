@@ -17,7 +17,7 @@
 Require Import Bool Int63 PArray.
 Require Structures.
 (* attention *)
-Require Import SMTCoq.Misc SMTCoq.State SMTCoq.SMT_terms Cnf Euf Lia Syntactic Arithmetic Operators Assumptions.
+Require Import SMTCoq.Misc SMTCoq.State SMTCoq.SMT_terms Cnf Euf Lia Syntactic Arithmetic Operators SMTCoq.spl.Assumptions.
 
 Local Open Scope array_scope.
 Local Open Scope int63_scope.
@@ -89,7 +89,7 @@ Section trace.
     (* intros a i _ Ha;apply PArray.fold_left_ind;trivial. *)
     (* intros a0 i0 _ H1;auto. *)
   Qed.
- 
+
 End trace.
 
 
@@ -100,23 +100,26 @@ Module Sat_Checker.
  Inductive step :=
    | Res (_:int) (_:resolution).
 
+
+ 
  Definition resolution_checker s t :=
-    _checker_ (fun s (st:step) => let (pos, r) := st in S.set_resolve s pos r) s t.
+   _checker_ (fun s (st:step) => let (pos, r) := st in S.set_resolve s pos r) s t.
 
  Lemma resolution_checker_correct :
     forall rho, Valuation.wf rho ->
     forall s t cid, resolution_checker C.is_false s t cid->
      ~S.valid rho s.
+
  Proof.
    intros rho Hwr;apply _checker__correct.
    intros; apply C.is_false_correct; trivial.
-   intros s Hv (pos, r);apply S.valid_set_resolve;trivial. 
+   intros s Hv (pos, r);apply S.valid_set_resolve; trivial.
  Qed.
-   
+
  (** Application to Zchaff *)
  Definition dimacs := PArray.array (PArray.array _lit).
 
- Definition C_interp_or rho c := 
+ Definition C_interp_or rho c :=
    afold_left _ _ false orb (Lit.interp rho) c.
 
  Lemma C_interp_or_spec : forall rho c,
@@ -146,7 +149,7 @@ Qed.
  Inductive certif :=
    | Certif : int -> _trace_ step -> clause_id -> certif.
 
- Definition add_roots s (d:dimacs) := 
+ Definition add_roots s (d:dimacs) :=
    PArray.foldi_right (fun i c s => S.set_clause s i (PArray.to_list c)) d s.
 
  Definition checker (d:dimacs) (c:certif) :=
@@ -170,15 +173,15 @@ Qed.
    apply S.valid_make; auto.
  Qed.
 
- Definition interp_var rho x := 
+ Definition interp_var rho x :=
    match compare x 1 with
    | Lt => true
    | Eq => false
-   | Gt => rho (x - 1) 
+   | Gt => rho (x - 1)
      (* This allows to have variable starting at 1 in the interpretation as in dimacs files *)
    end.
 
- Lemma theorem_checker : 
+ Lemma theorem_checker :
    forall d c,
      checker d c = true ->
      forall rho, ~valid (interp_var rho) d.
@@ -190,11 +193,11 @@ Qed.
 End Sat_Checker.
 
 Module Cnf_Checker.
-  
+
   Inductive step :=
   | Res (pos:int) (res:resolution)
-  | ImmFlatten (pos:int) (cid:clause_id) (lf:_lit) 
-  | CTrue (pos:int)       
+  | ImmFlatten (pos:int) (cid:clause_id) (lf:_lit)
+  | CTrue (pos:int)
   | CFalse (pos:int)
   | BuildDef (pos:int) (l:_lit)
   | BuildDef2 (pos:int) (l:_lit)
@@ -210,15 +213,15 @@ Module Cnf_Checker.
   Definition step_checker t_form s (st:step) :=
     match st with
     | Res pos res => S.set_resolve s pos res
-    | ImmFlatten pos cid lf => S.set_clause s pos (check_flatten t_form s cid lf) 
+    | ImmFlatten pos cid lf => S.set_clause s pos (check_flatten t_form s cid lf)
     | CTrue pos => S.set_clause s pos Cnf.check_True
     | CFalse pos => S.set_clause s pos Cnf.check_False
     | BuildDef pos l => S.set_clause s pos (check_BuildDef t_form l)
     | BuildDef2 pos l => S.set_clause s pos (check_BuildDef2 t_form l)
     | BuildProj pos l i => S.set_clause s pos (check_BuildProj t_form l i)
-    | ImmBuildDef pos cid => S.set_clause s pos (check_ImmBuildDef t_form s cid) 
+    | ImmBuildDef pos cid => S.set_clause s pos (check_ImmBuildDef t_form s cid)
     | ImmBuildDef2 pos cid => S.set_clause s pos (check_ImmBuildDef2 t_form s cid)
-    | ImmBuildProj pos cid i => S.set_clause s pos (check_ImmBuildProj t_form s cid i) 
+    | ImmBuildProj pos cid i => S.set_clause s pos (check_ImmBuildProj t_form s cid i)
     end.
 
   Lemma step_checker_correct : forall rho t_form,
@@ -258,7 +261,7 @@ Module Cnf_Checker.
    | Certif : int -> _trace_ step -> int -> certif.
 
  Definition checker t_form l (c:certif) :=
-   let (nclauses, t, confl) := c in   
+   let (nclauses, t, confl) := c in
    Form.check_form t_form &&
    cnf_checker t_form C.is_false (S.set_clause (S.make nclauses) 0 (l::nil)) t confl.
 
@@ -283,11 +286,11 @@ Module Cnf_Checker.
  Qed.
 
  Definition checker_eq t_form l1 l2 l (c:certif) :=
-   negb (Lit.is_pos l) && 
+   negb (Lit.is_pos l) &&
    match t_form.[Lit.blit l] with
    | Form.Fiff l1' l2' => (l1 == l1') && (l2 == l2')
    | _ => false
-   end && 
+   end &&
    checker t_form l c.
 
  Lemma checker_eq_correct : forall t_var t_form l1 l2 l c,
@@ -318,7 +321,7 @@ Module Euf_Checker.
   Variable t_atom : array Atom.atom.
   Variable t_form : array Form.form.
 
-  
+
   Inductive step :=
   | Res (pos:int) (res:resolution)
   | ImmFlatten (pos:int) (cid:clause_id) (lf:_lit)
@@ -343,7 +346,7 @@ Module Euf_Checker.
     (p:interp_conseq_uf (Form.interp_state_var (Atom.interp_form_hatom t_i t_func t_atom) t_form) prem concl)
   | ForallInst (pos:int) (lemma:Prop) (pl:lemma) (concl:C.t)
     (p: lemma -> interp_conseq_uf (Form.interp_state_var (Atom.interp_form_hatom t_i t_func t_atom) t_form) nil concl).
-  
+
   Local Open Scope list_scope.
 
   Local Notation check_flatten t_atom t_form := (check_flatten t_form (check_hatom t_atom) (check_neg_hatom t_atom)) (only parsing).
@@ -370,7 +373,7 @@ Module Euf_Checker.
       | @Hole pos prem_id prem concl _ => S.set_clause s pos (check_hole s prem_id prem concl)
       | ForallInst pos lemma _ concl  _ => S.set_clause s pos concl
     end.
-  
+
   Lemma step_checker_correct :
     let rho := Form.interp_state_var (Atom.interp_form_hatom t_i t_func t_atom) t_form in
       Form.check_form t_form -> Atom.check_atom t_atom ->
@@ -399,11 +402,7 @@ Module Euf_Checker.
     apply valid_check_spl_arith; auto.
     apply valid_check_distinct_elim; auto.
     apply valid_check_hole; auto.
-
-    intros pos lemma pl concl l. fold rho in l.
-    apply S.valid_set_clause; auto.
-    unfold C.valid. rewrite interp_equiv.
-    now apply l. 
+    apply valid_check_forall_inst; auto.
   Qed.
 
   Definition euf_checker (* t_atom t_form *) s t :=

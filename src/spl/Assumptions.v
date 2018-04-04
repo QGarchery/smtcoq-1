@@ -85,12 +85,15 @@ Section Checker_correct.
 
   Local Notation rho := (Form.interp_state_var (Atom.interp_form_hatom t_i t_func t_atom) t_form).
 
+  
   Variable s : S.t.
   Hypothesis Hs : S.valid rho s.
   Hypothesis Ht3 : Valuation.wf
           (Form.interp_state_var (Atom.interp_form_hatom t_i t_func t_atom)
              t_form).
 
+    
+  
   Lemma interp_check_clause c1 : forall c2,
     forallb2 (fun i j => i == j) c1 c2 -> C.interp rho c1 = C.interp rho c2.
   Proof.
@@ -107,12 +110,28 @@ Section Checker_correct.
     rewrite <- (interp_check_clause _ _ H). now apply Hs.
   Qed.
 
+
+
+  Lemma valid_check_forall_inst pos (lemma : Prop) :
+    lemma ->
+    forall concl,
+    (lemma -> interp_uf rho concl) ->
+    S.valid rho (S.set_clause s pos concl).
+
+  Proof.
+    intros pl concl applemma.
+    apply S.valid_set_clause; auto.
+    unfold C.valid. rewrite interp_equiv.
+    now apply applemma.
+  Qed.
+
+  Variable concl : C.t.  
   Variable prem_id : list int.
   Variable prem : list C.t.
-  Variable concl : C.t.
   Hypothesis p : interp_conseq_uf
         (Form.interp_state_var (Atom.interp_form_hatom t_i t_func t_atom)
            t_form) prem concl.
+
 
   Lemma valid_check_hole: C.valid rho (check_hole s prem_id prem concl).
   Proof.
