@@ -194,7 +194,7 @@ term:   /* returns a SmtAtom.Form.pform or a SmtAtom.hatom */
 ;
 
 blit:   
-  | name_term                                              { lit_of_atom_form_lit rf $1 } 
+  | name_term                                              { $1 } 
   | LPAR NOT lit RPAR                                      { Lit (Form.neg $3) }
 ;
 
