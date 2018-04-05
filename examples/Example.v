@@ -76,9 +76,10 @@ Proof.
   verit.
 Qed.
 
-About positive.
+(* About positive. *)
 (* Print N. *)
 
+(* About Z. *)
 (* Print Z. *)
 (* Check (-5)%Z. *)
 (* Check 5%N. *)

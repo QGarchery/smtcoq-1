@@ -1,0 +1,7 @@
+S src/**
+
+B src/**
+
+PKG str unix num
+FLG -rectypes
+

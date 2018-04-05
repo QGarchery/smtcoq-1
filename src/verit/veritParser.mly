@@ -34,6 +34,7 @@
 %token <Big_int.big_int> BIGINT
 %token <string> VAR BINDVAR
 
+
 /* type de "retour" du parseur : une clause */
 %type <int> line
 %start line
@@ -136,7 +137,11 @@ lit_list:
 ;
 
 lit:   /* returns a SmtAtom.Form.t */
-  | name_term                                              { lit_of_atom_form_lit rf $1 }
+  | name_term                                              { lit_of_atom_form_lit rf $1 } 
+  | LPAR NOT lit RPAR                                      { Form.neg $3 }
+;
+
+nlit:   
   | LPAR NOT lit RPAR                                      { Form.neg $3 }
 ;
 
@@ -182,16 +187,20 @@ term:   /* returns a SmtAtom.Form.pform or a SmtAtom.hatom */
   /* Both */
   | EQ name_term name_term                                 { let t1 = $2 in let t2 = $3 in match t1,t2 with | Atom h1, Atom h2 when (match Atom.type_of h1 with | Tbool -> false | _ -> true) -> Atom (Atom.mk_eq ra (Atom.type_of h1) h1 h2) | _, _ -> Form (Fapp (Fiff, [|lit_of_atom_form_lit rf t1; lit_of_atom_form_lit rf t2|])) }
   /* This rule introduces lots of shift/reduce conflicts */
-  | EQ lit lit                                             { let t1 = $2 in let t2 = $3 in Form (Fapp (Fiff, [|t1; t2|])) }
+  | EQ nlit lit                                            { let t1 = $2 in let t2 = $3 in Form (Fapp (Fiff, [|t1; t2|])) }
+  | EQ name_term nlit                                      { let t1 = $2 in let t2 = $3 in Form (Fapp (Fiff, [|lit_of_atom_form_lit rf t1; t2|])) }	
   | LET LPAR bindlist RPAR name_term                       { $3; $5 }
   | BINDVAR                                                { Hashtbl.find hlets $1 }
 ;
 
+blit:   
+  | name_term                                              { lit_of_atom_form_lit rf $1 } 
+  | LPAR NOT lit RPAR                                      { Lit (Form.neg $3) }
+;
+
 bindlist:
-  | LPAR BINDVAR name_term RPAR                            { Hashtbl.add hlets $2 $3 }
-  | LPAR BINDVAR lit RPAR                                  { Hashtbl.add hlets $2 (Lit $3) }
-  | LPAR BINDVAR name_term RPAR bindlist                   { Hashtbl.add hlets $2 $3; $5 }
-  | LPAR BINDVAR lit RPAR bindlist                         { Hashtbl.add hlets $2 (Lit $3); $5 }
+  | LPAR BINDVAR blit RPAR	                           { Hashtbl.add hlets $2 $3 }
+  | LPAR BINDVAR blit RPAR bindlist                        { Hashtbl.add hlets $2 $3; $5 }
 
 args:
   | name_term                                              { match $1 with Atom h -> [h] | _ -> assert false }

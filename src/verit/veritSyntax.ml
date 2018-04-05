@@ -18,8 +18,6 @@ open SmtAtom
 open SmtForm
 open SmtCertif
 open SmtTrace
-
-
        
 (*** Syntax of veriT proof traces ***)
 
@@ -29,6 +27,7 @@ type typ = | Inpu | Deep | True | Fals | Andp | Andn | Orp | Orn | Xorp1 | Xorp2
 
 (* About equality *)
 
+                      
 let get_eq l =
   match Form.pform l with
   | Fatom ha ->
