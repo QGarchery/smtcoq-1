@@ -104,7 +104,8 @@ let checker fsmt fproof = SmtCommands.checker (import_all fsmt fproof)
 
 let export out_channel rt ro l =
   let fmt = Format.formatter_of_out_channel out_channel in
-  Format.fprintf fmt "(set-logic QF_UFLIA)@.";
+  Format.fprintf fmt "(set-logic UFLIA)@.";
+
 
   List.iter (fun (i,t) ->
     let s = "Tindex_"^(string_of_int i) in
@@ -123,6 +124,7 @@ let export out_channel rt ro l =
     Format.fprintf fmt ")@."
   ) (Op.to_list ro);
 
+  Format.fprintf fmt "(assert (forall ((x Int) (y Int)) (= (op_0 x) (op_0 y))))\n";
   Format.fprintf fmt "(assert ";
   Form.to_smt Atom.to_smt fmt l;
   Format.fprintf fmt ")@\n(check-sat)@\n(exit)@."

@@ -1,5 +1,5 @@
-(set-logic UFLIA)
+(set-logic UFNIA)
 (declare-fun x () Int)
-(assert (<= (* x x) 0))
-(assert (<= (* (- 2) (- 2)) 0))
+(assert (forall ((y Int)) (>= (* y y) 0)))
+(assert (<= (* (- x) (- x)) 0))
 (check-sat)
