@@ -52,10 +52,12 @@ let is_eq l =
 
 (* Transitivity *)
 
-let rec list_find_remove p l =
-  match l with
-  | [] -> raise Not_found
-  | t::q -> if p t then (t,q) else let (a,l) = list_find_remove p q in (a,t::l)
+let rec list_find_remove p = function
+    [] -> raise Not_found
+  | h::t -> if p h
+            then h, t
+            else let (a, rest) = list_find_remove p t in
+                 a, h::rest
 
 let rec process_trans a b prem res =
   if List.length prem = 0 then (
@@ -208,32 +210,26 @@ let add value cl =
   | [neg_th] -> Hashtbl.add ref_cl (Form.index neg_th) cl
   | _ -> assert false
                       
-let rec find_fins ids_params =
+let rec fins_id ids_params =
   match ids_params with
     [] -> raise Not_found
   | h :: t -> let cl_target = repr (get_clause h) in
               match cl_target.kind with
-                Other (Forall_inst (i, _)) -> (i, h), t
-              | _ -> let (fins, rest) = find_fins t in
-                     fins, h::rest
+                Other (Forall_inst (i, _)) -> i
+              | _ -> fins_id t
 
-let rec find_root i ids_params =
-  match ids_params with
-    [] -> raise Not_found
-  | h :: t -> let h_clause = get_clause h in
-              let i_clause = Hashtbl.find ref_cl i in
-              if eq_clause h_clause i_clause
-              then h, t
-              else let root_id, rest = find_root i t in
-                   root_id, h::rest
+let rec find_remove_lemma i ids_params =
+  let eq_i h = let h_clause = get_clause h in
+               let i_clause = Hashtbl.find ref_cl i in
+               eq_clause h_clause i_clause in
+  list_find_remove eq_i ids_params
 
 let merge ids_params =
   try
-    let (i, fins_id), rest = find_fins ids_params in
-    let root_id, rest = find_root i rest in
-    fins_id :: rest
+    let i = fins_id ids_params in
+    let _, rest = find_remove_lemma i ids_params in
+    rest
   with Not_found -> ids_params
-
 
 let mk_clause (id,typ,value,ids_params) =
   let kind =
