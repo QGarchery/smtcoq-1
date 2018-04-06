@@ -172,7 +172,7 @@ term:   /* returns a SmtAtom.Form.pform or a SmtAtom.hatom */
   | IMP lit_list                                           { Form (Fapp (Fimp, Array.of_list $2)) }
   | XOR lit_list                                           { Form (Fapp (Fxor, Array.of_list $2)) }
   | ITE lit_list                                           { Form (Fapp (Fite, Array.of_list $2)) }
-  | FORALL LPAR var_decl_list RPAR lit			   { Lit $5 }
+  | FORALL LPAR var_decl_list RPAR name_term		   { $5 }
 
 
   /* Atoms */

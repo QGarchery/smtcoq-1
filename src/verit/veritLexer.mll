@@ -54,7 +54,7 @@
         "la_tautology", LATA;
         "dl_disequality", DLDE;
         "la_disequality", LADE;
-	"forall_inst", FINS;	
+	"XXXforall_instXXX", FINS;	
 	"forall", FORALL;
         "exists_inst", EINS;
         "skolem_ex_ax", SKEA;
