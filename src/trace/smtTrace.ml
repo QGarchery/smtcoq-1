@@ -213,7 +213,7 @@ let alloc c =
   done;
 
   (* r is the first clause defined by resolution or another rule,
-     normaly the first used *)
+     normally the first used *)
   let last_set = ref (get_pos (prev !r)) in
 
   let decr_clause c =
@@ -233,32 +233,6 @@ let alloc c =
 
   while !r.next <> None do
     let n = next !r in
-    if !r.used = 0 then 
-      begin let i = match !r.kind with
-          Root -> 100
-        | Same _ -> 200
-        | Res _ -> 300
-        | Other x ->
-           match x with
-           | True -> 1
-           | False -> 2
-           | ImmFlatten _ -> 3
-           | BuildDef _ -> 4
-           | BuildDef2 _ -> 5
-           | BuildProj _ -> 6
-           | ImmBuildDef _ -> 7
-           | ImmBuildDef2 _ -> 8
-           | ImmBuildProj _ -> 9
-           | EqTr _ -> 10
-           | EqCgr _ -> 11
-           | EqCgrP _ -> 12
-           | LiaMicromega _ -> 13
-           | LiaDiseq _ -> 14
-           | SplArith _ -> 15
-           | SplDistinctElim _ -> 16
-           | Hole _ -> 17
-           | Forall_inst _ -> 18 in
-      raise (Alloc i) end;
       assert (!r.used <> notUsed);
     if isRes !r.kind then
       decr_res (get_res !r "alloc")
@@ -371,7 +345,7 @@ let to_coq to_lit interp (cstep,
            let prem' = List.fold_right (fun cl l -> mklApp ccons [|Lazy.force cState_C_t; out_cl cl; l|]) prem (mklApp cnil [|Lazy.force cState_C_t|]) in
            let concl' = out_cl concl in
            mklApp cHole [|out_c c; prem_id'; prem'; concl'; ass_var|]
-        | Forall_inst (_, concl) ->
+        | Forall_inst (_, _, concl) ->
            let concl' = out_f concl in
            let apply_name = Names.id_of_string ("app"^(string_of_int (Hashtbl.hash concl))) in
            let app_var = Term.mkVar apply_name in

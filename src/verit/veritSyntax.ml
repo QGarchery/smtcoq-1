@@ -215,7 +215,7 @@ let rec fins_id ids_params =
     [] -> raise Not_found
   | h :: t -> let cl_target = repr (get_clause h) in
               match cl_target.kind with
-                Other (Forall_inst (i, _)) -> i
+                Other (Forall_inst (_, i, _)) -> i
               | _ -> fins_id t
 
 let rec find_remove_lemma i ids_params =
@@ -251,7 +251,9 @@ let mk_clause (id,typ,value,ids_params) =
         | [form] when Form.is_pos form->
            (match Form.pform form with
             | Fapp (For, [|lemma; inst|]) when Form.is_neg lemma && Form.is_pos inst->
-               Other (Forall_inst (Form.index lemma, inst))
+               let i = Form.index lemma in
+               let cl = Hashtbl.find ref_cl i in
+               Other (Forall_inst (cl, i, inst))
             | _ -> failwith "unexpected form of forall_inst")
         | _ -> failwith "unexpected form of forall_inst" end
     | Or ->
