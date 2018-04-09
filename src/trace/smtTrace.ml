@@ -154,24 +154,24 @@ let select c =
   while not (isRoot !r.kind) do
     let p = prev !r in
     (match !r.kind with
-      | Res res ->
-      if !r.used == 1 then begin
-        !r.used <- notUsed;
-        (* let res = get_res !r "select" in *)
-        mark res.rc1; mark res.rc2;
-        List.iter mark res.rtail
-      end else
-        skip !r;
-      | Same _ ->
+     | Res res ->
+        if !r.used == 1 then begin
+            !r.used <- notUsed;
+            (* let res = get_res !r "select" in *)
+            mark res.rc1; mark res.rc2;
+            List.iter mark res.rtail
+          end else
+          skip !r;
+     | Same _ ->
         skip !r
-      | _ ->
-      if !r.used == 1 then 
-	begin
-          !r.used <- notUsed;
-          let rl = get_other !r "select" in
-          List.iter mark (used_clauses rl)
-	end 
-      else skip !r;
+     | _ ->
+        if !r.used == 1 then 
+	  begin
+            !r.used <- notUsed;
+            let rl = get_other !r "select" in
+            List.iter mark (used_clauses rl)
+	  end 
+        else skip !r;
     );
     r := p
   done
@@ -197,6 +197,8 @@ let rec occur c =
 
 (* Allocate clause *)
 
+exception Alloc of int
+                         
 let alloc c =
   let free_pos = ref [] in
 
@@ -216,7 +218,7 @@ let alloc c =
 
   let decr_clause c =
     let rc = repr c in
-      assert (rc.used > notUsed);
+    assert (rc.used > notUsed);
     rc.used <- rc.used - 1;
     if rc.used = notUsed then
       free_pos := get_pos rc :: !free_pos in
@@ -231,6 +233,32 @@ let alloc c =
 
   while !r.next <> None do
     let n = next !r in
+    if !r.used = 0 then 
+      begin let i = match !r.kind with
+          Root -> 100
+        | Same _ -> 200
+        | Res _ -> 300
+        | Other x ->
+           match x with
+           | True -> 1
+           | False -> 2
+           | ImmFlatten _ -> 3
+           | BuildDef _ -> 4
+           | BuildDef2 _ -> 5
+           | BuildProj _ -> 6
+           | ImmBuildDef _ -> 7
+           | ImmBuildDef2 _ -> 8
+           | ImmBuildProj _ -> 9
+           | EqTr _ -> 10
+           | EqCgr _ -> 11
+           | EqCgrP _ -> 12
+           | LiaMicromega _ -> 13
+           | LiaDiseq _ -> 14
+           | SplArith _ -> 15
+           | SplDistinctElim _ -> 16
+           | Hole _ -> 17
+           | Forall_inst _ -> 18 in
+      raise (Alloc i) end;
       assert (!r.used <> notUsed);
     if isRes !r.kind then
       decr_res (get_res !r "alloc")

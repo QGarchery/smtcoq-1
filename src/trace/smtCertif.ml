@@ -143,4 +143,5 @@ let used_clauses r =
   | Hole (cs, _) -> cs
   | True | False | BuildDef _ | BuildDef2 _ | BuildProj _
   | EqTr _ | EqCgr _ | EqCgrP _
-  | LiaMicromega _ | LiaDiseq _ -> []
+  | LiaMicromega _ | LiaDiseq _   | Forall_inst _ -> []
+                                     
