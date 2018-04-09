@@ -113,14 +113,14 @@ let export out_channel rt ro l =
     Format.fprintf fmt "(declare-sort %s 0)@." s
   ) (Btype.to_list rt);
 
-  List.iter (fun (i,cod,dom,op) ->
+  List.iter (fun (i,dom,cod,op) ->
     let s = "op_"^(string_of_int i) in
     VeritSyntax.add_fun s op;
     Format.fprintf fmt "(declare-fun %s (" s;
     let is_first = ref true in
-    Array.iter (fun t -> if !is_first then is_first := false else Format.fprintf fmt " "; Btype.to_smt fmt t) cod;
+    Array.iter (fun t -> if !is_first then is_first := false else Format.fprintf fmt " "; Btype.to_smt fmt t) dom;
     Format.fprintf fmt ") ";
-    Btype.to_smt fmt dom;
+    Btype.to_smt fmt cod;
     Format.fprintf fmt ")@."
   ) (Op.to_list ro);
 

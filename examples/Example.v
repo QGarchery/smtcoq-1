@@ -8,7 +8,7 @@ Require Import Bool.
 Local Open Scope int63_scope.
 
 Lemma calling_verit :
-  forall f, forall y : Z, 
+  forall f, forall y, 
       Zeq_bool (f 2%Z) (f y).
 
 Proof.  

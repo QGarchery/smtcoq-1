@@ -247,9 +247,13 @@ let mk_clause (id,typ,value,ids_params) =
           Same (get_clause id)
        | _ -> failwith "unexpected form of tmp_qnt_tidy" end
     | Fins ->
-       (match value with
-        | [lemma; inst] -> Other (Forall_inst (Form.index lemma, inst))
-        | _ -> failwith "unexpected form of forall_inst")
+       begin match value with
+        | [form] when Form.is_pos form->
+           (match Form.pform form with
+            | Fapp (For, [|lemma; inst|]) when Form.is_neg lemma && Form.is_pos inst->
+               Other (Forall_inst (Form.index lemma, inst))
+            | _ -> failwith "unexpected form of forall_inst")
+        | _ -> failwith "unexpected form of forall_inst" end
     | Or ->
        (match ids_params with
         | [id_target] ->

@@ -54,7 +54,7 @@
         "la_tautology", LATA;
         "dl_disequality", DLDE;
         "la_disequality", LADE;
-	"XXXforall_instXXX", FINS;	
+	"forall_inst", FINS;	
 	"forall", FORALL;
         "exists_inst", EINS;
         "skolem_ex_ax", SKEA;
@@ -106,7 +106,7 @@ let alpha = [ 'a'-'z' 'A' - 'Z' ]
 let blank = [' ' '\t']
 let newline = ['\n' '\r']
 let var = alpha (alpha|digit|'_')*
-let atvar = '@' var | var
+let atvar = '@' var
 let bindvar = '?' var+
 let int = '-'? digit+
 

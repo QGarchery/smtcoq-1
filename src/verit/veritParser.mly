@@ -145,20 +145,27 @@ nlit:
   | LPAR NOT lit RPAR                                      { Form.neg $3 }
 ;
 
+maybeatvar:   
+  | VAR			                                   { $1 }
+  | ATVAR			                           { $1 }
+;
+
+
 name_term:   /* returns a SmtAtom.Form.pform or a SmtAtom.hatom */
   | SHARP INT                                              { get_solver $2 }
   | SHARP INT COLON LPAR term RPAR                         { let res = $5 in add_solver $2 res; res }
   | TRUE                                                   { Form Form.pform_true }
   | FALS                                                   { Form Form.pform_false }
-  | VAR                                                    { Atom (Atom.get ra (Aapp (get_fun $1,[||]))) }
+  | maybeatvar						   { let op = try get_fun $1 with _ -> dummy_indexed_op 0 [||] TZ in
+    							     Atom (Atom.get ra (Aapp (op, [||]))) }
   | BINDVAR                                                { Hashtbl.find hlets $1 }
   | INT                                                    { Atom (Atom.hatom_Z_of_int ra $1) }
   | BIGINT                                                 { Atom (Atom.hatom_Z_of_bigint ra $1) }
 ;
 
 var_decl_list:
-  | LPAR VAR VAR RPAR					   { () }
-  | LPAR VAR VAR RPAR var_decl_list			   { () }
+  | LPAR maybeatvar VAR RPAR				   { () }
+  | LPAR maybeatvar VAR RPAR var_decl_list		   { () }
 
 
 term:   /* returns a SmtAtom.Form.pform or a SmtAtom.hatom */
@@ -188,12 +195,11 @@ term:   /* returns a SmtAtom.Form.pform or a SmtAtom.hatom */
   | MINUS name_term                                        { match $2 with | Atom h -> Atom (Atom.mk_opp ra h) | _ -> assert false }
   | OPP name_term                                          { match $2 with | Atom h -> Atom (Atom.mk_opp ra h) | _ -> assert false }
   | DIST args                                              { let a = Array.of_list $2 in Atom (Atom.mk_distinct ra (Atom.type_of a.(0)) a) }
-  | VAR                                                    { Atom (Atom.get ra (Aapp (get_fun $1, [||]))) }
+  | VAR                                                    { Atom (Atom.get ra (Aapp (get_fun $1,[||]))) }
   | VAR args                                               { Atom (Atom.get ra (Aapp (get_fun $1, Array.of_list $2))) }
 
   /* Both */
   | EQ name_term name_term                                 { let t1 = $2 in let t2 = $3 in match t1,t2 with | Atom h1, Atom h2 when (match Atom.type_of h1 with | Tbool -> false | _ -> true) -> Atom (Atom.mk_eq ra (Atom.type_of h1) h1 h2) | _, _ -> Form (Fapp (Fiff, [|lit_of_atom_form_lit rf t1; lit_of_atom_form_lit rf t2|])) }
-  /* This rule introduces lots of shift/reduce conflicts */
   | EQ nlit lit                                            { let t1 = $2 in let t2 = $3 in Form (Fapp (Fiff, [|t1; t2|])) }
   | EQ name_term nlit                                      { let t1 = $2 in let t2 = $3 in Form (Fapp (Fiff, [|lit_of_atom_form_lit rf t1; t2|])) }	
   | LET LPAR bindlist RPAR name_term                       { $3; $5 }
