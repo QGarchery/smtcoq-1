@@ -32,8 +32,9 @@ let debug = false
 (******************************************************************************)
 (* Given a verit trace build the corresponding certif and theorem             *)
 (******************************************************************************)
+exception Import_trace of int
 
-let import_trace filename first =
+let rec import_trace filename first =
   let chan = open_in filename in
   let lexbuf = Lexing.from_channel chan in
   let confl_num = ref (-1) in
@@ -53,11 +54,11 @@ let import_trace filename first =
     raise VeritLexer.Eof
   with
     | VeritLexer.Eof ->
-      close_in chan;
-      let first =
-        let aux = VeritSyntax.get_clause !first_num in
-        match first, aux.value with
-          | Some (root,l), Some (fl::nil) ->
+       close_in chan;
+       let first =
+         let aux = VeritSyntax.get_clause !first_num in
+         match first, aux.value with
+         | Some (root,l), Some (fl::nil) ->
             if Form.equal l fl then
               aux
             else (
@@ -65,16 +66,58 @@ let import_trace filename first =
               SmtTrace.link root aux;
               root
             )
-          | _,_ -> aux in
-      let confl = VeritSyntax.get_clause !confl_num in
-      SmtTrace.select confl;
-      (* Trace.share_prefix first (2 * last.id); *)
-      occur confl;
-      (alloc first, confl)
+         | _,_ -> aux in
+       let confl = VeritSyntax.get_clause !confl_num in
+       SmtTrace.select confl;
+       (* Trace.share_prefix first (2 * last.id); *)
+       print first;
+       occur confl;
+       (alloc first, confl)
     | Parsing.Parse_error -> failwith ("Verit.import_trace: parsing error line "^(string_of_int !line))
 
+and print c =
+  let r = ref c in
+  let out_channel = open_out "/tmp/debug.log" in
+  while !r.next <> None do
+    Printf.fprintf out_channel "%s\n" (to_string r);
+    flush out_channel;
+    r := get_val (!r.next)
+  done;
+  Printf.fprintf out_channel "%s\n" (to_string r);
+  flush out_channel;
+  close_out out_channel
 
-                                      
+and get_val = function
+    Some a -> a
+  | None -> assert false
+  
+            
+and to_string r =
+  match !r.kind with
+            Root -> "Root"
+          | Same _ -> "Same"
+          | Res _ -> "Res"
+          | Other x -> "Other (" ^
+                         begin match x with
+                         | True -> "True"
+                         | False -> "False"
+                         | ImmFlatten _ -> "ImmFlatten"
+                         | BuildDef _ -> "BuildDef"
+                         | BuildDef2 _ -> "BuildDef2"
+                         | BuildProj _ -> "BuildProj"
+                         | ImmBuildDef _ -> "ImmBuildDef"
+                         | ImmBuildDef2 _ -> "ImmBuildDef2"
+                         | ImmBuildProj _ -> "ImmBuildProj"
+                         | EqTr _ -> "EqTr"
+                         | EqCgr _ -> "EqCgr"
+                         | EqCgrP _ -> "EqCgrP"
+                         | LiaMicromega _ -> "LiaMicromega"
+                         | LiaDiseq _ -> "LiaDiseq"
+                         | SplArith _ -> "SplArith"
+                         | SplDistinctElim _ -> "SplDistinctElim"
+                         | Hole _ -> "Hole"
+                         | Forall_inst _ -> "Forall_inst" end ^ ")"
+
 let clear_all () =
   SmtTrace.clear ();
   VeritSyntax.clear ()
@@ -124,11 +167,13 @@ let export out_channel rt ro l =
     Format.fprintf fmt ")@."
   ) (Op.to_list ro);
 
-  Format.fprintf fmt "(assert (forall ((x Int) (y Int)) (= (op_0 x) (op_0 y))))\n";
+
   Format.fprintf fmt "(assert ";
   Form.to_smt Atom.to_smt fmt l;
-  Format.fprintf fmt ")@\n(check-sat)@\n(exit)@."
-
+  Format.fprintf fmt ")\n";
+  Format.fprintf fmt "(assert (forall ((x Int) (y Int)) (= (op_0 x) (op_0 y))))\n";
+  Format.fprintf fmt "(check-sat)\n";
+  Format.fprintf fmt "(exit)@."
 
 (* val call_verit : Btype.reify_tbl -> Op.reify_tbl -> Form.t -> (Form.t clause * Form.t) -> (int * Form.t clause) *)
 let call_verit rt ro fl root =

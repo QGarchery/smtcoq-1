@@ -30,7 +30,7 @@ Lemma sat2:
     (negb (v 2) || v 3) &&
     (negb (v 3) || v 1)  = false.
 Proof.
-  zchaff.
+  verit.
 Qed.
 
 Zchaff_Checker "hole4.cnf" "hole4.log".

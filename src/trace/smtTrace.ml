@@ -115,10 +115,15 @@ let get_res c s =
   | Res res -> res
   | _ -> Printf.printf "get_res %s\n" s; assert false
 
+
 let get_other c s =
   match c.kind with
   | Other res -> res
-  | _ -> Printf.printf "get_other %s\n" s; assert false
+  | Same _ -> failwith "get_other on a Same"
+  | Res _ -> failwith "get_other on a Res"
+  | Root -> failwith "get_other on a Root"
+                       
+(* | _ -> Printf.printf "get_other %s\n" s; assert false *)
 
 let get_val c =
   match c.value with
@@ -211,7 +216,6 @@ let alloc c =
     end;
     r := next !r;
   done;
-
   (* r is the first clause defined by resolution or another rule,
      normally the first used *)
   let last_set = ref (get_pos (prev !r)) in
@@ -237,34 +241,7 @@ let alloc c =
     if isRes !r.kind then
       decr_res (get_res !r "alloc")
     else
-      ((try ignore (get_other !r "alloc")
-      with _ -> 
-        begin let i = match !r.kind with
-                  Root -> 100
-                | Same _ -> 200
-                | Res _ -> 300
-                | Other x ->
-                   match x with
-                   | True -> 1
-                   | False -> 2
-                   | ImmFlatten _ -> 3
-                   | BuildDef _ -> 4
-                   | BuildDef2 _ -> 5
-                   | BuildProj _ -> 6
-                   | ImmBuildDef _ -> 7
-                   | ImmBuildDef2 _ -> 8
-                   | ImmBuildProj _ -> 9
-                   | EqTr _ -> 10
-                   | EqCgr _ -> 11
-                   | EqCgrP _ -> 12
-                   | LiaMicromega _ -> 13
-                   | LiaDiseq _ -> 14
-                   | SplArith _ -> 15
-                   | SplDistinctElim _ -> 16
-                   | Hole _ -> 17
-                   | Forall_inst _ -> 18 in
-              raise (Alloc i) end);
-              decr_other (get_other !r "alloc"));
+      decr_other (get_other !r "alloc");
     begin match !free_pos with
     | p::free -> free_pos := free; !r.pos <- Some p
     | _ -> incr last_set; !r.pos <- Some !last_set
