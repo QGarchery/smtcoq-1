@@ -68,9 +68,10 @@ let rec import_trace filename first =
             )
          | _,_ -> aux in
        let confl = VeritSyntax.get_clause !confl_num in
+       print first;
        SmtTrace.select confl;
        (* Trace.share_prefix first (2 * last.id); *)
-       print first;
+
        occur confl;
        (alloc first, confl)
     | Parsing.Parse_error -> failwith ("Verit.import_trace: parsing error line "^(string_of_int !line))
@@ -79,11 +80,11 @@ and print c =
   let r = ref c in
   let out_channel = open_out "/tmp/debug.log" in
   while !r.next <> None do
-    Printf.fprintf out_channel "%s\n" (to_string r);
+    Printf.fprintf out_channel "%s\n" (to_string (!r.kind));
     flush out_channel;
     r := get_val (!r.next)
   done;
-  Printf.fprintf out_channel "%s\n" (to_string r);
+  Printf.fprintf out_channel "%s\n" (to_string (!r.kind));
   flush out_channel;
   close_out out_channel
 
@@ -92,31 +93,6 @@ and get_val = function
   | None -> assert false
   
             
-and to_string r =
-  match !r.kind with
-            Root -> "Root"
-          | Same _ -> "Same"
-          | Res _ -> "Res"
-          | Other x -> "Other (" ^
-                         begin match x with
-                         | True -> "True"
-                         | False -> "False"
-                         | ImmFlatten _ -> "ImmFlatten"
-                         | BuildDef _ -> "BuildDef"
-                         | BuildDef2 _ -> "BuildDef2"
-                         | BuildProj _ -> "BuildProj"
-                         | ImmBuildDef _ -> "ImmBuildDef"
-                         | ImmBuildDef2 _ -> "ImmBuildDef2"
-                         | ImmBuildProj _ -> "ImmBuildProj"
-                         | EqTr _ -> "EqTr"
-                         | EqCgr _ -> "EqCgr"
-                         | EqCgrP _ -> "EqCgrP"
-                         | LiaMicromega _ -> "LiaMicromega"
-                         | LiaDiseq _ -> "LiaDiseq"
-                         | SplArith _ -> "SplArith"
-                         | SplDistinctElim _ -> "SplDistinctElim"
-                         | Hole _ -> "Hole"
-                         | Forall_inst _ -> "Forall_inst" end ^ ")"
 
 let clear_all () =
   SmtTrace.clear ();

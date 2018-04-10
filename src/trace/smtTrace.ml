@@ -242,9 +242,10 @@ let alloc c =
       decr_res (get_res !r "alloc")
     else
       decr_other (get_other !r "alloc");
-    begin match !free_pos with
+    begin try match !free_pos with
     | p::free -> free_pos := free; !r.pos <- Some p
     | _ -> incr last_set; !r.pos <- Some !last_set
+          with _ -> failwith (to_string !r.kind)
     end;
     r := n
   done;

@@ -42,3 +42,5 @@ and 'hform resolution = {
   mutable rtail : 'hform clause list;
 }
 val used_clauses : 'a rule -> 'a clause list
+val to_string : 'a clause_kind -> string
+                                
