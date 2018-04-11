@@ -141,7 +141,7 @@ let used_clauses r =
   | ImmBuildProj (c, _) | ImmBuildDef c | ImmBuildDef2 c | Forall_inst (c, _, _)
   | ImmFlatten (c,_)  | SplArith (c,_,_) | SplDistinctElim (c,_) -> [c]
   | Hole (cs, _) -> cs
-  | True | False | BuildDef _ | BuildDef2 _ | BuildProj _
+  | True | False | BuildDef _ | BuildDef2 _ | BuildProj _ 
   | EqTr _ | EqCgr _ | EqCgrP _
   | LiaMicromega _ | LiaDiseq _   -> []
                                        

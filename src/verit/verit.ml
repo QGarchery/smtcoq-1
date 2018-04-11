@@ -34,6 +34,11 @@ let debug = false
 (******************************************************************************)
 exception Import_trace of int
 
+let get_val = function
+    Some a -> a
+  | None -> assert false
+
+                            
 let rec import_trace filename first =
   let chan = open_in filename in
   let lexbuf = Lexing.from_channel chan in
@@ -68,30 +73,31 @@ let rec import_trace filename first =
             )
          | _,_ -> aux in
        let confl = VeritSyntax.get_clause !confl_num in
-       print first;
+       print first "/tmp/select1.log";
        SmtTrace.select confl;
        (* Trace.share_prefix first (2 * last.id); *)
-
+       print first "/tmp/select2.log";
        occur confl;
        (alloc first, confl)
     | Parsing.Parse_error -> failwith ("Verit.import_trace: parsing error line "^(string_of_int !line))
 
-and print c =
+and print c where=
   let r = ref c in
-  let out_channel = open_out "/tmp/debug.log" in
-  while !r.next <> None do
-    Printf.fprintf out_channel "%s\n" (to_string (!r.kind));
+  let out_channel = open_out where in
+  let continue = ref true in
+  while !continue do
+    let kind = to_string (!r.kind) in
+    let id = !r.id in
+    let pos = match !r.pos with
+      | None -> "None"
+      | Some p -> string_of_int p in
+    Printf.fprintf out_channel "id:%i kind:%s pos:%s\n" id kind pos;
     flush out_channel;
-    r := get_val (!r.next)
-  done;
-  Printf.fprintf out_channel "%s\n" (to_string (!r.kind));
-  flush out_channel;
-  close_out out_channel
+    match !r.next with
+    | None -> continue := false
+    | Some n -> r := n 
+  done
 
-and get_val = function
-    Some a -> a
-  | None -> assert false
-  
             
 
 let clear_all () =

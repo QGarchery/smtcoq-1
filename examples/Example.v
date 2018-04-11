@@ -13,7 +13,31 @@ Lemma calling_verit :
 
 Proof.  
   verit.
-  
+
+Qed.  
+
+Lemma irrelf_ltb :
+  forall a b c,
+  (Z.ltb a b) &&
+  (Z.ltb b c) &&
+  (Z.ltb c a) = false.
+
+Proof.
+  verit.
+Qed.
+
+Lemma sat2:
+  forall a1 a2 a3 : bool,
+    (a1 || a2 || a3) &&
+    (negb (a1) || negb (a2) || negb (a3)) &&
+    (negb (a1) || a2) &&
+    (negb (a2) || a3) &&
+    (negb (a3) || a1)  = false.
+Proof.
+  verit.
+Qed.
+
+
 
   
 (* Examples that check ZChaff certificates *)
@@ -22,16 +46,6 @@ Zchaff_Checker "sat.cnf" "sat.log".
 Zchaff_Theorem sat "sat.cnf" "sat.log".
 Check sat.
 
-Lemma sat2:
-  forall v : int -> bool,
-    (v 1 || v 2 || v 3) &&
-    (negb (v 1) || negb (v 2) || negb (v 3)) &&
-    (negb (v 1) || v 2) &&
-    (negb (v 2) || v 3) &&
-    (negb (v 3) || v 1)  = false.
-Proof.
-  verit.
-Qed.
 
 Zchaff_Checker "hole4.cnf" "hole4.log".
 
@@ -147,15 +161,6 @@ Proof.
 Qed.
 
 
-Lemma irrelf_ltb :
-  forall a b c,
-  (Z.ltb a b) &&
-  (Z.ltb b c) &&
-  (Z.ltb c a) = false.
-
-Proof.
-  verit.
-Qed.
 
 Lemma un_menteur (a b c d : Z) dit:
   negb ((Zeq_bool (dit a) c) &&

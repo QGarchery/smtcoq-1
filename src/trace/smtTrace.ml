@@ -167,7 +167,8 @@ let select c =
             List.iter mark res.rtail
           end else
           skip !r;
-     | Same _ ->
+     | Same c ->
+        mark c;
         skip !r
      | _ ->
         if !r.used == 1 then 
@@ -182,8 +183,6 @@ let select c =
   done
 
  
-
-
 (* Compute the number of occurence of each_clause *)
 
 let rec occur c =
