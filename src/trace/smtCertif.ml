@@ -110,7 +110,7 @@ type 'hform rule =
 
   (* Possibility to introduce "holes" in proofs (that should be filled in Coq) *)
   | Hole of ('hform clause) list * 'hform list
-  | Forall_inst of 'hform clause * int * 'hform
+  | Forall_inst of 'hform clause * 'hform
 
                                           
 and 'hform clause = {
@@ -138,7 +138,7 @@ and 'hform resolution = {
 
 let used_clauses r =
   match r with
-  | ImmBuildProj (c, _) | ImmBuildDef c | ImmBuildDef2 c | Forall_inst (c, _, _)
+  | ImmBuildProj (c, _) | ImmBuildDef c | ImmBuildDef2 c | Forall_inst (c, _)
   | ImmFlatten (c,_)  | SplArith (c,_,_) | SplDistinctElim (c,_) -> [c]
   | Hole (cs, _) -> cs
   | True | False | BuildDef _ | BuildDef2 _ | BuildProj _ 

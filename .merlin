@@ -1,6 +1,12 @@
 S src/**
+S ../../native-coq/interp
+S ../../native-coq/kernel
+S ../../native-coq/plugins/micromega
 
 B src/**
+B ../../native-coq/interp
+B ../../native-coq/kernel
+B ../../native-coq/plugins/micromega
 
 PKG str unix num
 FLG -rectypes

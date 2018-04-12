@@ -13,7 +13,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-
 open SmtMisc
 open CoqTerms
 open SmtCertif
@@ -279,6 +278,7 @@ let build_certif first_root confl =
   occur confl;
   alloc first_root
 
+        
 
 let to_coq to_lit interp (cstep,
     cRes, cImmFlatten,
@@ -349,15 +349,16 @@ let to_coq to_lit interp (cstep,
            let prem' = List.fold_right (fun cl l -> mklApp ccons [|Lazy.force cState_C_t; out_cl cl; l|]) prem (mklApp cnil [|Lazy.force cState_C_t|]) in
            let concl' = out_cl concl in
            mklApp cHole [|out_c c; prem_id'; prem'; concl'; ass_var|]
-        | Forall_inst (_, _, concl) ->
+        | Forall_inst (cl, concl) ->
+           let th = repr cl in
            let concl' = out_f concl in
            let apply_name = Names.id_of_string ("app"^(string_of_int (Hashtbl.hash concl))) in
            let app_var = Term.mkVar apply_name in
-           let x = Names.id_of_string "x" in
+           let x = Names.id_of_string "azza" in
            let xid = Term.mkVar x in
            let xtyp = Lazy.force cint in
-           let lemma = Term.mkProd (Names.Name x, xtyp, 
-                                    mklApp ceqbZ
+           let lemma = Term.mkLambda (Names.Name x, xtyp,
+                                      mklApp ceqbZ
                                       [|mklApp cgeb
                                           [|mklApp cmul [|xid; xid|];
                                             Lazy.force cZ0|];

@@ -14,6 +14,7 @@
 (**************************************************************************)
 
 
+
 open SmtAtom
 open SmtForm
 open SmtCertif
@@ -210,24 +211,22 @@ let add value cl =
   | [neg_th] -> Hashtbl.add ref_cl (Form.index neg_th) cl
   | _ -> assert false
                       
-let rec fins_id ids_params =
+let rec fins_lemma ids_params =
   match ids_params with
     [] -> raise Not_found
   | h :: t -> let cl_target = repr (get_clause h) in
               match cl_target.kind with
-                Other (Forall_inst (_, i, _)) -> i
-              | _ -> fins_id t
+                Other (Forall_inst (lemma, _)) -> lemma
+              | _ -> fins_lemma t
 
-let rec find_remove_lemma i ids_params =
-  let eq_i h = let h_clause = get_clause h in
-               let i_clause = Hashtbl.find ref_cl i in
-               eq_clause h_clause i_clause in
-  list_find_remove eq_i ids_params
+let rec find_remove_lemma lemma ids_params =
+  let eq_lemma h = eq_clause lemma (get_clause h) in 
+  list_find_remove eq_lemma ids_params
 
 let merge ids_params =
   try
-    let i = fins_id ids_params in
-    let _, rest = find_remove_lemma i ids_params in
+    let lemma = fins_lemma ids_params in
+    let _, rest = find_remove_lemma lemma ids_params in
     rest
   with Not_found -> ids_params
 
@@ -253,7 +252,7 @@ let mk_clause (id,typ,value,ids_params) =
             | Fapp (For, [|lemma; inst|]) when Form.is_neg lemma && Form.is_pos inst->
                let i = Form.index lemma in
                let cl = Hashtbl.find ref_cl i in
-               Other (Forall_inst (cl, i, inst))
+               Other (Forall_inst (cl, inst))
             | _ -> failwith "unexpected form of forall_inst")
         | _ -> failwith "unexpected form of forall_inst" end
     | Or ->
