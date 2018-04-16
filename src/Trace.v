@@ -380,6 +380,7 @@ Module Euf_Checker.
       Atom.wt t_i t_func t_atom ->
       forall s, S.valid rho s ->
         forall st : step, S.valid rho (step_checker s st).
+
   Proof.
     intros rho H1 H2 H10 s Hs. destruct (Form.check_form_correct (Atom.interp_form_hatom t_i t_func t_atom) _ H1) as [[Ht1 Ht2] Ht3]. destruct (Atom.check_atom_correct _ H2) as [Ha1 Ha2]. intros [pos res|pos cid lf|pos|pos|pos l|pos l|pos l i|pos cid|pos cid|pos cid i|pos l fl|pos l fl|pos l1 l2 fl|pos cl c|pos l|pos orig res l|pos orig res|pos prem_id prem concl p | ]; simpl; try apply S.valid_set_clause; auto.
     apply S.valid_set_resolve; auto.

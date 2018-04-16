@@ -484,11 +484,11 @@ module Make (Atom:ATOM) =
 		  | For -> interp_args corb args
 		  | Fxor -> interp_args cxorb args
 		  | Fimp ->
-		      let r = ref (interp_form args.(Array.length args - 1)) in
-		      for i = Array.length args - 2 downto 0 do
-			r := mklApp cimplb [|interp_form args.(i); !r|]
-		      done;
-		      !r
+		     let r = ref (interp_form args.(Array.length args - 1)) in
+		     for i = Array.length args - 2 downto 0 do
+		       r := mklApp cimplb [|interp_form args.(i); !r|]
+		     done;
+		     !r
 		  | Fiff -> interp_args ceqb args
 		  | Fite ->
 		      (* TODO with if here *)

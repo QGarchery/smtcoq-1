@@ -349,22 +349,18 @@ let to_coq to_lit interp (cstep,
            let prem' = List.fold_right (fun cl l -> mklApp ccons [|Lazy.force cState_C_t; out_cl cl; l|]) prem (mklApp cnil [|Lazy.force cState_C_t|]) in
            let concl' = out_cl concl in
            mklApp cHole [|out_c c; prem_id'; prem'; concl'; ass_var|]
-        | Forall_inst (cl, concl) ->
-           let th = repr cl in
-           let concl' = out_f concl in
-           let apply_name = Names.id_of_string ("app"^(string_of_int (Hashtbl.hash concl))) in
-           let app_var = Term.mkVar apply_name in
-           let x = Names.id_of_string "azza" in
-           let xid = Term.mkVar x in
-           let xtyp = Lazy.force cint in
-           let lemma = Term.mkLambda (Names.Name x, xtyp,
-                                      mklApp ceqbZ
-                                      [|mklApp cgeb
-                                          [|mklApp cmul [|xid; xid|];
-                                            Lazy.force cZ0|];
-                                        Lazy.force ctrue
-                                      |]) in
-           mklApp cForallInst [|out_c c; lemma; concl'; app_var|]
+        | Forall_inst (_, concl) ->
+           let concl' = out_cl [concl] in
+           let lemma = CoqTerms.gen_constant [["SMTCoq";"SMTCoq"]] "lemma" in
+           let clemma = Lazy.force lemma in
+           let pl = CoqTerms.gen_constant [["SMTCoq";"SMTCoq"]] "pl" in
+           let cpl = Lazy.force pl in
+           let app_name = Names.id_of_string ("app"^(string_of_int (Hashtbl.hash concl))) in
+           let app_var = Term.mkVar app_name in
+           let unused_x = Names.id_of_string ("unused"^(string_of_int (Hashtbl.hash concl))) in 
+           let app_ty = Term.mkProd (Names.Name unused_x, clemma, interp ([], [concl])) in
+           cuts := (app_name, app_ty)::!cuts;
+           mklApp cForallInst [|out_c c; clemma; cpl; concl'; app_var|]
 	end
     | _ -> assert false in
   let step = Lazy.force cstep in

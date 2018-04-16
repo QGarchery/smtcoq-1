@@ -32,7 +32,7 @@ val naive_alloc : 'a SmtCertif.clause -> int
 val build_certif : 'a SmtCertif.clause -> 'b SmtCertif.clause -> int
 val to_coq :
   ('a -> Term.constr) ->
-  ('a list list * 'a list -> 'b) ->
+  ('a list list * 'a list -> Term.types) ->
   Term.types Lazy.t * Term.constr Lazy.t * Term.constr Lazy.t *
   Term.constr Lazy.t * Term.constr Lazy.t * Term.constr Lazy.t *
   Term.constr Lazy.t * Term.constr Lazy.t * Term.constr Lazy.t *
@@ -41,7 +41,8 @@ val to_coq :
   Term.constr Lazy.t * Term.constr Lazy.t * Term.constr Lazy.t *
   Term.constr Lazy.t * Term.constr Lazy.t ->
   'a SmtCertif.clause ->
-  Term.constr * 'a SmtCertif.clause * (Names.identifier * 'b) list
+  Term.constr * 'a SmtCertif.clause *
+    (Names.identifier * Term.types) list
 module MakeOpt :
   functor (Form : SmtForm.FORM) ->
     sig
