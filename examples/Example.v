@@ -50,6 +50,7 @@ Lemma irrelf_ltb :
 
 Proof.
   verit.
+
 Qed.
 
 Lemma sat2:

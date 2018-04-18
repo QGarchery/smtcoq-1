@@ -150,14 +150,12 @@ maybeatvar:
   | ATVAR			                           { $1 }
 ;
 
-
 name_term:   /* returns a SmtAtom.Form.pform or a SmtAtom.hatom */
   | SHARP INT                                              { get_solver $2 }
   | SHARP INT COLON LPAR term RPAR                         { let res = $5 in add_solver $2 res; res }
   | TRUE                                                   { Form Form.pform_true }
   | FALS                                                   { Form Form.pform_false }
-  | maybeatvar						   { let op = try get_fun $1 with _ -> dummy_indexed_op 0 [||] TZ in
-    							     Atom (Atom.get ra (Aapp (op, [||]))) }
+  | VAR							   { Atom (Atom.get ra (Aapp (get_fun $1, [||]))) }
   | BINDVAR                                                { Hashtbl.find hlets $1 }
   | INT                                                    { Atom (Atom.hatom_Z_of_int ra $1) }
   | BIGINT                                                 { Atom (Atom.hatom_Z_of_bigint ra $1) }
@@ -166,7 +164,7 @@ name_term:   /* returns a SmtAtom.Form.pform or a SmtAtom.hatom */
 var_decl_list:
   | LPAR maybeatvar VAR RPAR				   { () }
   | LPAR maybeatvar VAR RPAR var_decl_list		   { () }
-
+;
 
 term:   /* returns a SmtAtom.Form.pform or a SmtAtom.hatom */
   | LPAR term RPAR                                         { $2 }
@@ -179,7 +177,7 @@ term:   /* returns a SmtAtom.Form.pform or a SmtAtom.hatom */
   | IMP lit_list                                           { Form (Fapp (Fimp, Array.of_list $2)) }
   | XOR lit_list                                           { Form (Fapp (Fxor, Array.of_list $2)) }
   | ITE lit_list                                           { Form (Fapp (Fite, Array.of_list $2)) }
-  | FORALL LPAR var_decl_list RPAR name_term		   { $5 }
+  | FORALL LPAR var_decl_list RPAR name_term_local	   { Form Form.pform_true }
 
 
   /* Atoms */
@@ -204,6 +202,61 @@ term:   /* returns a SmtAtom.Form.pform or a SmtAtom.hatom */
   | EQ name_term nlit                                      { let t1 = $2 in let t2 = $3 in Form (Fapp (Fiff, [|lit_of_atom_form_lit rf t1; t2|])) }	
   | LET LPAR bindlist RPAR name_term                       { $3; $5 }
   | BINDVAR                                                { Hashtbl.find hlets $1 }
+;
+
+lit_list_local:
+  | lit_local                                              { () }
+  | lit_local lit_list_local                               { () }
+;
+
+lit_local:  
+  | name_term_local                                        { () }
+  | LPAR NOT lit_local RPAR                                { () }
+;
+
+name_term_local:   
+  | SHARP INT                                              { () }
+  | SHARP INT COLON LPAR term_local RPAR                   { () }
+  | TRUE                                                   { () }
+  | FALS                                                   { () }
+  | maybeatvar						   { () }
+  | BINDVAR                                                { () }
+  | INT                                                    { () }
+  | BIGINT                                                 { () }
+;
+
+term_local:
+  | LPAR term_local RPAR				   { () }
+
+  | TRUE                                                   { () }
+  | FALS                                                   { () }
+  | AND lit_list_local                                     { () }
+  | OR lit_list_local                                      { () }
+  | IMP lit_list_local                                     { () }
+  | XOR lit_list_local					   { () }
+  | ITE lit_list_local                                     { () }
+
+  | INT                                                    { () }
+  | BIGINT                                                 { () }
+  | LT name_term_local name_term_local                     { () }
+  | LEQ name_term_local name_term_local                    { () }
+  | GT name_term_local name_term_local                     { () }
+  | GEQ name_term_local name_term_local                    { () }
+  | PLUS name_term_local name_term_local                   { () }
+  | MULT name_term_local name_term_local                   { () }
+  | MINUS name_term_local name_term_local                  { () }
+  | MINUS name_term_local                                  { () }
+  | OPP name_term_local                                    { () }
+  | DIST args_local                                        { () }
+  | VAR                                                    { () }
+  | VAR args_local                                         { () }
+
+  | EQ lit_local lit_local				   { () }
+;
+
+args_local:
+  | name_term_local	                                   { () }
+  | name_term_local args_local				   { () }
 ;
 
 blit:   

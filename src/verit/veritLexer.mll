@@ -110,7 +110,6 @@ let atvar = '@' var
 let bindvar = '?' var+
 let int = '-'? digit+
 
-
 rule token = parse
   | blank +                    { token lexbuf }
   | newline +                  { EOL }
