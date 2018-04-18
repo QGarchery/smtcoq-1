@@ -15,7 +15,7 @@
 
 
 Require Import Bool List Int63 PArray.
-Require Import Misc State.
+Require Import SMTCoq.Misc SMTCoq.State.
 
 Local Open Scope array_scope.
 Local Open Scope int63_scope.
@@ -1266,7 +1266,7 @@ Module Atom.
         elim (ltb_0 _ H0).
         apply H;apply length_t_interp.
       Qed.
-
+      
       Lemma check_aux_interp_hatom : forall h,
         exists v, t_interp.[h] = Bval (get_type h) v.
       Proof.
@@ -1303,7 +1303,6 @@ Module Atom.
       let t_interp := t_interp t_atom in
       let get_type := get_type' t_interp in
         PArray.forallbi (fun i h => check_aux get_type h (get_type i)) t_atom.
-
 
     Definition interp_hatom (t_atom : PArray.array atom) :=
       let t_a := t_interp t_atom in

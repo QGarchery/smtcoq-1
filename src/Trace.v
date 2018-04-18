@@ -263,7 +263,7 @@ Module Cnf_Checker.
  Definition checker t_form l (c:certif) :=
    let (nclauses, t, confl) := c in
    Form.check_form t_form &&
-   cnf_checker t_form C.is_false (S.set_clause (S.make nclauses) 0 (l::nil)) t confl.
+                   cnf_checker t_form C.is_false (S.set_clause (S.make nclauses) 0 (l::nil)) t confl.
 
  Lemma checker_correct : forall t_form l c,
     checker t_form l c = true ->

@@ -321,7 +321,7 @@ module Make (Atom:ATOM) =
 		let l1 = mk_hform b1 in
 		let l2 = mk_hform b2 in
 		let l3 = mk_hform b3 in
-		get reify (Fapp(Fite, [|l1;l2;l3|]))
+		get reify (Fapp (Fite, [|l1;l2;l3|]))
 	    | _ -> Structures.error "SmtForm.Form.of_coq: wrong number of arguments for ifb"
 	    end
 	| _ ->

@@ -374,8 +374,10 @@ let core_tactic call_solver rt ro ra rf env sigma concl =
   let (body_cast, body_nocast, cuts) =
     if ((Term.eq_constr b (Lazy.force ctrue)) || (Term.eq_constr b (Lazy.force cfalse))) then
       let l = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf a in
+      let _ = Atom.print_atoms ra "/tmp/ra_1.log" in
       let l' = if (Term.eq_constr b (Lazy.force ctrue)) then Form.neg l else l in
       let max_id_confl = make_proof call_solver rt ro rf l' in
+      let _ = Atom.print_atoms ra "/tmp/ra_2.log" in
       build_body rt ro ra rf (Form.to_coq l) b max_id_confl
     else
       let l1 = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf a in

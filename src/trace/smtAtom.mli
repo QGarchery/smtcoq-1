@@ -139,6 +139,8 @@ module Atom :
 
       val create : unit -> reify_tbl
 
+      val print_atoms : reify_tbl -> string -> unit
+                             
       val clear : reify_tbl -> unit
 
       val get : reify_tbl -> atom -> hatom

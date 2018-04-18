@@ -491,7 +491,7 @@ module Atom =
           Array.iter (fun h -> Format.fprintf fmt " "; to_smt fmt h) a;
           Format.fprintf fmt ")"
         )
-
+                 
     and to_smt_bop fmt op h1 h2 =
       let s = match op with
         | BO_Zplus -> "+"
@@ -514,7 +514,6 @@ module Atom =
       Format.fprintf fmt "(%s" s;
       Array.iter (fun h -> Format.fprintf fmt " "; to_smt fmt h) a;
       Format.fprintf fmt ")"
-
 
 
     exception NotWellTyped of atom
@@ -540,9 +539,21 @@ module Atom =
 
     type reify_tbl =
         { mutable count : int;
-	          tbl : hatom HashAtom.t 
+	  tbl : hatom HashAtom.t 
 	}
 
+    let print_atoms reify where =
+      let oc = open_out where in
+      let fmt = Format.formatter_of_out_channel oc in
+      let accumulate _ ha acc = ha :: acc in
+      let list = HashAtom.fold accumulate reify.tbl [] in
+      let compare ha1 ha2 = compare ha1.index ha2.index in
+      let slist = List.sort compare list in
+      let print ha = to_smt_atom fmt (atom ha); Format.fprintf fmt "\n" in
+      List.iter print slist;
+      Format.fprintf fmt "@.";
+      close_out oc 
+          
     let create () = 
       { count = 0;
 	tbl =  HashAtom.create 17 }
@@ -631,9 +642,9 @@ module Atom =
                       
       and mk_bop op = function
         | [a1;a2] ->
-          let h1 = mk_hatom a1 in
-          let h2 = mk_hatom a2 in
-          get reify (Abop (op,h1,h2))
+           let h1 = mk_hatom a1 in
+           let h2 = mk_hatom a2 in
+           get reify (Abop (op,h1,h2))
         | _ -> assert false
                       
       and mk_unknown c args ty =
@@ -641,11 +652,11 @@ module Atom =
         let op =
           try Op.of_coq ro c
           with | Not_found ->
-            let targs = Array.map type_of hargs in
-            let tres = Btype.of_coq rt ty in
-            Op.declare ro c targs tres in
+                  let targs = Array.map type_of hargs in
+                  let tres = Btype.of_coq rt ty in
+                  Op.declare ro c targs tres in
         get reify (Aapp (op,hargs)) in
-       mk_hatom c
+      mk_hatom c
 
 
     let to_coq h = mkInt h.index
@@ -655,15 +666,15 @@ module Atom =
       | Acop op -> mklApp cAcop [|Op.c_to_coq op|]
       | Auop (op,h) -> mklApp cAuop [|Op.u_to_coq op; to_coq h|]
       | Abop (op,h1,h2) -> 
-	  mklApp cAbop [|Op.b_to_coq op;to_coq h1; to_coq h2|]
+	 mklApp cAbop [|Op.b_to_coq op;to_coq h1; to_coq h2|]
       | Anop (op,ha) ->
         let cop = Op.n_to_coq op in
         let cargs = Array.fold_right (fun h l -> mklApp ccons [|Lazy.force cint; to_coq h; l|]) ha (mklApp cnil [|Lazy.force cint|]) in
         mklApp cAnop [|cop; cargs|]
       | Aapp (op,args) ->
-        let cop = Op.i_to_coq op in
-        let cargs = Array.fold_right (fun h l -> mklApp ccons [|Lazy.force cint; to_coq h; l|]) args (mklApp cnil [|Lazy.force cint|]) in
-        mklApp cAapp [|cop; cargs|]
+         let cop = Op.i_to_coq op in
+         let cargs = Array.fold_right (fun h l -> mklApp ccons [|Lazy.force cint; to_coq h; l|]) args (mklApp cnil [|Lazy.force cint|]) in
+         mklApp cAapp [|cop; cargs|]
 
     let dft_atom = lazy (mklApp cAcop [| Lazy.force cCO_xH |])
 
@@ -673,6 +684,7 @@ module Atom =
       HashAtom.iter set reify.tbl;
       t
 
+        
     let interp_tbl reify =
       let t = to_array reify (Lazy.force dft_atom) a_to_coq in
       Structures.mkArray (Lazy.force catom, t)

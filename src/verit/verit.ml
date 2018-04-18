@@ -73,15 +73,13 @@ let rec import_trace filename first =
             )
          | _,_ -> aux in
        let confl = VeritSyntax.get_clause !confl_num in
-       print first "/tmp/select1.log";
        SmtTrace.select confl;
        (* Trace.share_prefix first (2 * last.id); *)
-       print first "/tmp/select2.log";
        occur confl;
        (alloc first, confl)
     | Parsing.Parse_error -> failwith ("Verit.import_trace: parsing error line "^(string_of_int !line))
 
-and print c where=
+and print_certif c where=
   let r = ref c in
   let out_channel = open_out where in
   let continue = ref true in

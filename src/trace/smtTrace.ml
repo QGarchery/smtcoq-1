@@ -357,8 +357,7 @@ let to_coq to_lit interp (cstep,
            let cpl = Lazy.force pl in
            let app_name = Names.id_of_string ("app"^(string_of_int (Hashtbl.hash concl))) in
            let app_var = Term.mkVar app_name in
-           let unused_x = Names.id_of_string ("unused"^(string_of_int (Hashtbl.hash concl))) in 
-           let app_ty = Term.mkProd (Names.Name unused_x, clemma, interp ([], [concl])) in
+           let app_ty = Term.mkArrow clemma (interp ([], [concl])) in
            cuts := (app_name, app_ty)::!cuts;
            mklApp cForallInst [|out_c c; clemma; cpl; concl'; app_var|]
 	end
