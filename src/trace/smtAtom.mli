@@ -139,12 +139,12 @@ module Atom :
 
       val create : unit -> reify_tbl
 
-      val print_atoms : reify_tbl -> string -> unit
-                             
       val clear : reify_tbl -> unit
 
       val get : reify_tbl -> atom -> hatom
 
+      val print_atoms : reify_tbl -> hatom -> string -> unit
+                                       
       (** Given a coq term, build the corresponding atom *)
       val of_coq : Btype.reify_tbl -> Op.reify_tbl -> reify_tbl ->
         Environ.env -> Evd.evar_map -> Term.constr -> t

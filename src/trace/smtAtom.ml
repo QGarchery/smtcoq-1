@@ -350,6 +350,8 @@ type atom =
 
 and hatom = atom gen_hashed
 
+
+                 
 (* let pp_acop = function *)
 (*   | CO_xH -> "CO_xH" *)
 (*   | CO_Z0 -> "CO_Z0" *)
@@ -540,17 +542,6 @@ module Atom =
 	  tbl : hatom HashAtom.t 
 	}
 
-    let print_atoms reify where =
-      let oc = open_out where in
-      let fmt = Format.formatter_of_out_channel oc in
-      let accumulate _ ha acc = ha :: acc in
-      let list = HashAtom.fold accumulate reify.tbl [] in
-      let compare ha1 ha2 = compare ha1.index ha2.index in
-      let slist = List.sort compare list in
-      let print ha = to_smt_atom fmt (atom ha); Format.fprintf fmt "\n" in
-      List.iter print slist;
-      Format.fprintf fmt "@.";
-      close_out oc 
           
     let create () = 
       { count = 0;
@@ -571,7 +562,20 @@ module Atom =
       try HashAtom.find reify.tbl a 
       with Not_found -> declare reify a
 
+    let print_atoms reify ha where =
+      let _ = declare reify (atom ha) in
+      let oc = open_out where in
+      let fmt = Format.formatter_of_out_channel oc in
+      let accumulate _ ha acc = ha :: acc in
+      let list = HashAtom.fold accumulate reify.tbl [] in
+      let compare ha1 ha2 = compare ha1.index ha2.index in
+      let slist = List.sort compare list in
+      let print ha = to_smt_atom fmt (atom ha); Format.fprintf fmt "\n" in
+      List.iter print slist;
+      Format.fprintf fmt "@.";
+      close_out oc 
 
+                                
     (** Given a coq term, build the corresponding atom *)
     type coq_cst =
       | CCxH
@@ -608,13 +612,14 @@ module Atom =
     let op_tbl = lazy (op_tbl ())
 
     let of_coq rt ro reify env sigma c =
+      (* let (_, c) = Term.decompose_prod_assum c in *)
+            
       let op_tbl = Lazy.force op_tbl in
       let get_cst c =
 	try Hashtbl.find op_tbl c with Not_found -> CCunknown in
       let mk_cop op = get reify (Acop op) in
       let rec mk_hatom h =
-        
-        let c, args = try Term.decompose_app h with _ -> failwith "decompose_app failed" in
+        let c, args = Term.decompose_app h in
 	match get_cst c with
           | CCxH -> mk_cop CO_xH
           | CCZ0 -> mk_cop CO_Z0
