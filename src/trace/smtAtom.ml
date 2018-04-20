@@ -196,8 +196,6 @@ module Op =
       | UO_Zneg -> Lazy.force cUO_Zneg
       | UO_Zopp -> Lazy.force cUO_Zopp
       | _ -> failwith "smtAtom.u_to_coq"
-    (*| UO_Fora x -> Lazy.force cforall *)
-
                               
     let u_type_of = function 
       | UO_xO | UO_xI -> Tpositive
@@ -310,7 +308,7 @@ module Op =
 
     let interp_tbl tval mk_Tval reify =
       let t = Array.make (reify.count + 1) 
-	  (mk_Tval [||] Tbool (Lazy.force ctrue))  in
+	  (mk_Tval [||] Tbool (Lazy.force ctrue)) in
       let set _ v = 
 	t.(v.index) <- mk_Tval v.hval.tparams v.hval.tres v.hval.op_val in
       Hashtbl.iter set reify.tbl;
@@ -615,7 +613,8 @@ module Atom =
 	try Hashtbl.find op_tbl c with Not_found -> CCunknown in
       let mk_cop op = get reify (Acop op) in
       let rec mk_hatom h =
-	let c, args = Term.decompose_app h in
+        
+        let c, args = try Term.decompose_app h with _ -> failwith "decompose_app failed" in
 	match get_cst c with
           | CCxH -> mk_cop CO_xH
           | CCZ0 -> mk_cop CO_Z0
@@ -638,14 +637,14 @@ module Atom =
 
       and mk_uop op = function
         | [a] -> let h = mk_hatom a in get reify (Auop (op,h))
-        | _ -> assert false
+        | _ -> failwith "unexpected number of arguments for mk_uop"
                       
       and mk_bop op = function
         | [a1;a2] ->
            let h1 = mk_hatom a1 in
            let h2 = mk_hatom a2 in
            get reify (Abop (op,h1,h2))
-        | _ -> assert false
+        | _ -> failwith "unexpected number of arguments for mk_bop"
                       
       and mk_unknown c args ty =
         let hargs = Array.of_list (List.map mk_hatom args) in

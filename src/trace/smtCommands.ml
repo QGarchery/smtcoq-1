@@ -14,6 +14,7 @@
 (**************************************************************************)
 
 
+
 open Entries
 open Declare
 open Decl_kinds
@@ -368,16 +369,19 @@ let make_proof call_solver rt ro rf l =
   let root = SmtTrace.mkRootV [l] in
   call_solver rt ro fl (root,l)
 
-
-let core_tactic call_solver rt ro ra rf env sigma concl =
+let core_tactic call_solver rt ro ra rf spl env sigma concl =
   let a, b = get_arguments concl in
   let (body_cast, body_nocast, cuts) =
     if ((Term.eq_constr b (Lazy.force ctrue)) || (Term.eq_constr b (Lazy.force cfalse))) then
+      let pl = CoqTerms.gen_constant [["SMTCoq";"SMTCoq"]] spl in
+      let cpl = Lazy.force pl in
+      let clemma = Retyping.get_type_of env sigma cpl in
+      let (_, concl) = Term.decompose_prod_assum clemma in
+      let _ = Atom.of_coq rt ro ra env sigma concl in
+      
       let l = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf a in
-      let _ = Atom.print_atoms ra "/tmp/ra_1.log" in
       let l' = if (Term.eq_constr b (Lazy.force ctrue)) then Form.neg l else l in
       let max_id_confl = make_proof call_solver rt ro rf l' in
-      let _ = Atom.print_atoms ra "/tmp/ra_2.log" in
       build_body rt ro ra rf (Form.to_coq l) b max_id_confl
     else
       let l1 = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf a in
@@ -395,8 +399,7 @@ let core_tactic call_solver rt ro ra rf env sigma concl =
          (Structures.set_evars_tac body_nocast)
          (Structures.vm_cast_no_check body_cast))
 
-
-let tactic call_solver rt ro ra rf =
+let tactic call_solver rt ro ra rf spl =
   Structures.tclTHEN
     Tactics.intros
-    (Structures.mk_tactic (core_tactic call_solver rt ro ra rf))
+    (Structures.mk_tactic (core_tactic call_solver rt ro ra rf spl))

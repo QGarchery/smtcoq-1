@@ -7,39 +7,21 @@ Require Import SMTCoq.
 Require Import Bool.
 Local Open Scope int63_scope.
 
-Parameter y : Z.
-Parameter app328061879 : lemma -> Zeq_bool (f 2) (f y).
-Definition t_i := [! | unit_typ_eqb !] : array typ_eqb.
-Definition t_func :=[!Tval t_i (Typ.TZ :: nil, Typ.TZ) f;Tval t_i (nil, Typ.TZ) y |Tval t_i (nil, Typ.Tbool) true !] : array (tval t_i).
-Definition t_atom := [!Acop CO_xH;Auop UO_xO 0;Auop UO_Zpos 1;Aapp 0 (2 :: nil);Aapp 1 nil;Aapp 0 (4 :: nil);Abop (BO_eq Typ.TZ) 3 5;Aapp 0 nil;Aapp 0 (7 :: nil);Abop (BO_eq Typ.TZ) 8 8 |Acop CO_xH !] : array atom.
-Definition t_form := [!Ftrue;Ffalse;Fatom 6;Fatom 9;For [!7;4 | 0 !] | Ftrue !] : array form.
-Definition t := [![!ForallInst (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 2 pl (concl:=4 :: nil) app328061879;Res (t_i:=t_i) t_func t_atom t_form 3 [!2;1 | 0 !] | Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !] !] |[! | Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !] !] !].
-Definition c := Certif (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 4 t 3 :certif (t_i:=t_i) t_func t_atom t_form.
 
-Definition l := 4.
-Definition confl := 3.
-Definition nclauses := 4.
-Definition nl := Lit.neg l.
-Definition d := (PArray.make nclauses nl).
+Lemma apply_lemma :
+  (*forall f, (forall x y, f x = f y) -> *) forall y,
+  Zeq_bool (f 5%Z) (f y).
 
-Compute (checker_b 4 true c).
+Proof.  
+  verit "pl" . intro H. apply H.
+Qed.  
 
-Compute (Form.check_form t_form).
-About checker.
-Compute (checker (PArray.make nclauses l) None c).
-Compute (Form.check_form t_form && Atom.check_atom t_atom).
-Compute (euf_checker (* t_atom t_form *) C.is_false (add_roots (S.make nclauses) d None) t confl).
-About Atom.wt.
-
-Compute (Atom.wt t_i t_func t_atom ).
-
-Lemma calling_verit :
-  (*forall f,*) forall y, 
-      Zeq_bool (f 2%Z) (f y).
+Lemma find_inst :
+  implb (Zeq_bool (f 2%Z) 5%Z) (Zeq_bool (f 3%Z) 5%Z).
 
 Proof.  
   verit.
-  auto.
+  intro H. apply H.
 Qed.  
 
 Lemma irrelf_ltb :
@@ -235,4 +217,29 @@ Print sat2_gen.
 Check checker_b_correct.
 
 
+(* Parameter y : Z. *)
+(* Parameter app328061879 : lemma -> Zeq_bool (f 2) (f y). *)
+(* Definition t_i := [! | unit_typ_eqb !] : array typ_eqb. *)
+(* Definition t_func :=[!Tval t_i (Typ.TZ :: nil, Typ.TZ) f;Tval t_i (nil, Typ.TZ) y |Tval t_i (nil, Typ.Tbool) true !] : array (tval t_i). *)
+(* Definition t_atom := [!Acop CO_xH;Auop UO_xO 0;Auop UO_Zpos 1;Aapp 0 (2 :: nil);Aapp 1 nil;Aapp 0 (4 :: nil);Abop (BO_eq Typ.TZ) 3 5;Aapp 0 nil;Aapp 0 (7 :: nil);Abop (BO_eq Typ.TZ) 8 8 |Acop CO_xH !] : array atom. *)
+(* Definition t_form := [!Ftrue;Ffalse;Fatom 6;Fatom 9;For [!7;4 | 0 !] | Ftrue !] : array form. *)
+(* Definition t := [![!ForallInst (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 2 pl (concl:=4 :: nil) app328061879;Res (t_i:=t_i) t_func t_atom t_form 3 [!2;1 | 0 !] | Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !] !] |[! | Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !] !] !]. *)
+(* Definition c := Certif (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 4 t 3 :certif (t_i:=t_i) t_func t_atom t_form. *)
+
+(* Definition l := 4. *)
+(* Definition confl := 3. *)
+(* Definition nclauses := 4. *)
+(* Definition nl := Lit.neg l. *)
+(* Definition d := (PArray.make nclauses nl). *)
+
+(* Compute (checker_b 4 true c). *)
+
+(* Compute (Form.check_form t_form). *)
+(* About checker. *)
+(* Compute (checker (PArray.make nclauses l) None c). *)
+(* Compute (Form.check_form t_form && Atom.check_atom t_atom). *)
+(* Compute (euf_checker (* t_atom t_form *) C.is_false (add_roots (S.make nclauses) d None) t confl). *)
+(* About Atom.wt. *)
+
+(* Compute (Atom.wt t_i t_func t_atom ). *)
 
