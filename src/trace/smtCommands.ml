@@ -370,7 +370,7 @@ let make_proof call_solver rt ro rf l =
   call_solver rt ro fl (root,l)
 
 exception Coqterm of Term.constr
-              
+
 let core_tactic call_solver rt ro ra rf spl env sigma concl =
   let a, b = get_arguments concl in
   let (body_cast, body_nocast, cuts) =
@@ -378,6 +378,7 @@ let core_tactic call_solver rt ro ra rf spl env sigma concl =
       let cpl = Lazy.force (CoqTerms.gen_constant [["SMTCoq";"SMTCoq"]] spl) in
       let clemma = Retyping.get_type_of env sigma cpl in
       let (rel_context, concl) = Term.decompose_prod_assum clemma in
+
       let env_lemma = List.fold_right Environ.push_rel rel_context env in
       let a1, b1 = get_arguments concl in
       let _ = Atom.of_coq rt ro ra env_lemma sigma a1 in

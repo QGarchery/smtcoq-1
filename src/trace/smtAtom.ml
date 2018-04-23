@@ -135,7 +135,7 @@ module Btype =
 type cop = 
    | CO_xH
    | CO_Z0
-   | CO_Rel of string
+
 
 
 type uop =
@@ -661,10 +661,12 @@ module Atom =
         let hargs = Array.of_list (List.map mk_hatom args) in
         let op = if Term.isRel c
                  then let i = Term.destRel c in
-                      let (na, _, _) = Environ.lookup_rel i env in
-                      match na with
-                        Names.Name n -> CO_Rel (Names.string_of_id n)
-                      | Names.Anonymous -> assert false
+                      let (_, _, t) = Environ.lookup_rel i env in
+                      {index = -42;
+                       hval = 
+                        { tparams = [||];
+                        tres = Btype.of_coq rt t;
+                        op_val = c}}
                  else 
                    try Op.of_coq ro c
                    with | Not_found ->
