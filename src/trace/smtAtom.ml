@@ -162,11 +162,12 @@ type nop =
 type op_def = { 
     tparams : btype array; 
     tres : btype; 
-    op_val : Term.constr }
+    op_val : Term.constr;
+    rel_name : string option}
 
 type indexed_op = op_def gen_hashed 
 
-let dummy_indexed_op i dom codom = {index = i; hval = {tparams = dom; tres = codom; op_val = Term.mkProp}}
+let dummy_indexed_op i dom codom = {index = i; hval = {tparams = dom; tres = codom; op_val = Term.mkProp; rel_name = None}}
 let indexed_op_index op = op.index
 
 type op = 
@@ -298,7 +299,7 @@ module Op =
 
     let declare reify op tparams tres =
       assert (not (Hashtbl.mem reify.tbl op));
-      let v = { tparams = tparams; tres = tres; op_val = op } in
+      let v = { tparams = tparams; tres = tres; op_val = op ; rel_name = None} in
       let res = {index = reify.count; hval = v } in
       Hashtbl.add reify.tbl op res;
       reify.count <- reify.count + 1;
@@ -486,10 +487,13 @@ module Atom =
       | Abop (op,h1,h2) -> to_smt_bop fmt op h1 h2
       | Anop (op,a) -> to_smt_nop fmt op a
       | Aapp (op,a) ->
+         let op_string = match op.hval.rel_name with
+             None -> "op_" ^ string_of_int op.index
+           | Some na -> na in                               
         if Array.length a = 0 then (
-          Format.fprintf fmt "op_%i" op.index;
+          Format.fprintf fmt "%s" op_string;
         ) else (
-          Format.fprintf fmt "(op_%i" op.index;
+          Format.fprintf fmt "(%s" op_string;
           Array.iter (fun h -> Format.fprintf fmt " "; to_smt fmt h) a;
           Format.fprintf fmt ")"
         )
@@ -638,13 +642,13 @@ module Atom =
         | CCeqbP -> mk_bop (BO_eq Tpositive) args
         | CCeqbZ -> mk_bop (BO_eq TZ) args
 	| CCunknown ->
-           let f h =
+           let u =
              try Retyping.get_type_of env sigma h
              with Not_found ->
                let stdp = Printer.pr_constr_env env h in
                let s = Pp.string_of_ppcmds stdp in
                failwith s in
-           mk_unknown c args (f h)
+           mk_unknown c args u
 
       and mk_uop op = function
         | [a] -> let h = mk_hatom a in get reify (Auop (op,h))
@@ -661,12 +665,15 @@ module Atom =
         let hargs = Array.of_list (List.map mk_hatom args) in
         let op = if Term.isRel c
                  then let i = Term.destRel c in
-                      let (_, _, t) = Environ.lookup_rel i env in
+                      let (na, _, t) = Environ.lookup_rel i env in
+                      let n = match na with Names.Name i -> i
+                                          | _ -> failwith "unnamed rel" in
                       {index = -42;
                        hval = 
                         { tparams = [||];
                         tres = Btype.of_coq rt t;
-                        op_val = c}}
+                        op_val = c;
+                      rel_name = Some (Names.string_of_id n)}}
                  else 
                    try Op.of_coq ro c
                    with | Not_found ->
