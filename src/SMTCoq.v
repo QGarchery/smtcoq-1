@@ -21,5 +21,4 @@ Export Atom Form Sat_Checker Cnf_Checker Euf_Checker.
 Declare ML Module "smtcoq_plugin".
 
 Parameter f : Z -> Z.
-Definition lemma := forall x y, is_true (Zeq_bool (f x) (f y)).
-Axiom pl : lemma.
+Axiom pl : forall x y, is_true (Zeq_bool (f x) (f y)).

@@ -6,15 +6,37 @@
 Require Import SMTCoq.
 Require Import Bool.
 Local Open Scope int63_scope.
+(* Parameter f : Z -> Z.
 
+ Axiom pl : forall x y, is_true (Zeq_bool (f x) (f y)).
+*)
 
 Lemma apply_lemma :
-  (*forall f, (forall x y, f x = f y) -> *) forall y,
+  forall y,
   Zeq_bool (f 5%Z) (f y).
 
 Proof.  
   verit "pl" . intro H. apply H.
 Qed.  
+
+
+Lemma sat2_gen a1 a2 a3:
+  forall v : int -> bool,
+    (v a1 || v a2 || v a3) &&
+    (negb (v a1) || negb (v a2) || negb (v a3)) &&
+    (negb (v a1) || v a2) &&
+    (negb (v a2) || v a3) &&
+    (negb (v a3) || v a1)  = false.
+
+Proof.
+  verit "pl".
+  exists Int63Native.eqb.
+  intros x y.
+  apply Int63Properties.reflect_eqb.
+Defined.
+
+
+
 
 Lemma find_inst :
   implb (Zeq_bool (f 2%Z) 5%Z) (Zeq_bool (f 3%Z) 5%Z).
@@ -198,20 +220,6 @@ Proof.
 Qed.
 
 
-Lemma sat2_gen a1 a2 a3:
-  forall v : int -> bool,
-    (v a1 || v a2 || v a3) &&
-    (negb (v a1) || negb (v a2) || negb (v a3)) &&
-    (negb (v a1) || v a2) &&
-    (negb (v a2) || v a3) &&
-    (negb (v a3) || v a1)  = false.
-
-Proof.
-  verit.
-  exists Int63Native.eqb.
-  intros x y.
-  apply Int63Properties.reflect_eqb.
-Defined.
 
 Print sat2_gen.
 Check checker_b_correct.

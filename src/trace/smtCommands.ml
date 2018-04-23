@@ -375,13 +375,14 @@ let core_tactic call_solver rt ro ra rf spl env sigma concl =
   let a, b = get_arguments concl in
   let (body_cast, body_nocast, cuts) =
     if ((Term.eq_constr b (Lazy.force ctrue)) || (Term.eq_constr b (Lazy.force cfalse))) then
-      let pl = CoqTerms.gen_constant [["SMTCoq";"SMTCoq"]] spl in
-      let cpl = Lazy.force pl in
+      let cpl = Lazy.force (CoqTerms.gen_constant [["SMTCoq";"SMTCoq"]] spl) in
       let clemma = Retyping.get_type_of env sigma cpl in
-      let (_, concl) = Term.decompose_prod_assum clemma in
-      let ha = Atom.of_coq rt ro ra env sigma concl in
-      Atom.print_atoms ra ha "/tmp/ra_after_concl_lemma.log";
-      (* raise (Coqterm concl); *)
+      let (rel_context, concl) = Term.decompose_prod_assum clemma in
+      let env_lemma = List.fold_right Environ.push_rel rel_context env in
+      let a1, b1 = get_arguments concl in
+      let _ = Atom.of_coq rt ro ra env_lemma sigma a1 in
+      Atom.print_atoms ra "/tmp/ra_after_concl_lemma.log";
+
       let l = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf a in
       let l' = if (Term.eq_constr b (Lazy.force ctrue)) then Form.neg l else l in
       let max_id_confl = make_proof call_solver rt ro rf l' in

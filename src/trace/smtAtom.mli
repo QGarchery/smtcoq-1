@@ -143,7 +143,7 @@ module Atom :
 
       val get : reify_tbl -> atom -> hatom
 
-      val print_atoms : reify_tbl -> hatom -> string -> unit
+      val print_atoms : reify_tbl -> string -> unit
                                        
       (** Given a coq term, build the corresponding atom *)
       val of_coq : Btype.reify_tbl -> Op.reify_tbl -> reify_tbl ->

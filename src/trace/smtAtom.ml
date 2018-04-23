@@ -135,6 +135,8 @@ module Btype =
 type cop = 
    | CO_xH
    | CO_Z0
+   | CO_Rel of string
+
 
 type uop =
    | UO_xO
@@ -562,8 +564,7 @@ module Atom =
       try HashAtom.find reify.tbl a 
       with Not_found -> declare reify a
 
-    let print_atoms reify ha where =
-      let _ = declare reify (atom ha) in
+    let print_atoms reify where =
       let oc = open_out where in
       let fmt = Format.formatter_of_out_channel oc in
       let accumulate _ ha acc = ha :: acc in
@@ -612,8 +613,6 @@ module Atom =
     let op_tbl = lazy (op_tbl ())
 
     let of_coq rt ro reify env sigma c =
-      (* let (_, c) = Term.decompose_prod_assum c in *)
-            
       let op_tbl = Lazy.force op_tbl in
       let get_cst c =
 	try Hashtbl.find op_tbl c with Not_found -> CCunknown in
@@ -621,24 +620,31 @@ module Atom =
       let rec mk_hatom h =
         let c, args = Term.decompose_app h in
 	match get_cst c with
-          | CCxH -> mk_cop CO_xH
-          | CCZ0 -> mk_cop CO_Z0
-          | CCxO -> mk_uop UO_xO args
-          | CCxI -> mk_uop UO_xI args
-          | CCZpos -> mk_uop UO_Zpos args
-          | CCZneg -> mk_uop UO_Zneg args
-          | CCZopp -> mk_uop UO_Zopp args
-          | CCZplus -> mk_bop BO_Zplus args
-          | CCZminus -> mk_bop BO_Zminus args
-          | CCZmult -> mk_bop BO_Zmult args
-          | CCZlt -> mk_bop BO_Zlt args
-          | CCZle -> mk_bop BO_Zle args
-          | CCZge -> mk_bop BO_Zge args
-          | CCZgt -> mk_bop BO_Zgt args
-          | CCeqb -> mk_bop (BO_eq Tbool) args
-          | CCeqbP -> mk_bop (BO_eq Tpositive) args
-          | CCeqbZ -> mk_bop (BO_eq TZ) args
-	  | CCunknown -> mk_unknown c args (Retyping.get_type_of env sigma h)
+        | CCxH -> mk_cop CO_xH
+        | CCZ0 -> mk_cop CO_Z0
+        | CCxO -> mk_uop UO_xO args
+        | CCxI -> mk_uop UO_xI args
+        | CCZpos -> mk_uop UO_Zpos args
+        | CCZneg -> mk_uop UO_Zneg args
+        | CCZopp -> mk_uop UO_Zopp args
+        | CCZplus -> mk_bop BO_Zplus args
+        | CCZminus -> mk_bop BO_Zminus args
+        | CCZmult -> mk_bop BO_Zmult args
+        | CCZlt -> mk_bop BO_Zlt args
+        | CCZle -> mk_bop BO_Zle args
+        | CCZge -> mk_bop BO_Zge args
+        | CCZgt -> mk_bop BO_Zgt args
+        | CCeqb -> mk_bop (BO_eq Tbool) args
+        | CCeqbP -> mk_bop (BO_eq Tpositive) args
+        | CCeqbZ -> mk_bop (BO_eq TZ) args
+	| CCunknown ->
+           let f h =
+             try Retyping.get_type_of env sigma h
+             with Not_found ->
+               let stdp = Printer.pr_constr_env env h in
+               let s = Pp.string_of_ppcmds stdp in
+               failwith s in
+           mk_unknown c args (f h)
 
       and mk_uop op = function
         | [a] -> let h = mk_hatom a in get reify (Auop (op,h))
@@ -653,12 +659,18 @@ module Atom =
                       
       and mk_unknown c args ty =
         let hargs = Array.of_list (List.map mk_hatom args) in
-        let op =
-          try Op.of_coq ro c
-          with | Not_found ->
-                  let targs = Array.map type_of hargs in
-                  let tres = Btype.of_coq rt ty in
-                  Op.declare ro c targs tres in
+        let op = if Term.isRel c
+                 then let i = Term.destRel c in
+                      let (na, _, _) = Environ.lookup_rel i env in
+                      match na with
+                        Names.Name n -> CO_Rel (Names.string_of_id n)
+                      | Names.Anonymous -> assert false
+                 else 
+                   try Op.of_coq ro c
+                   with | Not_found ->
+                           let targs = Array.map type_of hargs in
+                           let tres = Btype.of_coq rt ty in
+                           Op.declare ro c targs tres in
         get reify (Aapp (op,hargs)) in
       mk_hatom c
 
