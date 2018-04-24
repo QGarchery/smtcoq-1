@@ -81,7 +81,7 @@ val core_tactic :
   SmtAtom.Op.reify_tbl ->
   SmtAtom.Atom.reify_tbl ->
   SmtAtom.Form.reify ->
-  string ->
+  Names.identifier ->
   Environ.env -> Evd.evar_map -> Term.constr -> Proof_type.tactic
 val tactic :
   (SmtAtom.Btype.reify_tbl ->
@@ -91,4 +91,5 @@ val tactic :
    int * SmtAtom.Form.t SmtCertif.clause) ->
   SmtAtom.Btype.reify_tbl ->
   SmtAtom.Op.reify_tbl ->
-  SmtAtom.Atom.reify_tbl -> SmtAtom.Form.reify -> string -> Proof_type.tactic
+  SmtAtom.Atom.reify_tbl -> SmtAtom.Form.reify ->
+  Names.identifier -> Proof_type.tactic

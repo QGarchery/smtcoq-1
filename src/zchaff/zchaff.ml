@@ -470,8 +470,7 @@ let check_unsat filename =
       let i = input_int f in
       get_model (i::acc)
     with
-      | Finished -> acc in
-  try
+      | Finished -> acc in  try
     while true do
       let l = input_line f in
       let n = String.length l in

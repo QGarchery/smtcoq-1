@@ -4,6 +4,7 @@ S ../../native-coq/kernel
 S ../../native-coq/plugins/micromega
 S ../../native-coq/pretyping
 S ../../native-coq/tactics
+S ../../native-coq/library
 
 B src/**
 B ../../native-coq/interp
@@ -11,7 +12,7 @@ B ../../native-coq/kernel
 B ../../native-coq/plugins/micromega
 B ../../native-coq/pretyping
 B ../../native-coq/tactics
-
+B ../../native-coq/library
 
 PKG str unix num
 FLG -rectypes

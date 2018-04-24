@@ -670,10 +670,10 @@ module Atom =
                                           | _ -> failwith "unnamed rel" in
                       {index = -42;
                        hval = 
-                        { tparams = [||];
-                        tres = Btype.of_coq rt t;
-                        op_val = c;
-                      rel_name = Some (Names.string_of_id n)}}
+                         { tparams = [||];
+                           tres = Btype.of_coq rt t;
+                           op_val = c;
+                           rel_name = Some (Names.string_of_id n)}}
                  else 
                    try Op.of_coq ro c
                    with | Not_found ->
