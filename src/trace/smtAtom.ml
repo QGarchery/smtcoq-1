@@ -349,7 +349,7 @@ type atom =
   | Abop of bop * hatom * hatom 
   | Anop of nop * hatom array
   | Aapp of indexed_op * hatom array
-
+  (* | Aapprel of named_op * hatom array *)
 
 and hatom = atom gen_hashed
 
@@ -617,6 +617,8 @@ module Atom =
     let op_tbl = lazy (op_tbl ())
 
     let of_coq rt ro reify env sigma c =
+      let out = open_out "/tmp/ids.log" in
+      (* let fmt = Format.formatter_of_out_channel out in *)
       let op_tbl = Lazy.force op_tbl in
       let get_cst c =
 	try Hashtbl.find op_tbl c with Not_found -> CCunknown in
@@ -666,9 +668,10 @@ module Atom =
         let op = if Term.isRel c
                  then let i = Term.destRel c in
                       let (na, _, t) = Environ.lookup_rel i env in
-                      let n = match na with Names.Name i -> i
+                      let n = match na with Names.Name id -> id
                                           | _ -> failwith "unnamed rel" in
-                      {index = -42;
+                      Printf.fprintf out "%s\n" (Names.string_of_id n);
+                      {index = Random.int 65465465;
                        hval = 
                          { tparams = [||];
                            tres = Btype.of_coq rt t;
@@ -681,7 +684,8 @@ module Atom =
                            let tres = Btype.of_coq rt ty in
                            Op.declare ro c targs tres in
         get reify (Aapp (op,hargs)) in
-      mk_hatom c
+      let u = mk_hatom c in
+      flush out; u
 
 
     let to_coq h = mkInt h.index

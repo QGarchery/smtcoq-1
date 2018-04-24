@@ -322,7 +322,8 @@ Module Euf_Checker.
   Variable t_form : array Form.form.
 
 
-  Inductive step :=
+
+Inductive step :=
   | Res (pos:int) (res:resolution)
   | ImmFlatten (pos:int) (cid:clause_id) (lf:_lit)
   | CTrue (pos:int)
@@ -346,6 +347,7 @@ Module Euf_Checker.
     (p:interp_conseq_uf (Form.interp_state_var (Atom.interp_form_hatom t_i t_func t_atom) t_form) prem concl)
   | ForallInst (pos:int) (lemma:Prop) (pl:lemma) (concl:C.t)
     (p: lemma -> interp_conseq_uf (Form.interp_state_var (Atom.interp_form_hatom t_i t_func t_atom) t_form) nil concl).
+
 
   Local Open Scope list_scope.
 
