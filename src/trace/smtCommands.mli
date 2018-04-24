@@ -53,6 +53,7 @@ val build_body :
   Term.constr ->
   Term.constr ->
   int * SmtAtom.Form.t SmtCertif.clause ->
+  (Term.constr * Term.constr) list ->
   Term.constr * Term.constr * (Names.identifier * Term.types) list
 val build_body_eq :
   SmtAtom.Btype.reify_tbl ->

@@ -286,7 +286,7 @@ let to_coq to_lit interp (cstep,
     cImmBuildProj,cImmBuildDef,cImmBuildDef2,  
     cEqTr, cEqCgr, cEqCgrP, 
     cLiaMicromega, cLiaDiseq, cSplArith, cSplDistinctElim,
-    cHole, cForallInst) confl =
+    cHole, cForallInst) confl lemmas =
 
   let cuts = ref [] in
 
@@ -350,11 +350,8 @@ let to_coq to_lit interp (cstep,
            let concl' = out_cl concl in
            mklApp cHole [|out_c c; prem_id'; prem'; concl'; ass_var|]
         | Forall_inst (_, concl) ->
+           let (clemma, cpl) = List.hd lemmas in
            let concl' = out_cl [concl] in
-           let lemma = CoqTerms.gen_constant [["SMTCoq";"SMTCoq"]] "lemma" in
-           let clemma = Lazy.force lemma in
-           let pl = CoqTerms.gen_constant [["SMTCoq";"SMTCoq"]] "pl" in
-           let cpl = Lazy.force pl in
            let app_name = Names.id_of_string ("app"^(string_of_int (Hashtbl.hash concl))) in
            let app_var = Term.mkVar app_name in
            let app_ty = Term.mkArrow clemma (interp ([], [concl])) in
