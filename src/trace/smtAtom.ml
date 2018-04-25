@@ -143,7 +143,7 @@ type uop =
    | UO_Zpos 
    | UO_Zneg
    | UO_Zopp
-   | UO_Fora of string
+   | UO_Fora of (string * btype) list
 
 type bop = 
    | BO_Zplus
@@ -481,13 +481,25 @@ module Atom =
       Format.fprintf fmt "%s%i%s" s1 j s2
 
     let rec to_smt fmt h = to_smt_atom fmt (atom h)
-
+                                       
+    and to_smt_args fmt = function
+      | [] -> ()
+      | (s, t)::rest -> Format.fprintf fmt "(%s " s;
+                        Btype.to_smt fmt t;
+                        Format.fprintf fmt ") ";
+                        to_smt_args fmt rest
+                                       
     and to_smt_atom fmt = function
       | Acop _ as a -> to_smt_int fmt (compute_int a)
       | Auop (UO_Zopp,h) ->
         Format.fprintf fmt "(- ";
         to_smt fmt h;
         Format.fprintf fmt ")"
+      | Auop (UO_Fora lsb, h) ->
+         Format.fprintf fmt "forall (";
+         to_smt_args fmt lsb;
+         Format.fprintf fmt ") ";
+         to_smt fmt h
       | Auop _ as a -> to_smt_int fmt (compute_int a)
       | Abop (op,h1,h2) -> to_smt_bop fmt op h1 h2
       | Anop (op,a) -> to_smt_nop fmt op a
@@ -629,7 +641,11 @@ module Atom =
 
     let op_tbl = lazy (op_tbl ())
 
-                      
+
+    let string_of_name = function
+        Names.Name id -> Names.string_of_id id
+      | _ -> failwith "unnamed rel"
+
     let of_coq ?declare:(decl=true) rt ro reify env sigma c =
 
       let out = open_out "/tmp/ids.log" in
@@ -683,15 +699,14 @@ module Atom =
         let hargs = Array.of_list (List.map mk_hatom args) in
         let op = if Term.isRel c
                  then let i = Term.destRel c in
-                      let (na, _, t) = Environ.lookup_rel i env in
-                      let n = match na with Names.Name id -> id
-                                          | _ -> failwith "unnamed rel" in
-                      Printf.fprintf out "%s\n" (Names.string_of_id n);
+                      let (n, _, t) = Environ.lookup_rel i env in
+                      let sn = string_of_name n in
+                      Printf.fprintf out "%s\n" sn;
                       let hvalue = 
                          { tparams = [||];
                            tres = Btype.of_coq rt t;
                            op_val = c;
-                           rel_name = Some (Names.string_of_id n)} in
+                           rel_name = Some sn} in
                       Op.new_op hvalue
                  else 
                    try Op.of_coq ro c
@@ -707,13 +722,9 @@ module Atom =
       let (rel_context, concl) = Term.decompose_prod_assum clemma in
       let env_lemma = List.fold_right Environ.push_rel rel_context env in
       let a_smt = of_coq ~declare:false rt ro ra env_lemma sigma concl in
-      let get_string = function
-        | Names.Name id -> Names.string_of_id id
-        | Names.Anonymous -> assert false in
-      let fold (n, _, _) acc = get ~declare:false ra 
-                                 (Auop (UO_Fora (get_string n), acc)) in
-      List.fold_right fold rel_context a_smt
-
+      let arg_fora = let fmap (n, _, t) = string_of_name n, Btype.of_coq rt t in
+                     List.map fmap rel_context in
+      {index = 0; hval = Auop (UO_Fora arg_fora, a_smt)}
                    
     let to_coq h = mkInt h.index
 

@@ -377,22 +377,17 @@ exception Coqterm of Term.constr
 
 let core_tactic call_solver rt ro ra rf pl env sigma concl =
   let a, b = get_arguments concl in
+
+  let cpl = Lazy.force (gen_constant [["Top"]] (Names.string_of_id pl)) in
+  let clemma = Retyping.get_type_of env sigma cpl in
+  let ls_smtc = [Atom.of_coq_lemma rt ro ra env sigma clemma] in
+
   let (body_cast, body_nocast, cuts) =
-    if ((Term.eq_constr b (Lazy.force ctrue)) || (Term.eq_constr b (Lazy.force cfalse))) then
-      let cpl = Lazy.force (gen_constant [["Top"]] (Names.string_of_id pl)) in
-      let clemma = Retyping.get_type_of env sigma cpl in
-
-      (* let stdp = Printer.pr_constr_env env_lemma a1 in
-       * let s = Pp.string_of_ppcmds stdp in *)
-      (* failwith s; *)
-
-      let ls_smtc = [Atom.of_coq_lemma rt ro ra env sigma clemma] in
-      
-      Atom.print_atoms ra "/tmp/ra_after_concl_lemma.log";
-
-      
+    if ((Term.eq_constr b (Lazy.force ctrue)) || (Term.eq_constr b (Lazy.force cfalse)))
+    then      
       let l = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf a in
-      let l' = if (Term.eq_constr b (Lazy.force ctrue)) then Form.neg l else l in
+      let l' = if (Term.eq_constr b (Lazy.force ctrue))
+               then Form.neg l else l in
       let max_id_confl = make_proof call_solver rt ro rf l' ls_smtc in
       let lemmas = [(clemma, cpl)] in
       build_body rt ro ra rf (Form.to_coq l) b max_id_confl lemmas
@@ -400,8 +395,7 @@ let core_tactic call_solver rt ro ra rf pl env sigma concl =
       let l1 = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf a in
       let l2 = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf b in
       let l = Form.neg (Form.get rf (Fapp(Fiff,[|l1;l2|]))) in
-      (*EMPTY ls_smtc *)
-      let max_id_confl = make_proof call_solver rt ro rf l [] in
+      let max_id_confl = make_proof call_solver rt ro rf l ls_smtc in
       build_body_eq rt ro ra rf (Form.to_coq l1) (Form.to_coq l2) (Form.to_coq l) max_id_confl in
 
   let cuts = (Btype.get_cuts rt)@cuts in

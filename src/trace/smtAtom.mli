@@ -64,7 +64,7 @@ type uop =
    | UO_Zpos 
    | UO_Zneg
    | UO_Zopp
-   | UO_Fora of string
+   | UO_Fora of (string * btype) list
 
 
 type bop = 

@@ -151,7 +151,10 @@ let export out_channel rt ro l ls_stmc =
   Form.to_smt Atom.to_smt fmt l;
   Format.fprintf fmt ")\n";
 
-  List.iter (Atom.to_smt fmt) ls_stmc;
+  List.iter (fun u -> Format.fprintf fmt "(assert (";
+                      Atom.to_smt fmt u;
+                      Format.fprintf fmt "))\n"
+    ) ls_stmc;
 
   (* Format.fprintf fmt "(assert (forall ((x Int) (y Int)) (= (op_0 x) (op_0 y))))\n"; *)
   Format.fprintf fmt "(check-sat)\n";
