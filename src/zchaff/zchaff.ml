@@ -340,7 +340,8 @@ let call_zchaff nvars root =
   let exit_code2 = Sys.command command2 in
   if exit_code2 <> 0 then
       failwith ("Zchaff.call_zchaff: command " ^ command2 ^
-                  " exited with code " ^ (string_of_int exit_code2));
+                  " exited with code " ^ (string_of_int exit_code2) ^
+        "\nDid you forget to turn on Zchaff proof production?" );
   (* import_cnf_trace reloc logfilename root last  *)
   (reloc, resfilename, logfilename, last)
 
