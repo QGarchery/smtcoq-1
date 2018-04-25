@@ -38,8 +38,7 @@ Lemma apply_lemma_multiple :
 Proof.
   verit g_k_linear; auto.
 Qed.
-
-
+Print apply_lemma_multiple.
 
 Lemma sat2_gen a1 a2 a3:
   forall v : int -> bool,
@@ -80,17 +79,21 @@ Lemma sat2:
     (negb (a2) || a3) &&
     (negb (a3) || a1)  = false.
 Proof.
-  verit.
+  verit g_k_linear.
 Qed.
-  
+Print sat2.  
+
 (* Examples that check ZChaff certificates *)
 
+Close Scope Z_scope.
+
 Zchaff_Checker "sat.cnf" "sat.log".
-Zchaff_Theorem sat "sat.cnf" "sat.log".
-Check sat.
+Zchaff_Theorem sat3 "sat.cnf" "sat.log".
+Check sat3.
 
 
 Zchaff_Checker "hole4.cnf" "hole4.log".
+
 
 (* Example that checks a VeriT certificate, for logic QF_UF *)
 
@@ -125,7 +128,7 @@ Qed.
 
 Goal forall a b c, ((a || b || c) && ((negb a) || (negb b) || (negb c)) && ((negb a) || b) && ((negb b) || c) && ((negb c) || a)) = false.
 Proof.
-  verit.
+  verit f_is_constant.
 Qed.
 
 (* About positive. *)
@@ -152,7 +155,7 @@ Goal forall (a b : Z) (P : Z -> bool) (f : Z -> Z),
   (negb (Zeq_bool (f a) b)) || (negb (P (f a))) || (P b).
 
 Proof.
-  intros.
+  intros a b P f.
   destruct_with_eqn (P (f a)).
   destruct_with_eqn (Zeq_bool (f a) b).
   +apply orb_true_iff. right.
