@@ -7,19 +7,37 @@ Require Import SMTCoq.
 Require Import Bool.
 Local Open Scope int63_scope.
 
+Open Scope Z_scope.
 
 Parameter f : Z -> Z.
 Axiom f_is_constant : forall x y, Zeq_bool (f x) (f y).
-
+  
 Lemma apply_lemma :
   forall y,
-  Zeq_bool (f 5%Z) (f y).
+  Zeq_bool  (f y) (f 5%Z).
 
 Proof.  
   verit f_is_constant. auto.
 Qed.  
 
+Lemma find_inst :
+  implb (Zeq_bool (f 2) 5) (Zeq_bool (f 3) 5).
 
+Proof.  
+  verit f_is_constant.
+  intro H. apply H.
+Qed.  
+
+Parameter g : Z -> Z.
+Parameter k : Z.
+Axiom g_k_linear : forall x, Zeq_bool (g (x + 1)) ((g x) + k).
+
+Lemma apply_lemma_multiple :
+  forall x, Zeq_bool (g (x + 5)) ((g x) + 5 * k).
+
+Proof.
+  verit g_k_linear; auto.
+Qed.
 
 
 
@@ -35,7 +53,7 @@ Zchaff_Theorem sat "sat.cnf" "sat.log".
 About sat.
 
 Proof.
-  verit pl.
+  verit f_is_constant.
   exists Int63Native.eqb.
   intros x y.
   apply Int63Properties.reflect_eqb.
@@ -44,14 +62,6 @@ Defined.
 
 
 
-Lemma find_inst :
-  implb (Zeq_bool (f 2%Z) 5%Z) (Zeq_bool (f 3%Z) 5%Z).
-
-Proof.  
-  verit.
-  intro H. apply H.
-Qed.  
-
 Lemma irrelf_ltb :
   forall a b c,
   (Z.ltb a b) &&
@@ -59,8 +69,7 @@ Lemma irrelf_ltb :
   (Z.ltb c a) = false.
 
 Proof.
-  verit.
-
+  verit f_is_constant.
 Qed.
 
 Lemma sat2:

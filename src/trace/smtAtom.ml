@@ -719,8 +719,12 @@ module Atom =
       flush out; u
 
     let of_coq_lemma rt ro ra env sigma clemma = 
-      let (rel_context, concl) = Term.decompose_prod_assum clemma in
+      let (rel_context, is_true_concl) = Term.decompose_prod_assum clemma in
       let env_lemma = List.fold_right Environ.push_rel rel_context env in
+      let f, args = Term.decompose_app is_true_concl in
+      let concl = match args with
+        | [a] when (Term.eq_constr f (Lazy.force cis_true)) -> a
+        | _ -> failwith ("SmtAtom.of_coq_lemma : axiom form unsupported") in
       let a_smt = of_coq ~declare:false rt ro ra env_lemma sigma concl in
       let arg_fora = let fmap (n, _, t) = string_of_name n, Btype.of_coq rt t in
                      List.map fmap rel_context in
