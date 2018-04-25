@@ -141,14 +141,19 @@ module Atom :
 
       val clear : reify_tbl -> unit
 
-      val get : reify_tbl -> atom -> hatom
+      val get : ?declare:bool -> reify_tbl -> atom -> hatom
 
       val print_atoms : reify_tbl -> string -> unit
                                        
       (** Given a coq term, build the corresponding atom *)
-      val of_coq : Btype.reify_tbl -> Op.reify_tbl -> reify_tbl ->
-        Environ.env -> Evd.evar_map -> Term.constr -> t
+      val of_coq :
+        ?declare:bool -> Btype.reify_tbl -> Op.reify_tbl ->
+        reify_tbl -> Environ.env -> Evd.evar_map -> Term.constr -> t
 
+      val of_coq_lemma:
+        Btype.reify_tbl -> Op.reify_tbl -> reify_tbl ->
+        Environ.env -> Evd.evar_map -> Term.constr -> t
+                                                                                
       val to_coq : hatom -> Term.constr
 
       val to_array : reify_tbl -> 'a -> (atom -> 'a) -> 'a array

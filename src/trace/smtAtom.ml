@@ -23,6 +23,7 @@ type indexed_type = Term.constr gen_hashed
 let dummy_indexed_type i = {index = i; hval = Term.mkProp}
 let indexed_type_index i = i.index
 
+                             
 type btype =
   | TZ
   | Tbool
@@ -136,8 +137,6 @@ type cop =
    | CO_xH
    | CO_Z0
 
-
-
 type uop =
    | UO_xO
    | UO_xI
@@ -167,6 +166,7 @@ type op_def = {
 
 type indexed_op = op_def gen_hashed 
 
+                         
 let dummy_indexed_op i dom codom = {index = i; hval = {tparams = dom; tres = codom; op_val = Term.mkProp; rel_name = None}}
 let indexed_op_index op = op.index
 
@@ -205,7 +205,6 @@ module Op =
       | UO_Zpos | UO_Zneg | UO_Zopp -> TZ
       | _ -> assert false
 
-                                         
     let u_type_arg = function 
       | UO_xO | UO_xI | UO_Zpos | UO_Zneg -> Tpositive
       | UO_Zopp -> TZ
@@ -305,6 +304,12 @@ module Op =
       reify.count <- reify.count + 1;
       res
 
+    let new_op =
+      let u = ref 0 in
+      fun a  -> u := !u - 1; {index = !u;
+                              hval = a}
+
+        
     let of_coq reify op =
       Hashtbl.find reify.tbl op
 
@@ -564,9 +569,17 @@ module Atom =
       reify.count <- reify.count + 1;
       res
 
-    let get reify a =
+    let other_hash : 'a -> 'a gen_hashed =
+      let u = ref 0 in
+      fun a  -> u := !u - 1; {index = !u;
+                              hval = a}
+
+        
+    let get ?declare:(decl=true) reify a =
       try HashAtom.find reify.tbl a 
-      with Not_found -> declare reify a
+      with Not_found -> if decl
+                        then declare reify a
+                        else other_hash a
 
     let print_atoms reify where =
       let oc = open_out where in
@@ -616,33 +629,34 @@ module Atom =
 
     let op_tbl = lazy (op_tbl ())
 
-    let of_coq rt ro reify env sigma c =
+                      
+    let of_coq ?declare:(decl=true) rt ro reify env sigma c =
+
       let out = open_out "/tmp/ids.log" in
       (* let fmt = Format.formatter_of_out_channel out in *)
       let op_tbl = Lazy.force op_tbl in
       let get_cst c =
 	try Hashtbl.find op_tbl c with Not_found -> CCunknown in
-      let mk_cop op = get reify (Acop op) in
       let rec mk_hatom h =
         let c, args = Term.decompose_app h in
 	match get_cst c with
-        | CCxH -> mk_cop CO_xH
-        | CCZ0 -> mk_cop CO_Z0
-        | CCxO -> mk_uop UO_xO args
-        | CCxI -> mk_uop UO_xI args
-        | CCZpos -> mk_uop UO_Zpos args
-        | CCZneg -> mk_uop UO_Zneg args
-        | CCZopp -> mk_uop UO_Zopp args
-        | CCZplus -> mk_bop BO_Zplus args
-        | CCZminus -> mk_bop BO_Zminus args
-        | CCZmult -> mk_bop BO_Zmult args
-        | CCZlt -> mk_bop BO_Zlt args
-        | CCZle -> mk_bop BO_Zle args
-        | CCZge -> mk_bop BO_Zge args
-        | CCZgt -> mk_bop BO_Zgt args
-        | CCeqb -> mk_bop (BO_eq Tbool) args
-        | CCeqbP -> mk_bop (BO_eq Tpositive) args
-        | CCeqbZ -> mk_bop (BO_eq TZ) args
+        | CCxH -> mk_cop decl CO_xH
+        | CCZ0 -> mk_cop decl CO_Z0
+        | CCxO -> mk_uop decl UO_xO args
+        | CCxI -> mk_uop decl UO_xI args
+        | CCZpos -> mk_uop decl UO_Zpos args
+        | CCZneg -> mk_uop decl UO_Zneg args
+        | CCZopp -> mk_uop decl UO_Zopp args
+        | CCZplus -> mk_bop decl BO_Zplus args
+        | CCZminus -> mk_bop decl BO_Zminus args
+        | CCZmult -> mk_bop decl BO_Zmult args
+        | CCZlt -> mk_bop decl BO_Zlt args
+        | CCZle -> mk_bop decl BO_Zle args
+        | CCZge -> mk_bop decl BO_Zge args
+        | CCZgt -> mk_bop decl BO_Zgt args
+        | CCeqb -> mk_bop decl (BO_eq Tbool) args
+        | CCeqbP -> mk_bop decl (BO_eq Tpositive) args
+        | CCeqbZ -> mk_bop decl (BO_eq TZ) args
 	| CCunknown ->
            let u =
              try Retyping.get_type_of env sigma h
@@ -650,20 +664,22 @@ module Atom =
                let stdp = Printer.pr_constr_env env h in
                let s = Pp.string_of_ppcmds stdp in
                failwith s in
-           mk_unknown c args u
+           mk_unknown decl c args u
 
-      and mk_uop op = function
-        | [a] -> let h = mk_hatom a in get reify (Auop (op,h))
+      and mk_cop decl op = get ~declare:decl reify (Acop op)
+                      
+      and mk_uop decl op = function
+        | [a] -> let h = mk_hatom a in get ~declare:decl reify (Auop (op,h))
         | _ -> failwith "unexpected number of arguments for mk_uop"
                       
-      and mk_bop op = function
+      and mk_bop decl op = function
         | [a1;a2] ->
            let h1 = mk_hatom a1 in
            let h2 = mk_hatom a2 in
-           get reify (Abop (op,h1,h2))
+           get ~declare:decl reify (Abop (op,h1,h2))
         | _ -> failwith "unexpected number of arguments for mk_bop"
                       
-      and mk_unknown c args ty =
+      and mk_unknown decl c args ty =
         let hargs = Array.of_list (List.map mk_hatom args) in
         let op = if Term.isRel c
                  then let i = Term.destRel c in
@@ -671,23 +687,34 @@ module Atom =
                       let n = match na with Names.Name id -> id
                                           | _ -> failwith "unnamed rel" in
                       Printf.fprintf out "%s\n" (Names.string_of_id n);
-                      {index = Random.int 65465465;
-                       hval = 
+                      let hvalue = 
                          { tparams = [||];
                            tres = Btype.of_coq rt t;
                            op_val = c;
-                           rel_name = Some (Names.string_of_id n)}}
+                           rel_name = Some (Names.string_of_id n)} in
+                      Op.new_op hvalue
                  else 
                    try Op.of_coq ro c
                    with | Not_found ->
                            let targs = Array.map type_of hargs in
                            let tres = Btype.of_coq rt ty in
                            Op.declare ro c targs tres in
-        get reify (Aapp (op,hargs)) in
+        get ~declare:decl reify (Aapp (op,hargs)) in
       let u = mk_hatom c in
       flush out; u
 
+    let of_coq_lemma rt ro ra env sigma clemma = 
+      let (rel_context, concl) = Term.decompose_prod_assum clemma in
+      let env_lemma = List.fold_right Environ.push_rel rel_context env in
+      let a_smt = of_coq ~declare:false rt ro ra env_lemma sigma concl in
+      let get_string = function
+        | Names.Name id -> Names.string_of_id id
+        | Names.Anonymous -> assert false in
+      let fold (n, _, _) acc = get ~declare:false ra 
+                                 (Auop (UO_Fora (get_string n), acc)) in
+      List.fold_right fold rel_context a_smt
 
+                   
     let to_coq h = mkInt h.index
 
     let a_to_coq a =

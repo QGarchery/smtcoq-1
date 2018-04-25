@@ -368,10 +368,10 @@ let get_arguments concl =
   | _ -> failwith ("Verit.tactic: can only deal with equality over bool")
 
 
-let make_proof call_solver rt ro rf l =
+let make_proof call_solver rt ro rf l ls_smtc=
   let fl = Form.flatten rf l in
   let root = SmtTrace.mkRootV [l] in
-  call_solver rt ro fl (root,l)
+  call_solver rt ro fl (root,l) ls_smtc
 
 exception Coqterm of Term.constr
 
@@ -381,31 +381,27 @@ let core_tactic call_solver rt ro ra rf pl env sigma concl =
     if ((Term.eq_constr b (Lazy.force ctrue)) || (Term.eq_constr b (Lazy.force cfalse))) then
       let cpl = Lazy.force (gen_constant [["Top"]] (Names.string_of_id pl)) in
       let clemma = Retyping.get_type_of env sigma cpl in
-      let (rel_context, concl) = Term.decompose_prod_assum clemma in
-
-      let env_lemma = List.fold_right Environ.push_rel rel_context env in
-      let a1, b1 = get_arguments concl in
 
       (* let stdp = Printer.pr_constr_env env_lemma a1 in
        * let s = Pp.string_of_ppcmds stdp in *)
       (* failwith s; *)
 
-
-
-      let _ = Atom.of_coq rt ro ra env_lemma sigma a1 in
+      let ls_smtc = [Atom.of_coq_lemma rt ro ra env sigma clemma] in
+      
       Atom.print_atoms ra "/tmp/ra_after_concl_lemma.log";
-      raise Not_found;
+
       
       let l = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf a in
       let l' = if (Term.eq_constr b (Lazy.force ctrue)) then Form.neg l else l in
-      let max_id_confl = make_proof call_solver rt ro rf l' in
+      let max_id_confl = make_proof call_solver rt ro rf l' ls_smtc in
       let lemmas = [(clemma, cpl)] in
       build_body rt ro ra rf (Form.to_coq l) b max_id_confl lemmas
     else
       let l1 = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf a in
       let l2 = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf b in
       let l = Form.neg (Form.get rf (Fapp(Fiff,[|l1;l2|]))) in
-      let max_id_confl = make_proof call_solver rt ro rf l in
+      (*EMPTY ls_smtc *)
+      let max_id_confl = make_proof call_solver rt ro rf l [] in
       build_body_eq rt ro ra rf (Form.to_coq l1) (Form.to_coq l2) (Form.to_coq l) max_id_confl in
 
   let cuts = (Btype.get_cuts rt)@cuts in

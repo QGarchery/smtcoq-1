@@ -124,7 +124,7 @@ let checker fsmt fproof = SmtCommands.checker (import_all fsmt fproof)
 (** Given a Coq formula build the proof                                       *)
 (******************************************************************************)
 
-let export out_channel rt ro l =
+let export out_channel rt ro l ls_stmc =
   let fmt = Format.formatter_of_out_channel out_channel in
   Format.fprintf fmt "(set-logic UFLIA)@.";
 
@@ -150,14 +150,17 @@ let export out_channel rt ro l =
   Format.fprintf fmt "(assert ";
   Form.to_smt Atom.to_smt fmt l;
   Format.fprintf fmt ")\n";
-  Format.fprintf fmt "(assert (forall ((x Int) (y Int)) (= (op_0 x) (op_0 y))))\n";
+
+  List.iter (Atom.to_smt fmt) ls_stmc;
+
+  (* Format.fprintf fmt "(assert (forall ((x Int) (y Int)) (= (op_0 x) (op_0 y))))\n"; *)
   Format.fprintf fmt "(check-sat)\n";
   Format.fprintf fmt "(exit)@."
 
 (* val call_verit : Btype.reify_tbl -> Op.reify_tbl -> Form.t -> (Form.t clause * Form.t) -> (int * Form.t clause) *)
-let call_verit rt ro fl root =
+let call_verit rt ro fl root ls_smtc =
   let (filename, outchan) = Filename.open_temp_file "verit_coq" ".smt2" in
-  export outchan rt ro fl;
+  export outchan rt ro fl ls_smtc;
   close_out outchan;
   let logfilename = (Filename.chop_extension filename)^".vtlog" in
 
