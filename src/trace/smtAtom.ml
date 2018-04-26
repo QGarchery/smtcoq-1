@@ -496,9 +496,10 @@ module Atom =
         to_smt fmt h;
         Format.fprintf fmt ")"
       | Auop (UO_Fora lsb, h) ->
-         Format.fprintf fmt "forall (";
-         to_smt_args fmt lsb;
-         Format.fprintf fmt ") ";
+         if List.length lsb <> 0
+         then begin Format.fprintf fmt "forall (";
+                    to_smt_args fmt lsb;
+                    Format.fprintf fmt ") " end;
          to_smt fmt h
       | Auop _ as a -> to_smt_int fmt (compute_int a)
       | Abop (op,h1,h2) -> to_smt_bop fmt op h1 h2

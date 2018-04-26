@@ -182,10 +182,10 @@ let call_verit rt ro fl root ls_smtc =
     | VeritSyntax.Sat -> Structures.error "veriT can't prove this"
 
 
-let tactic pl =
+let tactic lpl =
   clear_all ();
   let rt = Btype.create () in
   let ro = Op.create () in
   let ra = VeritSyntax.ra in
   let rf = VeritSyntax.rf in
-  SmtCommands.tactic call_verit rt ro ra rf pl
+  SmtCommands.tactic call_verit rt ro ra rf lpl

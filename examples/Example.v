@@ -10,6 +10,8 @@ Local Open Scope int63_scope.
 Open Scope Z_scope.
 
 Parameter f : Z -> Z.
+(* Definition lemma := forall x y, Zeq_bool (f x) (f y). *)
+(* Axiom f_is_constant : lemma. *)
 Axiom f_is_constant : forall x y, Zeq_bool (f x) (f y).
   
 Lemma apply_lemma :
@@ -52,15 +54,20 @@ Zchaff_Theorem sat "sat.cnf" "sat.log".
 About sat.
 
 Proof.
-  verit f_is_constant.
+  verit.
   exists Int63Native.eqb.
   intros x y.
   apply Int63Properties.reflect_eqb.
 Defined.
 
+Parameter mult4 :  Z -> Z.
+Axiom mult4_0 : (* forall y : int, *) Zeq_bool (mult4 0) 0.
+Axiom mult4_Sx : forall x, Zeq_bool (mult4 (x+1)) (mult4 x + 4).
+Lemma mult4_22 : Zeq_bool (mult4 22) 88.
+Proof.
+  verit mult4_0 mult4_Sx.
 
-
-
+  
 Lemma irrelf_ltb :
   forall a b c,
   (Z.ltb a b) &&
@@ -68,7 +75,7 @@ Lemma irrelf_ltb :
   (Z.ltb c a) = false.
 
 Proof.
-  verit f_is_constant.
+  verit.
 Qed.
 
 Lemma sat2:
@@ -79,7 +86,7 @@ Lemma sat2:
     (negb (a2) || a3) &&
     (negb (a3) || a1)  = false.
 Proof.
-  verit g_k_linear.
+  verit.
 Qed.
 Print sat2.  
 
@@ -128,7 +135,7 @@ Qed.
 
 Goal forall a b c, ((a || b || c) && ((negb a) || (negb b) || (negb c)) && ((negb a) || b) && ((negb b) || c) && ((negb c) || a)) = false.
 Proof.
-  verit f_is_constant.
+  verit.
 Qed.
 
 (* About positive. *)
@@ -184,14 +191,14 @@ Qed.
 (* Parameter toto : Z -> Z. *)
 (* Variable toto : Z. *)
 
-Section S.
-  Variable f : Z -> Z.
-  Hypothesis th : forall x, Zeq_bool (f x) 3.
-  Definition g z := f z.
-  (* Add Theorem th. *)
-  (* Goal forall x, Zeq_bool ((f x) + 1) 4. *)
-    (* verit. *)
-End S.
+(* Section S. *)
+(*   Variable f : Z -> Z. *)
+(*   Hypothesis th : forall x, Zeq_bool (f x) 3. *)
+(*   Definition g z := f z. *)
+(*   (* Add Theorem th. *) *)
+(*   (* Goal forall x, Zeq_bool ((f x) + 1) 4. *) *)
+(*     (* verit. *) *)
+(* End S. *)
 
 Check g.
 Definition g1 (f : Z -> Z) (x : Z) := f x.

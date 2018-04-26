@@ -375,13 +375,13 @@ let make_proof call_solver rt ro rf l ls_smtc=
 
 exception Coqterm of Term.constr
 
-let core_tactic call_solver rt ro ra rf pl env sigma concl =
+let core_tactic call_solver rt ro ra rf lpl env sigma concl =
   let a, b = get_arguments concl in
-
-  let cpl = Lazy.force (gen_constant [["Top"]] (Names.string_of_id pl)) in
-  let clemma = Retyping.get_type_of env sigma cpl in
-  let ls_smtc = [Atom.of_coq_lemma rt ro ra env sigma clemma] in
-  let lemmas = [(clemma, cpl)] in
+  
+  let lcpl = List.map (fun pl -> Lazy.force (gen_constant [["Top"]] (Names.string_of_id pl))) lpl in
+  let lclemma = List.map (Retyping.get_type_of env sigma) lcpl in
+  let ls_smtc = List.map (Atom.of_coq_lemma rt ro ra env sigma) lclemma in
+  let lemmas = List.combine lclemma lcpl in
 
   let (body_cast, body_nocast, cuts) =
     if ((Term.eq_constr b (Lazy.force ctrue)) || (Term.eq_constr b (Lazy.force cfalse)))
@@ -409,7 +409,7 @@ let core_tactic call_solver rt ro ra rf pl env sigma concl =
 
 
       
-let tactic call_solver rt ro ra rf pl =
+let tactic call_solver rt ro ra rf lpl =
   Structures.tclTHEN
     Tactics.intros
-    (Structures.mk_tactic (core_tactic call_solver rt ro ra rf pl))
+    (Structures.mk_tactic (core_tactic call_solver rt ro ra rf lpl))
