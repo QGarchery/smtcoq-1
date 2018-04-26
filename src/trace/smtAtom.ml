@@ -496,11 +496,11 @@ module Atom =
         to_smt fmt h;
         Format.fprintf fmt ")"
       | Auop (UO_Fora lsb, h) ->
-         if List.length lsb <> 0
-         then begin Format.fprintf fmt "forall (";
-                    to_smt_args fmt lsb;
-                    Format.fprintf fmt ") " end;
-         to_smt fmt h
+         Format.fprintf fmt "(forall (";
+         to_smt_args fmt lsb;
+         Format.fprintf fmt ") ";
+         to_smt fmt h;
+         Format.fprintf fmt ")"
       | Auop _ as a -> to_smt_int fmt (compute_int a)
       | Abop (op,h1,h2) -> to_smt_bop fmt op h1 h2
       | Anop (op,a) -> to_smt_nop fmt op a
@@ -726,10 +726,12 @@ module Atom =
       let concl = match args with
         | [a] when (Term.eq_constr f (Lazy.force cis_true)) -> a
         | _ -> failwith ("SmtAtom.of_coq_lemma : axiom form unsupported") in
-      let a_smt = of_coq ~declare:false rt ro ra env_lemma sigma concl in
-      let arg_fora = let fmap (n, _, t) = string_of_name n, Btype.of_coq rt t in
+      let ha = of_coq ~declare:false rt ro ra env_lemma sigma concl in
+      let args = let fmap (n, _, t) = string_of_name n, Btype.of_coq rt t in
                      List.map fmap rel_context in
-      {index = 0; hval = Auop (UO_Fora arg_fora, a_smt)}
+      if List.length args = 0
+      then ha
+      else {index = 0; hval = Auop (UO_Fora args, ha)}
                    
     let to_coq h = mkInt h.index
 

@@ -63,9 +63,22 @@ Defined.
 Parameter mult4 :  Z -> Z.
 Axiom mult4_0 : (* forall y : int, *) Zeq_bool (mult4 0) 0.
 Axiom mult4_Sx : forall x, Zeq_bool (mult4 (x+1)) (mult4 x + 4).
+Lemma mult4_22 : Zeq_bool (mult4 2) 8.
+Proof.
+  verit mult4_0 mult4_Sx.
+
+Qed.
+
+
+Parameter mult :   Z -> Z -> Z.
+Axiom mult4_0 : (* forall y : int, *) Zeq_bool (mult4 0) 0.
+Axiom mult4_Sx : forall x, Zeq_bool (mult4 (x+1)) (mult4 x + 4).
 Lemma mult4_22 : Zeq_bool (mult4 22) 88.
 Proof.
   verit mult4_0 mult4_Sx.
+
+
+
 
   
 Lemma irrelf_ltb :
