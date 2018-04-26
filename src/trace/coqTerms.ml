@@ -94,7 +94,9 @@ let csigT = gen_constant init_modules "sigT"
 let cnot = gen_constant init_modules "not"
 let ceq = gen_constant init_modules "eq"
 let crefl_equal = gen_constant init_modules "eq_refl"
-
+let cconj = gen_constant init_modules "conj"
+let cand = gen_constant init_modules "and"
+                        
 (* SMT_terms *)
 
 let smt_modules = [ ["SMTCoq";"Misc"];

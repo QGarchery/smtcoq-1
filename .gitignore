@@ -2,6 +2,7 @@
 *.cmt
 *.cmti
 *.vt*log
+examples/lia.cache
 src/Makefile
 src/Misc.glob
 src/Misc.v.d

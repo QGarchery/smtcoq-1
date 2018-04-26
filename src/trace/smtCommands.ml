@@ -381,7 +381,7 @@ let core_tactic call_solver rt ro ra rf lpl env sigma concl =
   let lcpl = List.map (fun pl -> Lazy.force (gen_constant [["Top"]] (Names.string_of_id pl))) lpl in
   let lclemma = List.map (Retyping.get_type_of env sigma) lcpl in
   let ls_smtc = List.map (Atom.of_coq_lemma rt ro ra env sigma) lclemma in
-  let lemmas = List.combine lclemma lcpl in
+  let l_pl = List.combine lclemma lcpl in
 
   let (body_cast, body_nocast, cuts) =
     if ((Term.eq_constr b (Lazy.force ctrue)) || (Term.eq_constr b (Lazy.force cfalse)))
@@ -390,7 +390,7 @@ let core_tactic call_solver rt ro ra rf lpl env sigma concl =
       let l' = if (Term.eq_constr b (Lazy.force ctrue))
                then Form.neg l else l in
       let max_id_confl = make_proof call_solver rt ro rf l' ls_smtc in
-      build_body rt ro ra rf (Form.to_coq l) b max_id_confl lemmas
+      build_body rt ro ra rf (Form.to_coq l) b max_id_confl l_pl
     else
       let l1 = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf a in
       let l2 = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf b in

@@ -278,7 +278,10 @@ let build_certif first_root confl =
   occur confl;
   alloc first_root
 
-        
+let rec fr f = function
+  | [] -> failwith "smtTrace.ml : fr on empty list"
+  | [x] -> x
+  | h :: t -> f h (fr f t)
 
 let to_coq to_lit interp (cstep,
     cRes, cImmFlatten,
@@ -286,7 +289,7 @@ let to_coq to_lit interp (cstep,
     cImmBuildProj,cImmBuildDef,cImmBuildDef2,  
     cEqTr, cEqCgr, cEqCgrP, 
     cLiaMicromega, cLiaDiseq, cSplArith, cSplDistinctElim,
-    cHole, cForallInst) confl lemmas =
+    cHole, cForallInst) confl l_pl =
 
   let cuts = ref [] in
 
@@ -350,13 +353,18 @@ let to_coq to_lit interp (cstep,
            let concl' = out_cl concl in
            mklApp cHole [|out_c c; prem_id'; prem'; concl'; ass_var|]
         | Forall_inst (_, concl) ->
-           let (clemma, cpl) = List.hd lemmas in
+           (* let (clemma, cpl) = List.hd lemmas in *)
+           (* let (lclemma, lcpl) = List.split l_pl in
+            * let clemmas = fr (fun clemma p -> mklApp cand [|clemma; p|]) lclemma in *)
+           let clemmas, cplemmas = fr (fun (clemma, cpl) (acc_clemma, acc_cpl) ->
+                                       mklApp cand [| clemma; acc_clemma |],
+                                       mklApp cconj [| clemma; acc_clemma; cpl; acc_cpl |]) l_pl in 
            let concl' = out_cl [concl] in
            let app_name = Names.id_of_string ("app"^(string_of_int (Hashtbl.hash concl))) in
            let app_var = Term.mkVar app_name in
-           let app_ty = Term.mkArrow clemma (interp ([], [concl])) in
+           let app_ty = Term.mkArrow clemmas (interp ([], [concl])) in
            cuts := (app_name, app_ty)::!cuts;
-           mklApp cForallInst [|out_c c; clemma; cpl; concl'; app_var|]
+           mklApp cForallInst [|out_c c; clemmas; cplemmas; concl'; app_var|]
 	end
     | _ -> assert false in
   let step = Lazy.force cstep in
