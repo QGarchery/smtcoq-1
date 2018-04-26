@@ -381,6 +381,7 @@ let core_tactic call_solver rt ro ra rf pl env sigma concl =
   let cpl = Lazy.force (gen_constant [["Top"]] (Names.string_of_id pl)) in
   let clemma = Retyping.get_type_of env sigma cpl in
   let ls_smtc = [Atom.of_coq_lemma rt ro ra env sigma clemma] in
+  let lemmas = [(clemma, cpl)] in
 
   let (body_cast, body_nocast, cuts) =
     if ((Term.eq_constr b (Lazy.force ctrue)) || (Term.eq_constr b (Lazy.force cfalse)))
@@ -389,7 +390,6 @@ let core_tactic call_solver rt ro ra rf pl env sigma concl =
       let l' = if (Term.eq_constr b (Lazy.force ctrue))
                then Form.neg l else l in
       let max_id_confl = make_proof call_solver rt ro rf l' ls_smtc in
-      let lemmas = [(clemma, cpl)] in
       build_body rt ro ra rf (Form.to_coq l) b max_id_confl lemmas
     else
       let l1 = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf a in
