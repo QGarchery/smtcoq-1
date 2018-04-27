@@ -22,6 +22,13 @@ Proof.
   verit f_is_constant. auto.
 Qed.  
 
+(* Lemma f_const_is_eq_val_0 : *)
+(*   forall x, (forall f : Z -> Z, forall a b, Zeq_bool (f a) (f b)) -> *)
+(*             Zeq_bool (f x) (f 0). *)
+(* Proof. *)
+(*   intros x H. *)
+(*   verit H. *)
+
 Lemma find_inst :
   implb (Zeq_bool (f 2) 5) (Zeq_bool (f 3) 5).
 
@@ -61,6 +68,8 @@ Proof.
 Defined.
 
 Close Scope Z_scope.
+
+
 
 Parameter mult4 :  Z -> Z.
 Axiom mult4_0 : (* forall y : int, *) Zeq_bool (mult4 0) 0.
@@ -102,7 +111,7 @@ Fatom 14;Fatom 15;Fatom 16;Fatom 17;Fatom 18;For [!14;19;21 | 0 !];
 Fatom 19;Fatom 20;For [!16;25;27 | 0 !] | Ftrue !] : 
 array form.
 Definition t :=   [![!ForallInst (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 3
-        (conj mult4_0 mult4_Sx) (concl:=8 :: nil) app1024435598;
+                      (conj mult4_0 mult4_Sx) (concl:=8 :: nil) app1024435598;
     EqTr (t_i:=t_i) t_func t_atom t_form 4 4 (15 :: 9 :: 13 :: nil);
     EqCgr (t_i:=t_i) t_func t_atom t_form 5 12 (Some 17 :: nil);
     Res (t_i:=t_i) t_func t_atom t_form 5 [!4;5 | 0 !];
@@ -169,18 +178,26 @@ Definition nth n := List.nth (n-1) l_t (Res (t_i:=t_i) t_func t_atom t_form 0 [!
 
 Compute (up_to 0).
 Compute (up_to 1).
-
 Compute (up_to 2).
 Compute (nth 2).
 
 Compute (up_to 3).
+
 Compute (up_to 4).
+Compute (nth 4).
+
 Compute (up_to 5).
+
 Compute (up_to 6).
 Compute (up_to 7).
 Compute (up_to 8).
 Compute (up_to 9).
 Compute (up_to 10).
+
+Compute (get (up_to 10) 4).
+Compute (get (up_to 10) 2).
+
+Compute (C.resolve [7; 20] [5]).
 
 Compute (up_to 11).
 Compute (nth 11).
@@ -189,9 +206,13 @@ Compute (up_to 12).
 Compute (up_to 13).
 Compute (up_to 14).
 Compute (up_to 15).
+
 Compute (up_to 16).
+Compute (nth 16).
+
 Compute (up_to 17).
 Compute (up_to 18).
+
 
 
 
