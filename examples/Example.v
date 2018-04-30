@@ -10,15 +10,24 @@ Local Open Scope int63_scope.
 Open Scope Z_scope.
 
 Parameter f : Z -> Z.
+(* Definition lemma := forall x y, Zeq_bool (f x) (f y). *)
+(* Axiom f_is_constant : lemma. *)
 Axiom f_is_constant : forall x y, Zeq_bool (f x) (f y).
   
 Lemma apply_lemma :
   forall y,
-  Zeq_bool  (f y) (f 5%Z).
+  Zeq_bool (f y) (f 5%Z).
 
-Proof.  
+Proof.
   verit f_is_constant. auto.
-Qed.  
+Qed.
+
+(* Lemma f_const_is_eq_val_0 : *)
+(*   forall x, (forall f : Z -> Z, forall a b, Zeq_bool (f a) (f b)) -> *)
+(*             Zeq_bool (f x) (f 0). *)
+(* Proof. *)
+(*   intros x H. *)
+(*   verit H. *)
 
 Lemma find_inst :
   implb (Zeq_bool (f 2) 5) (Zeq_bool (f 3) 5).
@@ -28,15 +37,16 @@ Proof.
   intro H. apply H.
 Qed.  
 
+
 Parameter g : Z -> Z.
 Parameter k : Z.
 Axiom g_k_linear : forall x, Zeq_bool (g (x + 1)) ((g x) + k).
 
 Lemma apply_lemma_multiple :
-  forall x, Zeq_bool (g (x + 5)) ((g x) + 5 * k).
+  forall x y, Zeq_bool (g (x + y)) ((g x) + y * k).
 
 Proof.
-  verit g_k_linear; auto.
+  verit g_k_linear.
 Qed.
 Print apply_lemma_multiple.
 
@@ -52,15 +62,196 @@ Zchaff_Theorem sat "sat.cnf" "sat.log".
 About sat.
 
 Proof.
-  verit f_is_constant.
+  verit.
   exists Int63Native.eqb.
-  intros x y.
   apply Int63Properties.reflect_eqb.
 Defined.
 
+Close Scope Z_scope.
+
+Parameter m : Z -> Z.
+Axiom m_1 : Zeq_bool (m 1) (m 0).
+Axiom m_0 : Zeq_bool (m 0) 5.
+
+(* Lemma cinq_m_0 : *)
+(*   Zeq_bool 5 (m 0). *)
+
+(* Proof. *)
+(*   verit m_0. *)
+  
+(* Lemma m_1_5 : Zeq_bool (m 1) 5. *)
+
+(* Proof. *)
+(*   verit m_1 m_0. *)
+(* Qed. *)
+  
 
 
 
+(* Definition t_i := [! | unit_typ_eqb !] : array typ_eqb. *)
+(* Definition t_func := [!Tval t_i (Typ.TZ :: nil, Typ.TZ) m | Tval t_i (nil, Typ.Tbool) true !]. *)
+(* Definition t_atom := *)
+(* [!Acop CO_xH;Auop UO_Zpos 0;Aapp 0 (1 :: nil);Auop UO_xO 0; *)
+(* Auop UO_xI 3;Auop UO_Zpos 4;Abop (BO_eq Typ.TZ) 2 5; *)
+(* Acop CO_Z0;Aapp 0 (7 :: nil);Abop (BO_eq Typ.TZ) 2 8; *)
+(* Abop (BO_eq Typ.TZ) 5 8 | Acop CO_xH !] : array atom. *)
+(* Definition t_form := [!Ftrue;Ffalse;Fatom 6;Fatom 9;Fatom 10 | Ftrue !] : array form. *)
+(* Definition t :=   [![!EqTr (t_i:=t_i) t_func t_atom t_form 4 4 (9 :: 7 :: nil); *)
+(*     Res (t_i:=t_i) t_func t_atom t_form 5 [!4;1;2;3 | 0 !] | *)
+(*     Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !] !] | *)
+(*   [! | Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !] !] !]. *)
+
+(* Definition c := *)
+(* Certif (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 6 t 5 : *)
+(* certif (t_i:=t_i) t_func t_atom t_form. *)
+
+
+(* Compute (checker_b 4 true c). *)
+(* Compute (checker (PArray.make nclauses nl) None c). *)
+
+(* Compute (Form.check_form t_form). *)
+(* Compute (Atom.check_atom t_atom). *)
+(* Compute (Atom.wt t_i t_func t_atom). *)
+(* Compute (euf_checker (* t_atom t_form *) C.is_false s t confl). *)
+
+
+
+
+
+
+
+Parameter mult4 :  Z -> Z.
+Axiom mult4_0 : (* forall y : int, *) Zeq_bool (mult4 0) 0.
+Axiom mult4_Sx : forall x, Zeq_bool (mult4 (x+1)) (mult4 x + 4).
+(* Lemma mult4_22 : Zeq_bool (mult4 1) 4. *)
+(* Proof. *)
+(*   verit mult4_0 mult4_Sx; *)
+(*   intro H; destruct H as [H1 H2]; auto. *)
+(* Qed. *)
+
+
+
+Parameter app1024435598 : Zeq_bool (mult4 0) 0 /\ (forall x : Z, Zeq_bool (mult4 (x + 1)) (mult4 x + 4)) -> Zeq_bool (mult4 (0 + 1)) (mult4 0 + 4).
+
+Definition t_i := [! | unit_typ_eqb !] : array typ_eqb.
+Definition t_func :=
+[!Tval t_i (Typ.TZ :: nil, Typ.TZ) mult4 | Tval t_i (nil, Typ.Tbool) true !] :
+array (tval t_i).
+Definition t_atom :=
+[!Acop CO_xH;Auop UO_Zpos 0;Aapp 0 (1 :: nil);Auop UO_xO 0;
+Auop UO_xO 3;Auop UO_Zpos 4;Abop (BO_eq Typ.TZ) 2 5;
+Acop CO_Z0;Aapp 0 (7 :: nil);Abop (BO_eq Typ.TZ) 7 8;
+Abop BO_Zplus 7 1;Aapp 0 (10 :: nil);Abop BO_Zplus 8 5;
+Abop (BO_eq Typ.TZ) 11 12;Abop (BO_eq Typ.TZ) 2 11;
+Abop (BO_eq Typ.TZ) 5 12;Abop (BO_eq Typ.TZ) 1 10;Abop BO_Zle 5 12;
+Abop BO_Zle 12 5;Abop BO_Zle 1 10;Abop BO_Zle 10 1 |
+Acop CO_xH !] : array atom.
+Definition t_form :=
+[!Ftrue;Ffalse;Fatom 6;Fatom 9;Fatom 13;For [!1;8 | 0 !];
+Fatom 14;Fatom 15;Fatom 16;Fatom 17;Fatom 18;For [!14;19;21 | 0 !];
+Fatom 19;Fatom 20;For [!16;25;27 | 0 !] | Ftrue !] :
+array form.
+Definition t :=   [![!ForallInst (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 3
+                      (conj mult4_0 mult4_Sx) (concl:=8 :: nil) app1024435598;
+    EqTr (t_i:=t_i) t_func t_atom t_form 4 4 (15 :: 9 :: 13 :: nil);
+    EqCgr (t_i:=t_i) t_func t_atom t_form 5 12 (Some 17 :: nil);
+    Res (t_i:=t_i) t_func t_atom t_form 5 [!4;5 | 0 !];
+    Res (t_i:=t_i) t_func t_atom t_form 3 [!5;1;3 | 0 !];
+    LiaMicromega (t_i:=t_i) t_func t_atom t_form 1
+      (22 :: nil) nil;ImmBuildDef (t_i:=t_i) t_func t_atom t_form 1 1;
+    LiaMicromega (t_i:=t_i) t_func t_atom t_form 5
+      (28 :: nil) nil;ImmBuildDef (t_i:=t_i) t_func t_atom t_form 5 5;
+    LiaMicromega (t_i:=t_i) t_func t_atom t_form 4
+      (20 :: 7 :: nil) nil;Res (t_i:=t_i) t_func t_atom t_form 4 [!4;2 | 0 !];
+    LiaMicromega (t_i:=t_i) t_func t_atom t_form 6
+      (26 :: nil) nil;LiaMicromega (t_i:=t_i) t_func t_atom t_form 7
+                        (24 :: nil) nil;Res (t_i:=t_i) t_func t_atom t_form 6
+                                          [!5;7;6 | 0 !];
+    Res (t_i:=t_i) t_func t_atom t_form 6 [!3;6 | 0 !];
+    Res (t_i:=t_i) t_func t_atom t_form 4 [!1;6;4 | 0 !];
+    LiaMicromega (t_i:=t_i) t_func t_atom t_form 6
+      (18 :: 7 :: nil)
+      (ZMicromega.RatProof
+         (RingMicromega.PsatzAdd
+            (RingMicromega.PsatzMulC (EnvRing.Pc (-1)%Z) (RingMicromega.PsatzIn Z 0))
+            (RingMicromega.PsatzIn Z 1)) ZMicromega.DoneProof :: nil);
+    Res (t_i:=t_i) t_func t_atom t_form 1 [!6;2;4 | 0 !] |
+    Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !] !] |
+  [! | Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !] !] !].
+Definition c :=
+Certif (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 8 t 1.
+
+
+
+(* c = Certif nclauses t confl *)
+(* checker_b l true c = checker (PArray.make nclauses nl) None c*)
+(* checker d used_roots c=  *)
+(*  Form.check_form t_form && Atom.check_atom t_atom && *)
+(*  Atom.wt t_i t_func t_atom && *)
+(*  euf_checker (* t_atom t_form *) C.is_false (add_roots (S.make nclauses) d used_roots) t confl *)
+
+
+
+Definition l := 4.
+Definition nclauses := 6.
+Definition confl := 5.
+
+Definition nl := Lit.neg l.
+Definition d := (PArray.make nclauses nl).
+Definition s := (add_roots (S.make nclauses) d None).
+
+Definition rho := Form.interp_state_var (Atom.interp_form_hatom t_i t_func t_atom) t_form.
+
+Definition flatten {A : Type} (trace : array (array A)) :=
+PArray.fold_left (fun l_step arr_step => l_step ++ PArray.to_list arr_step)
+                 nil trace.
+
+Import ListNotations.
+Fixpoint firsts {A : Type} n (l : list A) :=
+  match n with
+  | 0 => []
+  | S n => match l with
+           | [] => []
+           | he :: ta => he :: firsts n ta end end.
+
+Definition step_euf := @step_checker t_i t_func t_atom t_form.
+Definition l_t := flatten t.
+Definition up_to n := List.fold_left step_euf (firsts n l_t) s.
+Compute (List.length l_t).
+Definition nth n := List.nth (n-1) l_t (Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !]).
+
+Compute (up_to 0).
+
+Compute (up_to 1).
+Compute (up_to 2).
+Compute (up_to 3).
+Compute (up_to 4).
+Compute (up_to 5).
+Compute (up_to 6).
+Compute (up_to 7).
+Compute (up_to 8).
+Compute (up_to 9).
+Compute (up_to 10).
+Compute (up_to 11).
+Compute (nth 11).
+
+Compute (up_to 12).
+Compute (up_to 13).
+Compute (up_to 14).
+Compute (up_to 15).
+Compute (up_to 16).
+Compute (up_to 17).
+Compute (up_to 18).
+
+
+(* Parameter mult :   Z -> Z -> Z. *)
+(* Axiom mult4_0 : (* forall y : int, *) Zeq_bool (mult4 0) 0. *)
+(* Axiom mult4_Sx : forall x, Zeq_bool (mult4 (x+1)) (mult4 x + 4). *)
+(* Lemma mult4_22 : Zeq_bool (mult4 22) 88. *)
+(* Proof. *)
+(*   verit mult4_0 mult4_Sx. *)
+
+  
 Lemma irrelf_ltb :
   forall a b c,
   (Z.ltb a b) &&
@@ -68,7 +259,7 @@ Lemma irrelf_ltb :
   (Z.ltb c a) = false.
 
 Proof.
-  verit f_is_constant.
+  verit.
 Qed.
 
 Lemma sat2:
@@ -79,7 +270,7 @@ Lemma sat2:
     (negb (a2) || a3) &&
     (negb (a3) || a1)  = false.
 Proof.
-  verit g_k_linear.
+  verit.
 Qed.
 Print sat2.  
 
@@ -128,7 +319,7 @@ Qed.
 
 Goal forall a b c, ((a || b || c) && ((negb a) || (negb b) || (negb c)) && ((negb a) || b) && ((negb b) || c) && ((negb c) || a)) = false.
 Proof.
-  verit f_is_constant.
+  verit.
 Qed.
 
 (* About positive. *)
@@ -184,14 +375,14 @@ Qed.
 (* Parameter toto : Z -> Z. *)
 (* Variable toto : Z. *)
 
-Section S.
-  Variable f : Z -> Z.
-  Hypothesis th : forall x, Zeq_bool (f x) 3.
-  Definition g z := f z.
-  (* Add Theorem th. *)
-  (* Goal forall x, Zeq_bool ((f x) + 1) 4. *)
-    (* verit. *)
-End S.
+(* Section S. *)
+(*   Variable f : Z -> Z. *)
+(*   Hypothesis th : forall x, Zeq_bool (f x) 3. *)
+(*   Definition g z := f z. *)
+(*   (* Add Theorem th. *) *)
+(*   (* Goal forall x, Zeq_bool ((f x) + 1) 4. *) *)
+(*     (* verit. *) *)
+(* End S. *)
 
 Check g.
 Definition g1 (f : Z -> Z) (x : Z) := f x.
@@ -242,30 +433,3 @@ Qed.
 Print sat2_gen.
 Check checker_b_correct.
 
-
-
-Parameter y : Z.
-Parameter app328061879 : lemma -> Zeq_bool (f 2) (f y).
-Definition t_i := [! | unit_typ_eqb !] : array typ_eqb.
-Definition t_func :=[!Tval t_i (Typ.TZ :: nil, Typ.TZ) f;Tval t_i (nil, Typ.TZ) y |Tval t_i (nil, Typ.Tbool) true !] : array (tval t_i).
-Definition t_atom := [!Acop CO_xH;Auop UO_xO 0;Auop UO_Zpos 1;Aapp 0 (2 :: nil);Aapp 1 nil;Aapp 0 (4 :: nil);Abop (BO_eq Typ.TZ) 3 5;Aapp 0 nil;Aapp 0 (7 :: nil);Abop (BO_eq Typ.TZ) 8 8 |Acop CO_xH !] : array atom.
-Definition t_form := [!Ftrue;Ffalse;Fatom 6;Fatom 9;For [!7;4 | 0 !] | Ftrue !] : array form.
-Definition t := [![!ForallInst (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 2 pl (concl:=4 :: nil) app328061879;Res (t_i:=t_i) t_func t_atom t_form 3 [!2;1 | 0 !] | Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !] !] |[! | Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !] !] !].
-Definition c := Certif (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 4 t 3 :certif (t_i:=t_i) t_func t_atom t_form.
-
-Definition l := 4.
-Definition confl := 3.
-Definition nclauses := 4.
-Definition nl := Lit.neg l.
-Definition d := (PArray.make nclauses nl).
-
-Compute (checker_b 4 true c).
-
-Compute (Form.check_form t_form).
-About checker.
-Compute (checker (PArray.make nclauses l) None c).
-Compute (Form.check_form t_form && Atom.check_atom t_atom).
-Compute (euf_checker (* t_atom t_form *) C.is_false (add_roots (S.make nclauses) d None) t confl).
-About Atom.wt.
-
-Compute (Atom.wt t_i t_func t_atom ).

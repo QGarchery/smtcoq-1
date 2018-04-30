@@ -151,9 +151,9 @@ let export out_channel rt ro l ls_stmc =
   Form.to_smt Atom.to_smt fmt l;
   Format.fprintf fmt ")\n";
 
-  List.iter (fun u -> Format.fprintf fmt "(assert (";
+  List.iter (fun u -> Format.fprintf fmt "(assert ";
                       Atom.to_smt fmt u;
-                      Format.fprintf fmt "))\n"
+                      Format.fprintf fmt ")\n"
     ) ls_stmc;
 
   (* Format.fprintf fmt "(assert (forall ((x Int) (y Int)) (= (op_0 x) (op_0 y))))\n"; *)
@@ -182,10 +182,10 @@ let call_verit rt ro fl root ls_smtc =
     | VeritSyntax.Sat -> Structures.error "veriT can't prove this"
 
 
-let tactic pl =
+let tactic lpl =
   clear_all ();
   let rt = Btype.create () in
   let ro = Op.create () in
   let ra = VeritSyntax.ra in
   let rf = VeritSyntax.rf in
-  SmtCommands.tactic call_verit rt ro ra rf pl
+  SmtCommands.tactic call_verit rt ro ra rf lpl

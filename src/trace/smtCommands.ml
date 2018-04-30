@@ -279,7 +279,7 @@ let checker (rt, ro, ra, rf, roots, max_id, confl) =
 
 (* Tactic *)
 
-let build_body rt ro ra rf l b (max_id, confl) lemmas =
+let build_body rt ro ra rf l b (max_id, confl) l_pl =
   let nti = mkName "t_i" in
   let ntfunc = mkName "t_func" in
   let ntatom = mkName "t_atom" in
@@ -292,7 +292,7 @@ let build_body rt ro ra rf l b (max_id, confl) lemmas =
   let t_func = Structures.lift 1 (make_t_func ro (v 0 (*t_i - 1*))) in
   let t_atom = Atom.interp_tbl ra in
   let t_form = snd (Form.interp_tbl rf) in
-  let (tres,_,cuts) = SmtTrace.to_coq Form.to_coq interp_conseq_uf (certif_ops (Some [|v 4 (*t_i*); v 3 (*t_func*); v 2 (*t_atom*); v 1 (*t_form*)|])) confl lemmas in
+  let (tres,_,cuts) = SmtTrace.to_coq Form.to_coq interp_conseq_uf (certif_ops (Some [|v 4 (*t_i*); v 3 (*t_func*); v 2 (*t_atom*); v 1 (*t_form*)|])) confl l_pl in
   let certif =
     mklApp cCertif [|v 4 (*t_i*); v 3 (*t_func*); v 2 (*t_atom*); v 1 (*t_form*); mkInt (max_id + 1); tres;mkInt (get_pos confl)|] in
 
@@ -373,14 +373,14 @@ let make_proof call_solver rt ro rf l ls_smtc=
   let root = SmtTrace.mkRootV [l] in
   call_solver rt ro fl (root,l) ls_smtc
 
-exception Coqterm of Term.constr
 
-let core_tactic call_solver rt ro ra rf pl env sigma concl =
+let core_tactic call_solver rt ro ra rf lpl env sigma concl =
   let a, b = get_arguments concl in
-
-  let cpl = Lazy.force (gen_constant [["Top"]] (Names.string_of_id pl)) in
-  let clemma = Retyping.get_type_of env sigma cpl in
-  let ls_smtc = [Atom.of_coq_lemma rt ro ra env sigma clemma] in
+  
+  let lcpl = List.map (fun pl -> Lazy.force (gen_constant [["Top"]] (Names.string_of_id pl))) lpl in
+  let lclemma = List.map (Retyping.get_type_of env sigma) lcpl in
+  let ls_smtc = List.map (Atom.of_coq_lemma rt ro ra env sigma) lclemma in
+  let l_pl = List.combine lclemma lcpl in
 
   let (body_cast, body_nocast, cuts) =
     if ((Term.eq_constr b (Lazy.force ctrue)) || (Term.eq_constr b (Lazy.force cfalse)))
@@ -389,8 +389,7 @@ let core_tactic call_solver rt ro ra rf pl env sigma concl =
       let l' = if (Term.eq_constr b (Lazy.force ctrue))
                then Form.neg l else l in
       let max_id_confl = make_proof call_solver rt ro rf l' ls_smtc in
-      let lemmas = [(clemma, cpl)] in
-      build_body rt ro ra rf (Form.to_coq l) b max_id_confl lemmas
+      build_body rt ro ra rf (Form.to_coq l) b max_id_confl l_pl
     else
       let l1 = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf a in
       let l2 = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf b in
@@ -409,7 +408,7 @@ let core_tactic call_solver rt ro ra rf pl env sigma concl =
 
 
       
-let tactic call_solver rt ro ra rf pl =
+let tactic call_solver rt ro ra rf lpl =
   Structures.tclTHEN
     Tactics.intros
-    (Structures.mk_tactic (core_tactic call_solver rt ro ra rf pl))
+    (Structures.mk_tactic (core_tactic call_solver rt ro ra rf lpl))
