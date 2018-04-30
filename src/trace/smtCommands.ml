@@ -279,7 +279,7 @@ let checker (rt, ro, ra, rf, roots, max_id, confl) =
 
 (* Tactic *)
 
-let build_body rt ro ra rf l b (max_id, confl) lemmas =
+let build_body rt ro ra rf l b (max_id, confl) l_pl =
   let nti = mkName "t_i" in
   let ntfunc = mkName "t_func" in
   let ntatom = mkName "t_atom" in
@@ -292,7 +292,7 @@ let build_body rt ro ra rf l b (max_id, confl) lemmas =
   let t_func = Structures.lift 1 (make_t_func ro (v 0 (*t_i - 1*))) in
   let t_atom = Atom.interp_tbl ra in
   let t_form = snd (Form.interp_tbl rf) in
-  let (tres,_,cuts) = SmtTrace.to_coq Form.to_coq interp_conseq_uf (certif_ops (Some [|v 4 (*t_i*); v 3 (*t_func*); v 2 (*t_atom*); v 1 (*t_form*)|])) confl lemmas in
+  let (tres,_,cuts) = SmtTrace.to_coq Form.to_coq interp_conseq_uf (certif_ops (Some [|v 4 (*t_i*); v 3 (*t_func*); v 2 (*t_atom*); v 1 (*t_form*)|])) confl l_pl in
   let certif =
     mklApp cCertif [|v 4 (*t_i*); v 3 (*t_func*); v 2 (*t_atom*); v 1 (*t_form*); mkInt (max_id + 1); tres;mkInt (get_pos confl)|] in
 
@@ -373,7 +373,6 @@ let make_proof call_solver rt ro rf l ls_smtc=
   let root = SmtTrace.mkRootV [l] in
   call_solver rt ro fl (root,l) ls_smtc
 
-exception Coqterm of Term.constr
 
 let core_tactic call_solver rt ro ra rf lpl env sigma concl =
   let a, b = get_arguments concl in

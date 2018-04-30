@@ -589,10 +589,10 @@ module Atom =
 
         
     let get ?declare:(decl=true) reify a =
-      try HashAtom.find reify.tbl a 
-      with Not_found -> if decl
-                        then declare reify a
-                        else other_hash a
+      if decl
+      then try HashAtom.find reify.tbl a 
+           with Not_found -> declare reify a
+      else {index = -1; hval = a}
 
     let print_atoms reify where =
       let oc = open_out where in
@@ -703,12 +703,12 @@ module Atom =
                       let (n, _, t) = Environ.lookup_rel i env in
                       let sn = string_of_name n in
                       Printf.fprintf out "%s\n" sn;
-                      let hvalue = 
+                      {index = -1;
+                       hval = 
                          { tparams = [||];
                            tres = Btype.of_coq rt t;
                            op_val = c;
-                           rel_name = Some sn} in
-                      Op.new_op hvalue
+                           rel_name = Some sn}}
                  else 
                    try Op.of_coq ro c
                    with | Not_found ->
