@@ -208,7 +208,7 @@ let ref_cl : (int,Form.t clause) Hashtbl.t = Hashtbl.create 17
 
 let add value cl =
   match value with
-  | [neg_th] -> Hashtbl.add ref_cl (Form.index neg_th) cl
+  | [th] -> Hashtbl.add ref_cl (Form.index th) cl
   | _ -> assert false
                       
 let rec fins_lemma ids_params =
@@ -223,13 +223,30 @@ let rec find_remove_lemma lemma ids_params =
   let eq_lemma h = eq_clause lemma (get_clause h) in 
   list_find_remove eq_lemma ids_params
 
-let merge ids_params =
-  try
-    let lemma = fins_lemma ids_params in
-    let _, rest = find_remove_lemma lemma ids_params in
-    rest
-  with Not_found -> ids_params
 
+let out = open_out "/tmp/ids_params.log"
+let outf = open_out "/tmp/all_ids.log"
+let fmt = Format.formatter_of_out_channel outf
+                   
+let print_params l =
+  List.iter (fun i -> Printf.fprintf out "%i " i) l;
+  Printf.fprintf out "\n"; flush out
+                   
+let merge ids_params =
+  print_params ids_params;
+  let u = try
+      let lemma = fins_lemma ids_params in
+      begin if ids_params = [12; 6] then
+              match lemma.value with
+                Some [thm] -> Form.to_smt Atom.to_smt fmt thm;
+                              Format.fprintf fmt "@."
+              | _ -> failwith "what happened?" end;
+      let _, rest = find_remove_lemma lemma ids_params in
+      rest
+    with Not_found -> ids_params in
+  print_params u; u
+
+                   
 let mk_clause (id,typ,value,ids_params) =
   let kind =
     match typ with
@@ -418,6 +435,7 @@ let clear () =
   clear_solver ();
   clear_btypes ();
   clear_funs ();
+  Hashtbl.clear ref_cl;
   Atom.clear ra;
   Form.clear rf;
   Hashtbl.clear hlets

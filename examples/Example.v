@@ -1,3 +1,4 @@
+
 (* [Require Import SMTCoq.SMTCoq.] loads the SMTCoq library.
    If you are using native-coq instead of Coq 8.6, replace it with:
      Require Import SMTCoq.
@@ -40,6 +41,7 @@ Parameter k : Z.
 Axiom g_k_linear : forall x, Zeq_bool (g (x + 1)) ((g x) + k).
 Axiom f_equal_k : forall x, Zeq_bool (f x) k.
 
+
 Lemma apply_lemma_multiple :
   forall x y, Zeq_bool (g (x + 1)) (g x + f y).
 
@@ -47,7 +49,116 @@ Proof.
   verit g_k_linear f_equal_k; intuition.
 Qed.
 
-Print apply_lemma_multiple.
+Close Scope Z_scope.
+Parameter x : Z.
+Parameter y : Z.
+Parameter app763386570 :
+(forall x : Z, Zeq_bool (g (x + 1)) (g x + k)) /\ (forall x : Z, Zeq_bool (f x) k) ->
+Zeq_bool (g (x + 1)) (g x + k).
+Parameter app247866433 :
+(forall x : Z, Zeq_bool (g (x + 1)) (g x + k)) /\ (forall x : Z, Zeq_bool (f x) k) ->
+Zeq_bool (f y) k.
+Definition t_i := [! | unit_typ_eqb !] : array typ_eqb.
+Definition t_func :=
+[!Tval t_i (Typ.TZ :: nil, Typ.TZ) g;Tval t_i (nil, Typ.TZ) k;
+Tval t_i (Typ.TZ :: nil, Typ.TZ) f;Tval t_i (nil, Typ.TZ) x;
+Tval t_i (nil, Typ.TZ) y | Tval t_i (nil, Typ.Tbool) true !] : 
+array (tval t_i).
+Definition t_atom :=
+[!Aapp 3 nil;Acop CO_xH;Auop UO_Zpos 1;Abop BO_Zplus 0 2;
+Aapp 0 (3 :: nil);Aapp 0 (0 :: nil);Aapp 4 nil;Aapp 2 (6 :: nil);
+Abop BO_Zplus 5 7;Abop (BO_eq Typ.TZ) 4 8;Aapp 1 nil;
+Abop (BO_eq Typ.TZ) 7 10;Abop BO_Zplus 5 10;Abop (BO_eq Typ.TZ) 4 12;
+Abop (BO_eq Typ.TZ) 8 12;Abop (BO_eq Typ.TZ) 5 5 | 
+Acop CO_xH !] : array atom.
+Definition t_form :=
+[!Ftrue;Ffalse;Fatom 9;Fatom 11;For [!1;6 | 0 !];Fatom 13;
+For [!1;10 | 0 !];Fatom 14;Fatom 15 | Ftrue !] : array form.
+Definition t := [![!ForallInst (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 4
+        (conj g_k_linear f_equal_k) (concl:=6 :: nil) app247866433;
+    ForallInst (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 3
+      (conj g_k_linear f_equal_k) (concl:=10 :: nil) app763386570;
+    Res (t_i:=t_i) t_func t_atom t_form 2 [!3;2 | 0 !];
+    EqTr (t_i:=t_i) t_func t_atom t_form 3 4 (15 :: 11 :: nil);
+    EqCgr (t_i:=t_i) t_func t_atom t_form 5 14 (Some 17 :: Some 7 :: nil);
+    EqTr (t_i:=t_i) t_func t_atom t_form 6 16 nil;Res (t_i:=t_i) t_func t_atom
+                                                  t_form 6 
+                                                  [!5;6 | 0 !];
+    Res (t_i:=t_i) t_func t_atom t_form 6 [!3;6 | 0 !];
+    Res (t_i:=t_i) t_func t_atom t_form 3 [!6;1;4;2 | 0 !] |
+    Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !] !] |
+  [! | Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !] !] !].
+
+Definition c :=
+Certif (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 7 t 3 :
+certif (t_i:=t_i) t_func t_atom t_form.
+
+(* c = Certif nclauses t confl *)
+(* checker_b l true c = checker (PArray.make nclauses nl) None c*)
+(* checker d used_roots c=  *)
+(*  Form.check_form t_form && Atom.check_atom t_atom && *)
+(*  Atom.wt t_i t_func t_atom && *)
+(*  euf_checker (* t_atom t_form *) C.is_false (add_roots (S.make nclauses) d used_roots) t confl *)
+
+Definition l := 4.
+Definition nclauses := 7.
+Definition confl := 3.
+
+Definition nl := Lit.neg l.
+Definition d := (PArray.make nclauses nl).
+Definition s := (add_roots (S.make nclauses) d None).
+
+
+Compute (checker_b 4 true c).
+Compute (checker (PArray.make nclauses nl) None c).
+
+Compute (Form.check_form t_form).
+Compute (Atom.check_atom t_atom).
+Compute (Atom.wt t_i t_func t_atom).
+Compute (euf_checker (* t_atom t_form *) C.is_false s t confl).
+
+
+
+
+Definition flatten {A : Type} (trace : array (array A)) :=
+PArray.fold_left (fun l_step arr_step => l_step ++ PArray.to_list arr_step)
+                 nil trace.
+
+Import ListNotations.
+Fixpoint firsts {A : Type} n (l : list A) :=
+  match n with
+  | 0 => []
+  | S n => match l with
+           | [] => []
+           | he :: ta => he :: firsts n ta end end.
+
+Definition step_euf := @step_checker t_i t_func t_atom t_form.
+Definition l_t := flatten t.
+SearchAbout PArray.array.
+
+Definition up_to n := List.fold_left step_euf (firsts n l_t) s.
+Definition nth n := List.nth (n-1) l_t (Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !]).
+
+Compute (List.length l_t).
+
+Compute (up_to 0).
+Compute (up_to 1).
+
+Compute (up_to 2).
+
+Compute (up_to 3).
+Compute (nth 3).
+
+Compute (up_to 4).
+Compute (nth 4).
+
+Compute (up_to 5).
+Compute (up_to 6).
+Compute (up_to 7).
+Compute (up_to 8).
+Compute (up_to 9).
+
+
 
 Lemma sat2_gen a1 a2 a3:
   forall v : int -> bool,
