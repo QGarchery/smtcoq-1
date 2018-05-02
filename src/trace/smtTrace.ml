@@ -353,14 +353,11 @@ let to_coq to_lit interp (cstep,
            let concl' = out_cl concl in
            mklApp cHole [|out_c c; prem_id'; prem'; concl'; ass_var|]
         | Forall_inst (_, concl) ->
-           (* let (clemma, cpl) = List.hd lemmas in *)
-           (* let (lclemma, lcpl) = List.split l_pl in
-            * let clemmas = fr (fun clemma p -> mklApp cand [|clemma; p|]) lclemma in *)
            let clemmas, cplemmas = fr (fun (clemma, cpl) (acc_clemma, acc_cpl) ->
                                        mklApp cand [| clemma; acc_clemma |],
                                        mklApp cconj [| clemma; acc_clemma; cpl; acc_cpl |]) l_pl in 
            let concl' = out_cl [concl] in
-           let app_name = Names.id_of_string ("app"^(string_of_int (Hashtbl.hash concl))) in
+           let app_name = Names.id_of_string ("app" ^ (string_of_int (Hashtbl.hash concl))) in
            let app_var = Term.mkVar app_name in
            let app_ty = Term.mkArrow clemmas (interp ([], [concl])) in
            cuts := (app_name, app_ty)::!cuts;

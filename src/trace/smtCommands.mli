@@ -64,6 +64,7 @@ val build_body_eq :
   Term.constr ->
   Term.constr ->
   int * SmtAtom.Form.t SmtCertif.clause ->
+  (Term.constr * Term.constr) list ->
   Term.constr * Term.constr * (Names.identifier * Term.types) list
 val get_arguments : Term.constr -> Term.constr * Term.constr
 val make_proof :

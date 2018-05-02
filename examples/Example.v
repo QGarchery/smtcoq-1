@@ -11,13 +11,13 @@ Open Scope Z_scope.
 
 Parameter f : Z -> Z.
 Axiom f_is_constant : forall x y, Zeq_bool (f x) (f y).
-  
+
 Lemma apply_lemma :
   forall y,
   Zeq_bool (f y) (f 5%Z).
 
 Proof.
-  verit.
+  verit f_is_constant. auto.
 Qed.
 
 (* Lemma f_const_is_eq_val_0 : *)
@@ -38,12 +38,13 @@ Qed.
 Parameter g : Z -> Z.
 Parameter k : Z.
 Axiom g_k_linear : forall x, Zeq_bool (g (x + 1)) ((g x) + k).
+Axiom f_equal_k : forall x, Zeq_bool (f x) k.
 
 Lemma apply_lemma_multiple :
-  forall x, Zeq_bool (g (x + 5)) ((g x) + 5 * k).
+  forall x y, Zeq_bool (g (x + 1)) (g x + f y).
 
 Proof.
-  verit g_k_linear; auto.
+  verit g_k_linear f_equal_k; intuition.
 Qed.
 
 Print apply_lemma_multiple.

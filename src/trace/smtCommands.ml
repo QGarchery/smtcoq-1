@@ -319,7 +319,7 @@ let build_body rt ro ra rf l b (max_id, confl) l_pl =
   (proof_cast, proof_nocast, cuts)
 
 
-let build_body_eq rt ro ra rf l1 l2 l (max_id, confl) =
+let build_body_eq rt ro ra rf l1 l2 l (max_id, confl) l_pl =
   let nti = mkName "t_i" in
   let ntfunc = mkName "t_func" in
   let ntatom = mkName "t_atom" in
@@ -331,9 +331,9 @@ let build_body_eq rt ro ra rf l1 l2 l (max_id, confl) =
   let t_i = make_t_i rt in
   let t_func = Structures.lift 1 (make_t_func ro (v 0 (*t_i*))) in
   let t_atom = Atom.interp_tbl ra in
-  (* EMPTY LEMMA LIST *)
+
   let t_form = snd (Form.interp_tbl rf) in
-  let (tres,_,cuts) = SmtTrace.to_coq Form.to_coq interp_conseq_uf (certif_ops (Some [|v 4 (*t_i*); v 3 (*t_func*); v 2 (*t_atom*); v 1 (*t_form*)|])) confl [] in
+  let (tres,_,cuts) = SmtTrace.to_coq Form.to_coq interp_conseq_uf (certif_ops (Some [|v 4 (*t_i*); v 3 (*t_func*); v 2 (*t_atom*); v 1 (*t_form*)|])) confl l_pl in
   let certif =
     mklApp cCertif [|v 4 (*t_i*); v 3 (*t_func*); v 2 (*t_atom*); v 1 (*t_form*); mkInt (max_id + 1); tres;mkInt (get_pos confl)|] in
 
@@ -395,7 +395,7 @@ let core_tactic call_solver rt ro ra rf lpl env sigma concl =
       let l2 = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf b in
       let l = Form.neg (Form.get rf (Fapp(Fiff,[|l1;l2|]))) in
       let max_id_confl = make_proof call_solver rt ro rf l ls_smtc in
-      build_body_eq rt ro ra rf (Form.to_coq l1) (Form.to_coq l2) (Form.to_coq l) max_id_confl in
+      build_body_eq rt ro ra rf (Form.to_coq l1) (Form.to_coq l2) (Form.to_coq l) max_id_confl l_pl in
 
   let cuts = (Btype.get_cuts rt)@cuts in
 
