@@ -204,7 +204,7 @@ let get_clause id =
 let add_clause id cl = Hashtbl.add clauses id cl
 let clear_clauses () = Hashtbl.clear clauses
 
-let ref_cl : (int,Form.t clause) Hashtbl.t = Hashtbl.create 17
+let ref_cl : (int, Form.t clause) Hashtbl.t = Hashtbl.create 17
 
 let add value cl =
   match value with
@@ -225,8 +225,6 @@ let rec find_remove_lemma lemma ids_params =
 
 
 let out = open_out "/tmp/ids_params.log"
-let outf = open_out "/tmp/all_ids.log"
-let fmt = Format.formatter_of_out_channel outf
                    
 let print_params l =
   List.iter (fun i -> Printf.fprintf out "%i " i) l;
@@ -236,11 +234,6 @@ let merge ids_params =
   print_params ids_params;
   let u = try
       let lemma = fins_lemma ids_params in
-      begin if ids_params = [12; 6] then
-              match lemma.value with
-                Some [thm] -> Form.to_smt Atom.to_smt fmt thm;
-                              Format.fprintf fmt "@."
-              | _ -> failwith "what happened?" end;
       let _, rest = find_remove_lemma lemma ids_params in
       rest
     with Not_found -> ids_params in
@@ -389,6 +382,9 @@ let mk_clause (id,typ,value,ids_params) =
     else SmtTrace.mk_scertif kind (Some value) in
   add_clause id cl;
   if id > 1 then SmtTrace.link (get_clause (id-1)) cl;
+  let out_cl = open_out "/tmp/ref_cl.log" in
+  Hashtbl.iter (fun i cl -> Printf.fprintf out_cl "%i --> %i\n" i cl.id) ref_cl;
+  flush out_cl;
   id
 
 
