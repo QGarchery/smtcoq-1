@@ -17,7 +17,7 @@ Lemma apply_lemma :
   Zeq_bool (f y) (f 5%Z).
 
 Proof.
-  verit f_is_constant. auto.
+  verit.
 Qed.
 
 (* Lemma f_const_is_eq_val_0 : *)

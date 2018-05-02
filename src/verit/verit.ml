@@ -166,20 +166,26 @@ let call_verit rt ro fl root ls_smtc =
   export outchan rt ro fl ls_smtc;
   close_out outchan;
   let logfilename = (Filename.chop_extension filename)^".vtlog" in
-
-  let command = "veriT --proof-prune --proof-merge --proof-with-sharing --cnf-definitional --disable-ackermann --input=smtlib2 --proof="^logfilename^" "^filename in
+  let (wname, woc) = Filename.open_temp_file "warnings_verit" ".log" in
+  let command = "veriT --proof-prune --proof-merge --proof-with-sharing --cnf-definitional --disable-ackermann --input=smtlib2 --proof="^logfilename^" "^filename ^ " 2> " ^ wname in
   Format.eprintf "%s@." command;
   let t0 = Sys.time () in
   let exit_code = Sys.command command in
   let t1 = Sys.time () in
   Format.eprintf "Verit = %.5f@." (t1-.t0);
+  close_out woc;
+  let win = open_in wname in
+  let err_string = input_line win in
+  close_in win; Sys.remove wname;
+  if err_string != "" 
+  then failwith ("Verit.call_verit: command " ^ command ^ " has the following warning: '" ^ err_string ^"'");
   if exit_code <> 0 then
     failwith ("Verit.call_verit: command "^command^
-	      " exited with code "^(string_of_int exit_code));
+	        " exited with code "^(string_of_int exit_code));
   try
     import_trace logfilename (Some root)
   with
-    | VeritSyntax.Sat -> Structures.error "veriT can't prove this"
+  | VeritSyntax.Sat -> Structures.error "veriT can't prove this"
 
 
 let tactic lpl =

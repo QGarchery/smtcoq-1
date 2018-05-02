@@ -648,9 +648,6 @@ module Atom =
       | _ -> failwith "unnamed rel"
 
     let of_coq ?declare:(decl=true) rt ro reify env sigma c =
-
-      let out = open_out "/tmp/ids.log" in
-      (* let fmt = Format.formatter_of_out_channel out in *)
       let op_tbl = Lazy.force op_tbl in
       let get_cst c =
 	try Hashtbl.find op_tbl c with Not_found -> CCunknown in
@@ -702,7 +699,6 @@ module Atom =
                  then let i = Term.destRel c in
                       let (n, _, t) = Environ.lookup_rel i env in
                       let sn = string_of_name n in
-                      Printf.fprintf out "%s\n" sn;
                       {index = -1;
                        hval = 
                          { tparams = [||];
@@ -716,8 +712,7 @@ module Atom =
                            let tres = Btype.of_coq rt ty in
                            Op.declare ro c targs tres in
         get ~declare:decl reify (Aapp (op,hargs)) in
-      let u = mk_hatom c in
-      flush out; u
+      mk_hatom c
 
     let of_coq_lemma rt ro ra env sigma clemma = 
       let (rel_context, is_true_concl) = Term.decompose_prod_assum clemma in
