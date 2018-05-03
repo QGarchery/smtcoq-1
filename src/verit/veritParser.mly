@@ -46,6 +46,8 @@ line:
   | SAT                                                    { raise Sat }
   | INT COLON LPAR typ clause                   RPAR EOL   { mk_clause ($1,$4,$5,[]) }
   | INT COLON LPAR typ clause clause_ids_params RPAR EOL   { mk_clause ($1,$4,$5,$6) }
+  | INT COLON LPAR TPQT LPAR SHARP INT COLON LPAR forall_decl RPAR RPAR INT RPAR EOL { add_solver $7 $10; add_ref $7 $1; mk_clause ($1, Tpqt, [], [$13]) }
+  | INT COLON LPAR FINS LPAR SHARP INT COLON LPAR OR LPAR NOT SHARP INT RPAR lit RPAR RPAR RPAR EOL { mk_clause ($1, Fins, [$16], [get_ref $14]) } 
 ;
 
 typ:
@@ -81,7 +83,6 @@ typ:
   | LATA                                                   { Lata  }
   | DLDE                                                   { Dlde  }
   | LADE                                                   { Lade  }
-  | FINS                                                   { Fins  }
   | EINS                                                   { Eins  }
   | SKEA                                                   { Skea  }
   | SKAA                                                   { Skaa  }
@@ -119,7 +120,6 @@ typ:
   | TPBE                                                   { Tpbe  }
   | TPSC                                                   { Tpsc  }
   | TPPP                                                   { Tppp  }
-  | TPQT                                                   { Tpqt  }
   | TPQS                                                   { Tpqs  }
   | TPSK                                                   { Tpsk  }
   | SUBP                                                   { Subp  }
@@ -166,6 +166,10 @@ var_decl_list:
   | LPAR maybeatvar VAR RPAR var_decl_list		   { () }
 ;
 
+forall_decl:
+  | FORALL LPAR var_decl_list RPAR name_term_local	   { Form Form.pform_true }
+; 
+
 term:   /* returns a SmtAtom.Form.pform or a SmtAtom.hatom */
   | LPAR term RPAR                                         { $2 }
 
@@ -177,7 +181,7 @@ term:   /* returns a SmtAtom.Form.pform or a SmtAtom.hatom */
   | IMP lit_list                                           { Form (Fapp (Fimp, Array.of_list $2)) }
   | XOR lit_list                                           { Form (Fapp (Fxor, Array.of_list $2)) }
   | ITE lit_list                                           { Form (Fapp (Fite, Array.of_list $2)) }
-  | FORALL LPAR var_decl_list RPAR name_term_local	   { Form Form.pform_true }
+  | forall_decl 					   { $1 }
 
 
   /* Atoms */

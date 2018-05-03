@@ -204,12 +204,13 @@ let get_clause id =
 let add_clause id cl = Hashtbl.add clauses id cl
 let clear_clauses () = Hashtbl.clear clauses
 
-let ref_cl : (int, Form.t clause) Hashtbl.t = Hashtbl.create 17
+let ref_cl : (int, int) Hashtbl.t = Hashtbl.create 17
 
-let add value cl =
-  match value with
-  | [th] -> Hashtbl.add ref_cl (Form.index th) cl
-  | _ -> assert false
+let add_ref i j = 
+  Hashtbl.add ref_cl i j
+
+let get_ref i =
+  Hashtbl.find ref_cl i
                       
 let rec fins_lemma ids_params =
   match ids_params with
@@ -246,24 +247,17 @@ let mk_clause (id,typ,value,ids_params) =
     | Tpbr ->
        begin match ids_params with
        | [id] ->
-          add value (get_clause id);
           Same (get_clause id)
        | _ -> failwith "unexpected form of tmp_betared" end
     | Tpqt ->
        begin match ids_params with
        | [id] ->
-          add value (get_clause id);
           Same (get_clause id)
        | _ -> failwith "unexpected form of tmp_qnt_tidy" end
     | Fins ->
-       begin match value with
-        | [form] when Form.is_pos form->
-           (match Form.pform form with
-            | Fapp (For, [|lemma; inst|]) when Form.is_neg lemma && Form.is_pos inst->
-               let i = Form.index lemma in
-               let cl = Hashtbl.find ref_cl i in
-               Other (Forall_inst (cl, inst))
-            | _ -> failwith "unexpected form of forall_inst")
+       begin match value, ids_params with
+        | [inst], [ref_th] when Form.is_pos inst->
+           Other (Forall_inst (get_clause ref_th, inst))
         | _ -> failwith "unexpected form of forall_inst" end
     | Or ->
        (match ids_params with
@@ -382,9 +376,6 @@ let mk_clause (id,typ,value,ids_params) =
     else SmtTrace.mk_scertif kind (Some value) in
   add_clause id cl;
   if id > 1 then SmtTrace.link (get_clause (id-1)) cl;
-  let out_cl = open_out "/tmp/ref_cl.log" in
-  Hashtbl.iter (fun i cl -> Printf.fprintf out_cl "%i --> %i\n" i cl.id) ref_cl;
-  flush out_cl;
   id
 
 
