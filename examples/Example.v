@@ -46,7 +46,7 @@ Lemma apply_lemma_multiple :
   forall x y, Zeq_bool (g (x + 1)) (g x + f y).
 
 Proof.
-  verit g_k_linear f_equal_k; intuition.
+  verit g_k_linear f_equal_k; intro H; repeat destruct H; auto.
 Qed.
 
 Close Scope Z_scope.

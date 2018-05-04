@@ -225,20 +225,12 @@ let rec find_remove_lemma lemma ids_params =
   list_find_remove eq_lemma ids_params
 
 
-let out = open_out "/tmp/ids_params.log"
-                   
-let print_params l =
-  List.iter (fun i -> Printf.fprintf out "%i " i) l;
-  Printf.fprintf out "\n"; flush out
-                   
 let merge ids_params =
-  print_params ids_params;
-  let u = try
-      let lemma = fins_lemma ids_params in
-      let _, rest = find_remove_lemma lemma ids_params in
-      rest
-    with Not_found -> ids_params in
-  print_params u; u
+  try
+    let lemma = fins_lemma ids_params in
+    let _, rest = find_remove_lemma lemma ids_params in
+    rest
+  with Not_found -> ids_params
 
                    
 let mk_clause (id,typ,value,ids_params) =

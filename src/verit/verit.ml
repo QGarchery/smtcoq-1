@@ -175,15 +175,14 @@ let call_verit rt ro fl root ls_smtc =
   Format.eprintf "Verit = %.5f@." (t1-.t0);
   close_out woc;
   let win = open_in wname in
-  try let err_string = input_line win in
+  try let _ = input_line win in
       close_in win; Sys.remove wname;
-      failwith ("Verit.call_verit: command " ^ command
-                ^ " has the following warning: '" ^ err_string ^"'")
+      Structures.error "veriT can't prove this"
   with End_of_file -> 
   close_in win; Sys.remove wname;
   if exit_code <> 0 then
-    failwith ("Verit.call_verit: command "^command^
-	        " exited with code "^(string_of_int exit_code));
+    failwith ("Verit.call_verit: command " ^ command ^
+	        " exited with code " ^ string_of_int exit_code);
   try
     import_trace logfilename (Some root)
   with
