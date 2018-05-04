@@ -76,8 +76,9 @@ let rec import_trace filename first =
        SmtTrace.select confl;
        (* Trace.share_prefix first (2 * last.id); *)
        occur confl;
+       print_certif first "/tmp/certif.log";
        (alloc first, confl)
-    | Parsing.Parse_error -> failwith ("Verit.import_trace: parsing error line "^(string_of_int !line))
+    | Parsing.Parse_error -> failwith ("Verit.import_trace: parsing error line " ^ (string_of_int !line))
 
 and print_certif c where=
   let r = ref c in
@@ -162,22 +163,22 @@ let export out_channel rt ro l ls_stmc =
 
 (* val call_verit : Btype.reify_tbl -> Op.reify_tbl -> Form.t -> (Form.t clause * Form.t) -> (int * Form.t clause) *)
 let call_verit rt ro fl root ls_smtc =
-  let (filename, outchan) = Filename.open_temp_file "verit_coq" ".smt2" in
+  let filename, outchan = Filename.open_temp_file "verit_coq" ".smt2" in
   export outchan rt ro fl ls_smtc;
   close_out outchan;
-  let logfilename = (Filename.chop_extension filename)^".vtlog" in
-  let (wname, woc) = Filename.open_temp_file "warnings_verit" ".log" in
-  let command = "veriT --proof-prune --proof-merge --proof-with-sharing --cnf-definitional --disable-ackermann --input=smtlib2 --proof="^logfilename^" "^filename ^ " 2> " ^ wname in
+  let logfilename = Filename.chop_extension filename ^ ".vtlog" in
+  let wname, woc = Filename.open_temp_file "warnings_verit" ".log" in
+  close_out woc;
+  let command = "veriT --proof-prune --proof-merge --proof-with-sharing --cnf-definitional --disable-ackermann --input=smtlib2 --proof=" ^ logfilename ^ " " ^ filename ^ " 2> " ^ wname in
   Format.eprintf "%s@." command;
   let t0 = Sys.time () in
   let exit_code = Sys.command command in
   let t1 = Sys.time () in
   Format.eprintf "Verit = %.5f@." (t1-.t0);
-  close_out woc;
   let win = open_in wname in
   try let _ = input_line win in
       close_in win; Sys.remove wname;
-      Structures.error "veriT can't prove this"
+      Structures.error "veriT returns 'unknown'"
   with End_of_file -> 
   close_in win; Sys.remove wname;
   if exit_code <> 0 then
@@ -186,7 +187,7 @@ let call_verit rt ro fl root ls_smtc =
   try
     import_trace logfilename (Some root)
   with
-  | VeritSyntax.Sat -> Structures.error "veriT can't prove this"
+  | VeritSyntax.Sat -> Structures.error "veriT found a counter-example"
 
 
 let tactic lpl =

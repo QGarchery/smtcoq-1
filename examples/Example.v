@@ -28,7 +28,7 @@ Qed.
 (*   intros x H. *)
 (*   verit H. *)
 
-Lemma find_inst :
+Lemma find_inst : 
   implb (Zeq_bool (f 2) 5) (Zeq_bool (f 3) 5).
 
 Proof.
@@ -49,49 +49,27 @@ Proof.
   verit g_k_linear f_equal_k; intro H; repeat destruct H; auto.
 Qed.
 
-Close Scope Z_scope.
-Parameter x : Z.
-Parameter y : Z.
-Parameter app763386570 :
-(forall x : Z, Zeq_bool (g (x + 1)) (g x + k)) /\ (forall x : Z, Zeq_bool (f x) k) ->
-Zeq_bool (g (x + 1)) (g x + k).
-Parameter app247866433 :
-(forall x : Z, Zeq_bool (g (x + 1)) (g x + k)) /\ (forall x : Z, Zeq_bool (f x) k) ->
-Zeq_bool (f y) k.
-Definition t_i := [! | unit_typ_eqb !] : array typ_eqb.
-Definition t_func :=
-[!Tval t_i (Typ.TZ :: nil, Typ.TZ) g;Tval t_i (nil, Typ.TZ) k;
-Tval t_i (Typ.TZ :: nil, Typ.TZ) f;Tval t_i (nil, Typ.TZ) x;
-Tval t_i (nil, Typ.TZ) y | Tval t_i (nil, Typ.Tbool) true !] : 
-array (tval t_i).
-Definition t_atom :=
-[!Aapp 3 nil;Acop CO_xH;Auop UO_Zpos 1;Abop BO_Zplus 0 2;
-Aapp 0 (3 :: nil);Aapp 0 (0 :: nil);Aapp 4 nil;Aapp 2 (6 :: nil);
-Abop BO_Zplus 5 7;Abop (BO_eq Typ.TZ) 4 8;Aapp 1 nil;
-Abop (BO_eq Typ.TZ) 7 10;Abop BO_Zplus 5 10;Abop (BO_eq Typ.TZ) 4 12;
-Abop (BO_eq Typ.TZ) 8 12;Abop (BO_eq Typ.TZ) 5 5 | 
-Acop CO_xH !] : array atom.
-Definition t_form :=
-[!Ftrue;Ffalse;Fatom 9;Fatom 11;For [!1;6 | 0 !];Fatom 13;
-For [!1;10 | 0 !];Fatom 14;Fatom 15 | Ftrue !] : array form.
-Definition t := [![!ForallInst (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 4
-        (conj g_k_linear f_equal_k) (concl:=6 :: nil) app247866433;
-    ForallInst (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 3
-      (conj g_k_linear f_equal_k) (concl:=10 :: nil) app763386570;
-    Res (t_i:=t_i) t_func t_atom t_form 2 [!3;2 | 0 !];
-    EqTr (t_i:=t_i) t_func t_atom t_form 3 4 (15 :: 11 :: nil);
-    EqCgr (t_i:=t_i) t_func t_atom t_form 5 14 (Some 17 :: Some 7 :: nil);
-    EqTr (t_i:=t_i) t_func t_atom t_form 6 16 nil;Res (t_i:=t_i) t_func t_atom
-                                                  t_form 6 
-                                                  [!5;6 | 0 !];
-    Res (t_i:=t_i) t_func t_atom t_form 6 [!3;6 | 0 !];
-    Res (t_i:=t_i) t_func t_atom t_form 3 [!6;1;4;2 | 0 !] |
-    Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !] !] |
-  [! | Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !] !] !].
 
-Definition c :=
-Certif (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 7 t 3 :
-certif (t_i:=t_i) t_func t_atom t_form.
+Close Scope Z_scope.
+
+Parameter m : Z -> Z.
+Axiom m_1 : Zeq_bool (m 1) (m 0).
+Axiom m_0 : Zeq_bool (m 0) 5.
+
+Lemma cinq_m_0 :
+  Zeq_bool (m 0) 5.
+
+Proof.
+  verit m_0.
+
+  
+(* Lemma m_1_5 : Zeq_bool (m 1) 5. *)
+
+(* Proof. *)
+(*   verit m_1 m_0. *)
+(* Qed. *)
+
+
 
 (* c = Certif nclauses t confl *)
 (* checker_b l true c = checker (PArray.make nclauses nl) None c*)
@@ -116,9 +94,6 @@ Compute (Form.check_form t_form).
 Compute (Atom.check_atom t_atom).
 Compute (Atom.wt t_i t_func t_atom).
 Compute (euf_checker (* t_atom t_form *) C.is_false s t confl).
-
-
-
 
 Definition flatten {A : Type} (trace : array (array A)) :=
 PArray.fold_left (fun l_step arr_step => l_step ++ PArray.to_list arr_step)
@@ -190,23 +165,6 @@ Proof.
   apply H.
 Qed.
   
-Close Scope Z_scope.
-
-Parameter m : Z -> Z.
-Axiom m_1 : Zeq_bool (m 1) (m 0).
-Axiom m_0 : Zeq_bool (m 0) 5.
-
-(* Lemma cinq_m_0 : *)
-(*   Zeq_bool 5 (m 0). *)
-
-(* Proof. *)
-(*   verit m_0. *)
-  
-(* Lemma m_1_5 : Zeq_bool (m 1) 5. *)
-
-(* Proof. *)
-(*   verit m_1 m_0. *)
-(* Qed. *)
   
 
 Definition t_i := [! | unit_typ_eqb !] : array typ_eqb.
