@@ -76,7 +76,6 @@ let rec import_trace filename first =
        SmtTrace.select confl;
        (* Trace.share_prefix first (2 * last.id); *)
        occur confl;
-       print_certif first "/tmp/certif.log";
        (alloc first, confl)
     | Parsing.Parse_error -> failwith ("Verit.import_trace: parsing error line " ^ (string_of_int !line))
 
@@ -90,14 +89,15 @@ and print_certif c where=
     let pos = match !r.pos with
       | None -> "None"
       | Some p -> string_of_int p in
-    Printf.fprintf out_channel "id:%i kind:%s pos:%s\n" id kind pos;
-    flush out_channel;
+    let used = !r.used in
+    Printf.fprintf out_channel "id:%i kind:%s pos:%s used:%i\n" id kind pos used;
     match !r.next with
     | None -> continue := false
     | Some n -> r := n 
-  done
+  done;
+  flush out_channel; close_out out_channel
 
-
+                               
 let clear_all () =
   SmtTrace.clear ();
   VeritSyntax.clear ()

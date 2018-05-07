@@ -150,6 +150,9 @@ let rec get_pos c =
 let eq_clause c1 c2 = (repr c1).id = (repr c2).id
 
 (* Selection of useful rules *)
+(* for select, occur and alloc we assume that the roots and only the roots are
+   at the beginning of the smtcoq certif *)
+
 let select c =
   let mark c =
     if not (isRoot c.kind) then c.used <- 1 in
@@ -181,7 +184,6 @@ let select c =
     r := p
   done
 
-
 (* Compute the number of occurence of each_clause *)
 
 let rec occur c =
@@ -192,8 +194,8 @@ let rec occur c =
 	begin occur res.rc1; occur res.rc2; List.iter occur res.rtail end;
       c.used <- c.used + 1
   | Other res ->
-      if c.used == notUsed then List.iter occur (used_clauses res);
-      c.used <- c.used + 1;
+     if c.used == notUsed then List.iter occur (used_clauses res);
+     c.used <- c.used + 1;
   | Same c' ->
     occur c';
     c.used <- c.used + 1
@@ -221,7 +223,7 @@ let alloc c =
     (* assert (rc.used > notUsed); *)
     if rc.used <= notUsed then failwith (string_of_int rc.id) else
 
-    rc.used <- rc.used - 1;
+      rc.used <- rc.used - 1;
     if rc.used = notUsed then
       free_pos := get_pos rc :: !free_pos in
 
@@ -233,24 +235,22 @@ let alloc c =
   let decr_other o =
     List.iter decr_clause (used_clauses o) in
 
-  while !r.next <> None do
-    let n = next !r in
-      assert (!r.used <> notUsed);
+  let continue = ref true in
+  while !continue do
+    assert (!r.used <> notUsed);
     if isRes !r.kind then
       decr_res (get_res !r "alloc")
     else
       decr_other (get_other !r "alloc");
     begin try match !free_pos with
-    | p::free -> free_pos := free; !r.pos <- Some p
-    | _ -> incr last_set; !r.pos <- Some !last_set
+              | p::free -> free_pos := free; !r.pos <- Some p
+              | _ -> incr last_set; !r.pos <- Some !last_set
           with _ -> failwith (to_string !r.kind)
     end;
-    r := n
+    match !r.next with
+    | None -> continue := false
+    | Some n -> r := n 
   done;
-  begin match !free_pos with
-  | p::free -> free_pos := free; !r.pos <- Some p
-  | _ -> incr last_set; !r.pos <- Some !last_set
-  end;
   !last_set
 
 
