@@ -352,7 +352,7 @@ Inductive step :=
   Local Open Scope list_scope.
 
   Local Notation check_flatten t_atom t_form := (check_flatten t_form (check_hatom t_atom) (check_neg_hatom t_atom)) (only parsing).
-  About S.set_resolve.
+
   Definition step_checker s (st:step) :=
     match st with
       | Res pos res => S.set_resolve s pos res

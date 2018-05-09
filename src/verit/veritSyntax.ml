@@ -19,7 +19,7 @@ open SmtAtom
 open SmtForm
 open SmtCertif
 open SmtTrace
-       
+
 (*** Syntax of veriT proof traces ***)
 
 exception Sat
@@ -28,7 +28,7 @@ type typ = | Inpu | Deep | True | Fals | Andp | Andn | Orp | Orn | Xorp1 | Xorp2
 
 (* About equality *)
 
-                      
+
 let get_eq l =
   match Form.pform l with
   | Fatom ha ->
@@ -206,12 +206,12 @@ let clear_clauses () = Hashtbl.clear clauses
 
 let ref_cl : (int, int) Hashtbl.t = Hashtbl.create 17
 
-let add_ref i j = 
+let add_ref i j =
   Hashtbl.add ref_cl i j
 
 let get_ref i =
   Hashtbl.find ref_cl i
-                      
+
 let rec fins_lemma ids_params =
   match ids_params with
     [] -> raise Not_found
@@ -221,7 +221,7 @@ let rec fins_lemma ids_params =
               | _ -> fins_lemma t
 
 let rec find_remove_lemma lemma ids_params =
-  let eq_lemma h = eq_clause lemma (get_clause h) in 
+  let eq_lemma h = eq_clause lemma (get_clause h) in
   list_find_remove eq_lemma ids_params
 
 
@@ -232,8 +232,18 @@ let merge ids_params =
     rest
   with Not_found -> ids_params
 
-                   
-let mk_clause (id,typ,value,ids_params) =
+let is_forall (t : SmtAtom.Form.t) : bool =
+  match Form.pform t with
+    Fatom ha ->
+     let value = Atom.atom ha in
+     (match value with
+        Auop (UO_Fora _, _) -> true
+      | _ -> false)
+  | _ -> false
+
+let mk_clause =
+  let first_root = ref true in
+  fun (id,typ,value,ids_params) ->
   let kind =
     match typ with
     | Tpbr ->
@@ -248,7 +258,7 @@ let mk_clause (id,typ,value,ids_params) =
        | _ -> failwith "unexpected form of tmp_qnt_tidy" end
     | Fins ->
        begin match value, ids_params with
-        | [inst], [ref_th] when Form.is_pos inst->
+        | [inst], [ref_th] when Form.is_pos inst ->
            Other (Forall_inst (get_clause ref_th, inst))
         | _ -> failwith "unexpected form of forall_inst" end
     | Or ->
@@ -270,7 +280,12 @@ let mk_clause (id,typ,value,ids_params) =
         | [] -> assert false)
 
     (* Roots *)
-    | Inpu -> Root
+    | Inpu -> if !first_root
+              then (first_root := false; Root)
+              else begin match value with
+                   | [thm] when not (is_forall thm) -> 
+                      Other (Hole ([], [thm]))
+                   | _ -> Root end
     (* Cnf conversion *)
     | True -> Other SmtCertif.True
     | Fals -> Other False

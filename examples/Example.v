@@ -20,6 +20,7 @@ Lemma apply_lemma :
 
 Proof.
   verit f_is_constant. auto.
+  reflexivity.
 Qed.
 
 (* Lemma f_const_is_eq_val_0 : *)

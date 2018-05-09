@@ -91,8 +91,6 @@ Section Checker_correct.
   Hypothesis Ht3 : Valuation.wf
           (Form.interp_state_var (Atom.interp_form_hatom t_i t_func t_atom)
              t_form).
-
-    
   
   Lemma interp_check_clause c1 : forall c2,
     forallb2 (fun i j => i == j) c1 c2 -> C.interp rho c1 = C.interp rho c2.
@@ -106,11 +104,10 @@ Section Checker_correct.
     forallb2 (fun i j => i == j) (S.get s cid) (S.sort_uniq c) ->
     interp_uf rho c.
   Proof.
-    intro H. rewrite <- interp_equiv, <- S.sort_uniq_correct; auto.
+    intro H.
+    rewrite <- interp_equiv, <- S.sort_uniq_correct; auto.
     rewrite <- (interp_check_clause _ _ H). now apply Hs.
   Qed.
-
-
 
   Lemma valid_check_forall_inst pos (lemma : Prop) :
     lemma ->

@@ -220,10 +220,8 @@ let alloc c =
 
   let decr_clause c =
     let rc = repr c in
-    (* assert (rc.used > notUsed); *)
-    if rc.used <= notUsed then failwith (string_of_int rc.id) else
-
-      rc.used <- rc.used - 1;
+    assert (rc.used > notUsed);
+    rc.used <- rc.used - 1;
     if rc.used = notUsed then
       free_pos := get_pos rc :: !free_pos in
 

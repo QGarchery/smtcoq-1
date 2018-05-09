@@ -482,13 +482,6 @@ module Atom =
 
     let rec to_smt fmt h = to_smt_atom fmt (atom h)
                                        
-    and to_smt_args fmt = function
-      | [] -> ()
-      | (s, t)::rest -> Format.fprintf fmt "(%s " s;
-                        Btype.to_smt fmt t;
-                        Format.fprintf fmt ") ";
-                        to_smt_args fmt rest
-                                       
     and to_smt_atom fmt = function
       | Acop _ as a -> to_smt_int fmt (compute_int a)
       | Auop (UO_Zopp,h) ->
@@ -516,6 +509,13 @@ module Atom =
           Format.fprintf fmt ")"
         )
                  
+    and to_smt_args fmt = function
+      | [] -> ()
+      | (s, t)::rest -> Format.fprintf fmt "(%s " s;
+                        Btype.to_smt fmt t;
+                        Format.fprintf fmt ") ";
+                        to_smt_args fmt rest
+                                       
     and to_smt_bop fmt op h1 h2 =
       let s = match op with
         | BO_Zplus -> "+"
