@@ -274,7 +274,7 @@ let qf_holes c =
   while !continue do
     if isRoot !r.kind
     then begin match !r.value with
-         | Some [t] when not (SmtAtom.Form.is_true t) ->
+         | Some [t] (* when not (SmtAtom.Form.is_pos t) *) ->
             !r.kind <- Other (Hole ([], [t]))
          | _ -> () end;
     match !r.next with

@@ -29,6 +29,7 @@ val select : 'a SmtCertif.clause -> unit
 val occur : 'a SmtCertif.clause -> unit
 val alloc : 'a SmtCertif.clause -> int
 val naive_alloc : 'a SmtCertif.clause -> int
+val qf_holes : SmtAtom.Form.t SmtCertif.clause -> unit
 val build_certif : 'a SmtCertif.clause -> 'b SmtCertif.clause -> int
 val to_coq :
   ('a -> Term.constr) ->

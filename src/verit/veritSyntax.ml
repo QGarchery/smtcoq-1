@@ -233,8 +233,6 @@ let merge ids_params =
   with Not_found -> ids_params
 
 
-let first_root = ref true
-
 let mk_clause (id,typ,value,ids_params) =
   let kind =
     match typ with
@@ -272,12 +270,7 @@ let mk_clause (id,typ,value,ids_params) =
         | [] -> assert false)
 
     (* Roots *)
-    | Inpu -> if !first_root
-              then (first_root := false; Root)
-              else begin match value with
-                   | [thm] when not (is_forall thm) -> 
-                      Other (Hole ([], [thm]))
-                   | _ -> Root end
+    | Inpu -> Root
     (* Cnf conversion *)
     | True -> Other SmtCertif.True
     | Fals -> Other False
@@ -417,7 +410,6 @@ let hlets : (string, atom_form_lit) Hashtbl.t = Hashtbl.create 17
 
 
 let clear () =
-  first_root := true;
   clear_clauses ();
   clear_solver ();
   clear_btypes ();

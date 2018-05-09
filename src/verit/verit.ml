@@ -78,7 +78,7 @@ let rec import_trace filename first =
        (* Trace.share_prefix first (2 * last.id); *)
        occur confl;
        let last_set = alloc first in
-       qf_holes first;
+       (* qf_holes first; *)
        (last_set, confl)
     | Parsing.Parse_error -> failwith ("Verit.import_trace: parsing error line " ^ (string_of_int !line))
 
