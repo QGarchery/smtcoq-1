@@ -268,6 +268,19 @@ let naive_alloc c =
   incr last_set; !r.pos <- Some !last_set;
   !last_set
 
+let qf_holes c =
+  let r = ref c in
+  let continue = ref true in
+  while !continue do
+    if isRoot !r.kind
+    then begin match !r.value with
+         | Some [t] when not (SmtAtom.Form.is_true t) ->
+            !r.kind <- Other (Hole ([], [t]))
+         | _ -> () end;
+    match !r.next with
+    | None -> continue := false
+    | Some n -> r := n 
+  done
 
 (* This function is currently inlined in verit/verit.ml and zchaff/zchaff.ml *)
 

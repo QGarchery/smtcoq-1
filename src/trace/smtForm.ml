@@ -61,7 +61,8 @@ module type FORM =
       val to_lit : t -> int
       val index : t -> int
       val pform : t -> pform
-
+      val is_true : t -> bool
+                         
       val neg : t -> t
       val is_pos : t -> bool
       val is_neg : t -> bool
@@ -113,6 +114,7 @@ module Make (Atom:ATOM) =
       | Neg of hpform
 
     let pform_true = Fapp (Ftrue,[||])
+
     let pform_false = Fapp (Ffalse,[||])
 
     let equal h1 h2 =
@@ -144,6 +146,11 @@ module Make (Atom:ATOM) =
     let pform = function
       | Pos hp -> hp.hval
       | Neg hp -> hp.hval
+
+    let is_true t =
+      match pform t with
+      | Fapp (Ftrue, [||]) -> true
+      | _ -> false
 
     let rec to_smt atom_to_smt fmt = function
       | Pos hp -> to_smt_pform atom_to_smt fmt hp.hval

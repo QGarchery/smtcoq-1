@@ -57,7 +57,8 @@ module type FORM =
       val to_lit : t -> int
       val index : t -> int
       val pform : t -> pform
-
+      val is_true : t -> bool
+                         
       val neg : t -> t
       val is_pos : t -> bool
       val is_neg : t -> bool

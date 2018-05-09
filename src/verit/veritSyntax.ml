@@ -232,18 +232,10 @@ let merge ids_params =
     rest
   with Not_found -> ids_params
 
-let is_forall (t : SmtAtom.Form.t) : bool =
-  match Form.pform t with
-    Fatom ha ->
-     let value = Atom.atom ha in
-     (match value with
-        Auop (UO_Fora _, _) -> true
-      | _ -> false)
-  | _ -> false
 
-let mk_clause =
-  let first_root = ref true in
-  fun (id,typ,value,ids_params) ->
+let first_root = ref true
+
+let mk_clause (id,typ,value,ids_params) =
   let kind =
     match typ with
     | Tpbr ->
@@ -425,6 +417,7 @@ let hlets : (string, atom_form_lit) Hashtbl.t = Hashtbl.create 17
 
 
 let clear () =
+  first_root := true;
   clear_clauses ();
   clear_solver ();
   clear_btypes ();

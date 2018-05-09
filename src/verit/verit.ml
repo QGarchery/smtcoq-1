@@ -73,10 +73,13 @@ let rec import_trace filename first =
             )
          | _,_ -> aux in
        let confl = VeritSyntax.get_clause !confl_num in
+       print_certif first "/tmp/certif_parsing.log";
        SmtTrace.select confl;
        (* Trace.share_prefix first (2 * last.id); *)
        occur confl;
-       (alloc first, confl)
+       let last_set = alloc first in
+       qf_holes first;
+       (last_set, confl)
     | Parsing.Parse_error -> failwith ("Verit.import_trace: parsing error line " ^ (string_of_int !line))
 
 and print_certif c where=

@@ -10,7 +10,28 @@ Local Open Scope int63_scope.
 
 Open Scope Z_scope.
 
+Lemma sym_zeq_bool x y :
+  Zeq_bool x y <-> Zeq_bool y x.
 
+Proof.
+  unfold is_true. rewrite <- ? Zeq_is_eq_bool.
+  split; intro H; now rewrite H.
+Qed.
+
+Parameter mult4 : Z -> Z.
+Axiom mult4_0 : Zeq_bool (mult4 0) 0.
+Axiom mult4_Sn : forall n, Zeq_bool (mult4 (n+1)) (mult4 n + 4).
+
+Lemma mult4_1 : Zeq_bool (mult4 1) 4.
+
+Proof.
+  verit mult4_0 mult4_Sn; auto.
+  intros [H1 H2].
+  apply H2.
+  apply sym_zeq_bool.
+  apply mult4_0.
+Qed.  
+  
 Parameter f : Z -> Z.
 Axiom f_is_constant : forall x y, Zeq_bool (f x) (f y).
 
