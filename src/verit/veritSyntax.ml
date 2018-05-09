@@ -232,8 +232,10 @@ let merge ids_params =
     rest
   with Not_found -> ids_params
 
-
-let mk_clause (id,typ,value,ids_params) =
+let first_root = ref true 
+let clauses_to_add = ref []
+                     
+let rec mk_clause (id,typ,value,ids_params) =
   let kind =
     match typ with
     | Tpbr ->
@@ -270,7 +272,10 @@ let mk_clause (id,typ,value,ids_params) =
         | [] -> assert false)
 
     (* Roots *)
-    | Inpu -> Root
+    | Inpu -> if !first_root
+              then first_root := false
+              else clauses_to_add := (id, value) :: !clauses_to_add;
+              Root
     (* Cnf conversion *)
     | True -> Other SmtCertif.True
     | Fals -> Other False
@@ -408,13 +413,17 @@ let rf = Form.create ()
 
 let hlets : (string, atom_form_lit) Hashtbl.t = Hashtbl.create 17
 
-
+let clear_mk_clause () = 
+  first_root := true;
+  clauses_to_add := [];
+  Hashtbl.clear ref_cl
+                
 let clear () =
+  clear_mk_clause ();
   clear_clauses ();
   clear_solver ();
   clear_btypes ();
   clear_funs ();
-  Hashtbl.clear ref_cl;
   Atom.clear ra;
   Form.clear rf;
   Hashtbl.clear hlets
