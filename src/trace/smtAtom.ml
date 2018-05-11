@@ -713,7 +713,7 @@ module Atom =
       let forall_args =
         let fmap (n, _, t) = string_of_name n, Btype.of_coq rt t in
         List.map fmap rel_context in
-      if List.length args = 0
+      if List.length forall_args = 0
       then ha
       else {index = 0; hval = Auop (UO_Fora forall_args, ha)}
 

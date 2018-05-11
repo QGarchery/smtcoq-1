@@ -38,11 +38,9 @@ Axiom mult4_Sn : forall n, Zeq_bool (mult4 (n+1)) (mult4 n + 4).
 Lemma mult4_1 : Zeq_bool (mult4 1) 4.
 
 Proof.
-  verit mult4_0 mult4_Sn; auto.
+  verit mult4_0 mult4_Sn.
   intros [H1 H2].
   apply H2.
-  apply sym_zeq_bool.
-  apply mult4_0.
 Qed.  
   
 

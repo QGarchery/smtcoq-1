@@ -172,18 +172,19 @@ let call_verit rt ro fl root ls_smtc =
   let t1 = Sys.time () in
   Format.eprintf "Verit = %.5f@." (t1-.t0);
   let win = open_in wname in
-  if exit_code <> 0 then
-    failwith ("Verit.call_verit: command " ^ command ^
-	        " exited with code " ^ string_of_int exit_code);
-  try let _ = input_line win in
-      close_in win; Sys.remove wname;
-      Structures.error "veriT returns 'unknown'"
-  with End_of_file -> 
-  close_in win; Sys.remove wname;
-  try
-    import_trace logfilename (Some root)
-  with
-  | VeritSyntax.Sat -> Structures.error "veriT found a counter-example"
+  try 
+    if exit_code <> 0 then
+      failwith ("Verit.call_verit: command " ^ command ^
+	          " exited with code " ^ string_of_int exit_code);
+
+    try let _ = input_line win in
+        Structures.error "veriT returns 'unknown'"
+    with End_of_file -> 
+          try
+            import_trace logfilename (Some root)
+          with
+          | VeritSyntax.Sat -> Structures.error "veriT found a counter-example"
+  with x -> close_in win; Sys.remove wname; raise x
 
 
 let tactic lpl =
