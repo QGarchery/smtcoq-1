@@ -18,6 +18,19 @@ Proof.
   split; intro H; now rewrite H.
 Qed.
 
+Parameter f : Z -> Z.
+Axiom f_is_constant : forall x, Zeq_bool (f x) (f 2%Z).
+
+
+Lemma apply_lemma :
+  forall y,
+  Zeq_bool (f y) (f 2%Z).
+
+Proof.
+  verit f_is_constant. auto.
+Qed.
+
+
 Parameter mult4 : Z -> Z.
 Axiom mult4_0 : Zeq_bool (mult4 0) 0.
 Axiom mult4_Sn : forall n, Zeq_bool (mult4 (n+1)) (mult4 n + 4).
@@ -32,17 +45,7 @@ Proof.
   apply mult4_0.
 Qed.  
   
-Parameter f : Z -> Z.
-Axiom f_is_constant : forall x y, Zeq_bool (f x) (f y).
 
-Lemma apply_lemma :
-  forall y,
-  Zeq_bool (f y) (f 5%Z).
-
-Proof.
-  verit f_is_constant. auto.
-  reflexivity.
-Qed.
 
 (* Lemma f_const_is_eq_val_0 : *)
 (*   forall x, (forall f : Z -> Z, forall a b, Zeq_bool (f a) (f b)) -> *)

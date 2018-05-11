@@ -379,7 +379,7 @@ let core_tactic call_solver rt ro ra rf lpl env sigma concl =
   
   let lcpl = List.map (fun pl -> Lazy.force (gen_constant [["Top"]] (Names.string_of_id pl))) lpl in
   let lclemma = List.map (Retyping.get_type_of env sigma) lcpl in
-  let ls_smtc = List.map (Atom.of_coq_lemma rt ro ra env sigma) lclemma in
+  let ls_smtc = List.map (Form.of_coq ~declare:false (Atom.of_coq_lemma rt ro ra env sigma) rf) lclemma in
   let l_pl = List.combine lclemma lcpl in
 
   let (body_cast, body_nocast, cuts) =

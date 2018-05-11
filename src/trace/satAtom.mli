@@ -34,8 +34,9 @@ module Form :
     type reify = SmtForm.Make(Atom).reify
     val create : unit -> reify
     val clear : reify -> unit
-    val get : reify -> pform -> t
-    val of_coq : (Term.constr -> hatom) -> reify -> Term.constr -> t
+    val get : ?declare:bool -> reify -> pform -> t
+    val of_coq : ?declare:bool -> (Term.constr -> hatom) ->
+                 reify -> Term.constr -> t
     val flatten : reify -> t -> t
     val to_coq : t -> Term.constr
     val pform_tbl : reify -> pform array

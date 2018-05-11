@@ -128,7 +128,7 @@ let checker fsmt fproof = SmtCommands.checker (import_all fsmt fproof)
 (** Given a Coq formula build the proof                                       *)
 (******************************************************************************)
 
-let export out_channel rt ro l ls_stmc =
+let export out_channel rt ro ls_stmc =
   let fmt = Format.formatter_of_out_channel out_channel in
   Format.fprintf fmt "(set-logic UFLIA)@.";
 
@@ -150,24 +150,17 @@ let export out_channel rt ro l ls_stmc =
     Format.fprintf fmt ")@."
   ) (Op.to_list ro);
 
-
-  Format.fprintf fmt "(assert ";
-  Form.to_smt Atom.to_smt fmt l;
-  Format.fprintf fmt ")\n";
-
   List.iter (fun u -> Format.fprintf fmt "(assert ";
-                      Atom.to_smt fmt u;
-                      Format.fprintf fmt ")\n"
-    ) ls_stmc;
+                      Form.to_smt Atom.to_smt fmt u;
+                      Format.fprintf fmt ")\n") ls_stmc;
 
-  (* Format.fprintf fmt "(assert (forall ((x Int) (y Int)) (= (op_0 x) (op_0 y))))\n"; *)
   Format.fprintf fmt "(check-sat)\n";
   Format.fprintf fmt "(exit)@."
 
 (* val call_verit : Btype.reify_tbl -> Op.reify_tbl -> Form.t -> (Form.t clause * Form.t) -> (int * Form.t clause) *)
 let call_verit rt ro fl root ls_smtc =
   let filename, outchan = Filename.open_temp_file "verit_coq" ".smt2" in
-  export outchan rt ro fl ls_smtc;
+  export outchan rt ro (fl::ls_smtc);
   close_out outchan;
   let logfilename = Filename.chop_extension filename ^ ".vtlog" in
   let wname, woc = Filename.open_temp_file "warnings_verit" ".log" in
@@ -179,14 +172,14 @@ let call_verit rt ro fl root ls_smtc =
   let t1 = Sys.time () in
   Format.eprintf "Verit = %.5f@." (t1-.t0);
   let win = open_in wname in
+  if exit_code <> 0 then
+    failwith ("Verit.call_verit: command " ^ command ^
+	        " exited with code " ^ string_of_int exit_code);
   try let _ = input_line win in
       close_in win; Sys.remove wname;
       Structures.error "veriT returns 'unknown'"
   with End_of_file -> 
   close_in win; Sys.remove wname;
-  if exit_code <> 0 then
-    failwith ("Verit.call_verit: command " ^ command ^
-	        " exited with code " ^ string_of_int exit_code);
   try
     import_trace logfilename (Some root)
   with

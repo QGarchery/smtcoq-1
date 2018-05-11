@@ -199,11 +199,11 @@ module Op =
       | UO_Zneg -> Lazy.force cUO_Zneg
       | UO_Zopp -> Lazy.force cUO_Zopp
       | _ -> failwith "smtAtom.u_to_coq"
-                              
+
     let u_type_of = function 
       | UO_xO | UO_xI -> Tpositive
       | UO_Zpos | UO_Zneg | UO_Zopp -> TZ
-      | _ -> assert false
+      | UO_Fora _ -> failwith "Op.u_type_of on forall"
 
     let u_type_arg = function 
       | UO_xO | UO_xI | UO_Zpos | UO_Zneg -> Tpositive
@@ -304,12 +304,6 @@ module Op =
       reify.count <- reify.count + 1;
       res
 
-    let new_op =
-      let u = ref 0 in
-      fun a  -> u := !u - 1; {index = !u;
-                              hval = a}
-
-        
     let of_coq reify op =
       Hashtbl.find reify.tbl op
 
@@ -546,8 +540,8 @@ module Atom =
       match a with
       | Acop _ -> ()
       | Auop(op,h) -> 
-	  if not (Btype.equal (Op.u_type_arg op) (type_of h)) then
-	    raise (NotWellTyped a)
+	 if not (Btype.equal (Op.u_type_arg op) (type_of h))
+         then raise (NotWellTyped a)
       | Abop(op,h1,h2) ->
 	  let (t1,t2) = Op.b_type_args op in
 	  if not (Btype.equal t1 (type_of h1) && Btype.equal t2 (type_of h2))
@@ -581,12 +575,6 @@ module Atom =
       HashAtom.add reify.tbl a res;
       reify.count <- reify.count + 1;
       res
-
-    let other_hash : 'a -> 'a gen_hashed =
-      let u = ref 0 in
-      fun a  -> u := !u - 1; {index = !u;
-                              hval = a}
-
         
     let get ?declare:(decl=true) reify a =
       if decl
@@ -654,23 +642,23 @@ module Atom =
       let rec mk_hatom h =
         let c, args = Term.decompose_app h in
 	match get_cst c with
-        | CCxH -> mk_cop decl CO_xH
-        | CCZ0 -> mk_cop decl CO_Z0
-        | CCxO -> mk_uop decl UO_xO args
-        | CCxI -> mk_uop decl UO_xI args
-        | CCZpos -> mk_uop decl UO_Zpos args
-        | CCZneg -> mk_uop decl UO_Zneg args
-        | CCZopp -> mk_uop decl UO_Zopp args
-        | CCZplus -> mk_bop decl BO_Zplus args
-        | CCZminus -> mk_bop decl BO_Zminus args
-        | CCZmult -> mk_bop decl BO_Zmult args
-        | CCZlt -> mk_bop decl BO_Zlt args
-        | CCZle -> mk_bop decl BO_Zle args
-        | CCZge -> mk_bop decl BO_Zge args
-        | CCZgt -> mk_bop decl BO_Zgt args
-        | CCeqb -> mk_bop decl (BO_eq Tbool) args
-        | CCeqbP -> mk_bop decl (BO_eq Tpositive) args
-        | CCeqbZ -> mk_bop decl (BO_eq TZ) args
+        | CCxH -> mk_cop CO_xH
+        | CCZ0 -> mk_cop CO_Z0
+        | CCxO -> mk_uop UO_xO args
+        | CCxI -> mk_uop UO_xI args
+        | CCZpos -> mk_uop UO_Zpos args
+        | CCZneg -> mk_uop UO_Zneg args
+        | CCZopp -> mk_uop UO_Zopp args
+        | CCZplus -> mk_bop BO_Zplus args
+        | CCZminus -> mk_bop BO_Zminus args
+        | CCZmult -> mk_bop BO_Zmult args
+        | CCZlt -> mk_bop BO_Zlt args
+        | CCZle -> mk_bop BO_Zle args
+        | CCZge -> mk_bop BO_Zge args
+        | CCZgt -> mk_bop BO_Zgt args
+        | CCeqb -> mk_bop (BO_eq Tbool) args
+        | CCeqbP -> mk_bop (BO_eq Tpositive) args
+        | CCeqbZ -> mk_bop (BO_eq TZ) args
 	| CCunknown ->
            let u =
              try Retyping.get_type_of env sigma h
@@ -678,22 +666,22 @@ module Atom =
                let stdp = Printer.pr_constr_env env h in
                let s = Pp.string_of_ppcmds stdp in
                failwith s in
-           mk_unknown decl c args u
+           mk_unknown c args u
 
-      and mk_cop decl op = get ~declare:decl reify (Acop op)
+      and mk_cop op = get ~declare:decl reify (Acop op)
                       
-      and mk_uop decl op = function
+      and mk_uop op = function
         | [a] -> let h = mk_hatom a in get ~declare:decl reify (Auop (op,h))
         | _ -> failwith "unexpected number of arguments for mk_uop"
                       
-      and mk_bop decl op = function
+      and mk_bop op = function
         | [a1;a2] ->
            let h1 = mk_hatom a1 in
            let h2 = mk_hatom a2 in
            get ~declare:decl reify (Abop (op,h1,h2))
         | _ -> failwith "unexpected number of arguments for mk_bop"
                       
-      and mk_unknown decl c args ty =
+      and mk_unknown c args ty =
         let hargs = Array.of_list (List.map mk_hatom args) in
         let op = if Term.isRel c
                  then let i = Term.destRel c in
@@ -714,7 +702,7 @@ module Atom =
         get ~declare:decl reify (Aapp (op,hargs)) in
       mk_hatom c
 
-    let of_coq_lemma rt ro ra env sigma clemma = 
+    let of_coq_lemma rt ro ra env sigma clemma =
       let (rel_context, is_true_concl) = Term.decompose_prod_assum clemma in
       let env_lemma = List.fold_right Environ.push_rel rel_context env in
       let f, args = Term.decompose_app is_true_concl in
@@ -722,12 +710,14 @@ module Atom =
         | [a] when (Term.eq_constr f (Lazy.force cis_true)) -> a
         | _ -> failwith ("SmtAtom.of_coq_lemma : axiom form unsupported") in
       let ha = of_coq ~declare:false rt ro ra env_lemma sigma concl in
-      let args = let fmap (n, _, t) = string_of_name n, Btype.of_coq rt t in
-                     List.map fmap rel_context in
+      let forall_args =
+        let fmap (n, _, t) = string_of_name n, Btype.of_coq rt t in
+        List.map fmap rel_context in
       if List.length args = 0
       then ha
-      else {index = 0; hval = Auop (UO_Fora args, ha)}
-                   
+      else {index = 0; hval = Auop (UO_Fora forall_args, ha)}
+
+               
     let to_coq h = mkInt h.index
 
     let a_to_coq a =

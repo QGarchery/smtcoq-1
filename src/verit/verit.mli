@@ -22,12 +22,12 @@ val checker : string -> string -> unit
 val export :
   out_channel ->
   SmtAtom.Btype.reify_tbl -> SmtAtom.Op.reify_tbl ->
-  SmtAtom.Form.t -> SmtAtom.hatom list -> unit
+  SmtAtom.Form.t list -> unit
 val call_verit :
   SmtAtom.Btype.reify_tbl ->
   SmtAtom.Op.reify_tbl ->
   SmtAtom.Form.t ->
   SmtAtom.Form.t SmtCertif.clause * SmtAtom.Form.t ->
-  SmtAtom.hatom list ->
+  SmtAtom.Form.t list ->
   int * SmtAtom.Form.t SmtCertif.clause
 val tactic : Names.identifier list -> Proof_type.tactic

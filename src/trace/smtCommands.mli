@@ -76,7 +76,7 @@ val core_tactic :
    SmtAtom.Op.reify_tbl ->
    SmtAtom.Form.t ->
    SmtAtom.Form.t SmtCertif.clause * SmtAtom.Form.t ->
-   SmtAtom.Atom.t list -> int * SmtAtom.Form.t SmtCertif.clause) ->
+   SmtAtom.Form.t list -> int * SmtAtom.Form.t SmtCertif.clause) ->
   SmtAtom.Btype.reify_tbl ->
   SmtAtom.Op.reify_tbl ->
   SmtAtom.Atom.reify_tbl ->
@@ -88,7 +88,7 @@ val tactic :
    SmtAtom.Op.reify_tbl ->
    SmtAtom.Form.t ->
    SmtAtom.Form.t SmtCertif.clause * SmtAtom.Form.t ->
-   SmtAtom.Atom.t list -> int * SmtAtom.Form.t SmtCertif.clause) ->
+   SmtAtom.Form.t list -> int * SmtAtom.Form.t SmtCertif.clause) ->
   SmtAtom.Btype.reify_tbl ->
   SmtAtom.Op.reify_tbl ->
   SmtAtom.Atom.reify_tbl -> SmtAtom.Form.reify ->

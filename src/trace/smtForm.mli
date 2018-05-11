@@ -69,10 +69,11 @@ module type FORM =
       type reify 
       val create : unit -> reify
       val clear : reify -> unit
-      val get : reify -> pform -> t
+      val get : ?declare:bool -> reify -> pform -> t
       
       (** Given a coq term, build the corresponding formula *)  
-      val of_coq : (Term.constr -> hatom) -> reify -> Term.constr -> t
+      val of_coq : ?declare:bool -> (Term.constr -> hatom) ->
+                   reify -> Term.constr -> t
    
       (** Flattening of [Fand] and [For], removing of [Fnot2]  *)
       val flatten : reify -> t -> t
