@@ -662,10 +662,9 @@ module Atom =
 	| CCunknown ->
            let u =
              try Retyping.get_type_of env sigma h
-             with Not_found ->
-               let stdp = Printer.pr_constr_env env h in
-               let s = Pp.string_of_ppcmds stdp in
-               failwith s in
+             with Not_found -> Printer.pr_constr_env env h
+                               |> Pp.string_of_ppcmds
+                               |> failwith in
            mk_unknown c args u
 
       and mk_cop op = get ~declare:decl reify (Acop op)
@@ -703,13 +702,9 @@ module Atom =
       mk_hatom c
 
     let of_coq_lemma rt ro ra env sigma clemma =
-      let (rel_context, is_true_concl) = Term.decompose_prod_assum clemma in
+      let (rel_context, qf_lemma) = Term.decompose_prod_assum clemma in
       let env_lemma = List.fold_right Environ.push_rel rel_context env in
-      let f, args = Term.decompose_app is_true_concl in
-      let concl = match args with
-        | [a] when (Term.eq_constr f (Lazy.force cis_true)) -> a
-        | _ -> failwith ("SmtAtom.of_coq_lemma : axiom form unsupported") in
-      let ha = of_coq ~declare:false rt ro ra env_lemma sigma concl in
+      let ha = of_coq ~declare:false rt ro ra env_lemma sigma qf_lemma in
       let forall_args =
         let fmap (n, _, t) = string_of_name n, Btype.of_coq rt t in
         List.map fmap rel_context in

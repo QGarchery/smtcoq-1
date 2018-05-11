@@ -30,7 +30,6 @@ module type ATOM =
 
   end
 
-
 type fop =
   | Ftrue
   | Ffalse
@@ -53,51 +52,55 @@ module type FORM =
     type t
     type pform = (hatom, t) gen_pform
 
-      val pform_true : pform
-      val pform_false : pform
+    val pform_true : pform
+    val pform_false : pform
 
-      val equal : t -> t -> bool
+    val equal : t -> t -> bool
 
-      val to_lit : t -> int
-      val index : t -> int
-      val pform : t -> pform
+    val to_lit : t -> int
+    val index : t -> int
+    val pform : t -> pform
 
-                         
-      val neg : t -> t
-      val is_pos : t -> bool
-      val is_neg : t -> bool
+                       
+    val neg : t -> t
+    val is_pos : t -> bool
+    val is_neg : t -> bool
 
-      val to_smt : (Format.formatter -> hatom -> unit) -> Format.formatter -> t -> unit
+    val to_smt : (Format.formatter -> hatom -> unit) -> Format.formatter ->
+                 t -> unit
 
-      (* Building formula from positive formula *)
-      exception NotWellTyped of pform
-      type reify
-      val create : unit -> reify
-      val clear : reify -> unit
-      val get : ?declare:bool -> reify -> pform -> t
+    (* Building formula from positive formula *)
+    exception NotWellTyped of pform
+    type reify
+    val create : unit -> reify
+    val clear : reify -> unit
+    val get : ?declare:bool -> reify -> pform -> t
 
-      (** Give a coq term, build the corresponding formula *)
-      val of_coq : ?declare:bool -> (Term.constr -> hatom) -> reify -> Term.constr -> t
+    (** Give a coq term, build the corresponding formula *)
+    val of_coq : ?declare:bool -> (Term.constr -> hatom) ->
+                 reify -> Term.constr -> t
 
-      (** Flattening of [Fand] and [For], removing of [Fnot2]  *)
-      val flatten : reify -> t -> t
-                                    
-      (** Producing Coq terms *)
+    val of_coq_lemma : (Term.constr -> hatom) -> reify -> Term.constr -> t
+                                           
+    (** Flattening of [Fand] and [For], removing of [Fnot2]  *)
+    val flatten : reify -> t -> t
+                                  
+    (** Producing Coq terms *)
 
-      val to_coq : t -> Term.constr
+    val to_coq : t -> Term.constr
 
-      val pform_tbl : reify -> pform array
+    val pform_tbl : reify -> pform array
 
-      val to_array : reify -> 'a -> (pform -> 'a) -> int * 'a array
-      val interp_tbl : reify -> Term.constr * Term.constr
-      val nvars : reify -> int
-      (** Producing a Coq term corresponding to the interpretation
+    val to_array : reify -> 'a -> (pform -> 'a) -> int * 'a array
+    val interp_tbl : reify -> Term.constr * Term.constr
+    val nvars : reify -> int
+    (** Producing a Coq term corresponding to the interpretation
           of a formula *)
-      (** [interp_atom] map [hatom] to coq term, it is better if it produce
+    (** [interp_atom] map [hatom] to coq term, it is better if it produce
           shared terms. *)
-      val interp_to_coq :
-	  (hatom -> Term.constr) -> (int, Term.constr) Hashtbl.t ->
-	    t -> Term.constr
+    val interp_to_coq :
+      (hatom -> Term.constr) -> (int, Term.constr) Hashtbl.t ->
+      t -> Term.constr
   end
 
 module Make (Atom:ATOM) =
@@ -150,9 +153,9 @@ module Make (Atom:ATOM) =
     let rec to_smt atom_to_smt fmt = function
       | Pos hp -> to_smt_pform atom_to_smt fmt hp.hval
       | Neg hp ->
-        Format.fprintf fmt "(not ";
-        to_smt_pform atom_to_smt fmt hp.hval;
-        Format.fprintf fmt ")"
+         Format.fprintf fmt "(not ";
+         to_smt_pform atom_to_smt fmt hp.hval;
+         Format.fprintf fmt ")"
 
     and to_smt_pform atom_to_smt fmt = function
       | Fatom a -> atom_to_smt fmt a
@@ -184,29 +187,29 @@ module Make (Atom:ATOM) =
 	  match pf1, pf2 with
 	  | Fatom ha1, Fatom ha2 -> Atom.equal ha1 ha2
 	  | Fapp(op1,args1), Fapp(op2,args2) ->
-	      op1 = op2 &&
-	      Array.length args1 == Array.length args2 &&
-	      (try
-		for i = 0 to Array.length args1 - 1 do
-		  if not (equal args1.(i) args2.(i)) then raise Not_found
-		done;
-		true
-	      with Not_found -> false)
+	     op1 = op2 &&
+	       Array.length args1 == Array.length args2 &&
+	         (try
+		    for i = 0 to Array.length args1 - 1 do
+		      if not (equal args1.(i) args2.(i)) then raise Not_found
+		    done;
+		    true
+	          with Not_found -> false)
 	  | _, _ -> false
 
 	let hash pf =
 	  match pf with
 	  | Fatom ha1 -> Atom.index ha1 * 2
 	  | Fapp(op, args) ->
-	      let hash_args =
-		match Array.length args with
-		| 0 -> 0
-		| 1 -> to_lit args.(0)
-		| 2 -> (to_lit args.(1)) lsl 2 + to_lit args.(0)
-		| _ ->
-		    (to_lit args.(2)) lsl 4 + (to_lit args.(1)) lsl 2 +
-		      to_lit args.(0) in
-	      (hash_args * 10 + Hashtbl.hash op) * 2 + 1
+	     let hash_args =
+	       match Array.length args with
+	       | 0 -> 0
+	       | 1 -> to_lit args.(0)
+	       | 2 -> (to_lit args.(1)) lsl 2 + to_lit args.(0)
+	       | _ ->
+		  (to_lit args.(2)) lsl 4 + (to_lit args.(1)) lsl 2 +
+		    to_lit args.(0) in
+	     (hash_args * 10 + Hashtbl.hash op) * 2 + 1
 
       end
 
@@ -214,7 +217,7 @@ module Make (Atom:ATOM) =
 
     type reify = {
 	mutable count : int;
-                tbl : t HashForm.t
+        tbl : t HashForm.t
       }
 
     exception NotWellTyped of pform
@@ -223,16 +226,16 @@ module Make (Atom:ATOM) =
       match pf with
       | Fatom ha ->  if not (Atom.is_bool_type ha) then raise (NotWellTyped pf)
       | Fapp (op, args) ->
-	  match op with
-	  | Ftrue | Ffalse ->
-	      if Array.length args <> 0 then raise (NotWellTyped pf)
-	  | Fnot2 _ ->
-	      if Array.length args <> 1 then raise (NotWellTyped pf)
-	  | Fand | For -> ()
-	  | Fxor | Fimp | Fiff ->
-	      if Array.length args <> 2 then raise (NotWellTyped pf)
-	  | Fite ->
-	      if Array.length args <> 3 then raise (NotWellTyped pf)
+	 match op with
+	 | Ftrue | Ffalse ->
+	    if Array.length args <> 0 then raise (NotWellTyped pf)
+	 | Fnot2 _ ->
+	    if Array.length args <> 1 then raise (NotWellTyped pf)
+	 | Fand | For -> ()
+	 | Fxor | Fimp | Fiff ->
+	    if Array.length args <> 2 then raise (NotWellTyped pf)
+	 | Fite ->
+	    if Array.length args <> 3 then raise (NotWellTyped pf)
 
     let declare reify pf =
       check pf;
@@ -288,9 +291,9 @@ module Make (Atom:ATOM) =
       let add (c1,c2) = ConstrHashtbl.add tbl (Lazy.force c1) c2 in
       List.iter add
 	[
-	 ctrue,CCtrue; cfalse,CCfalse;
-	 candb,CCand; corb,CCor; cxorb,CCxor; cimplb,CCimp; cnegb,CCnot;
-         ceqb,CCiff; cifb,CCifb ];
+	  ctrue,CCtrue; cfalse,CCfalse;
+	  candb,CCand; corb,CCor; cxorb,CCxor; cimplb,CCimp; cnegb,CCnot;
+          ceqb,CCiff; cifb,CCifb ];
       tbl
 
     let op_tbl = lazy (op_tbl ())
@@ -312,73 +315,80 @@ module Make (Atom:ATOM) =
         | CCxor -> op2 (fun l -> Fapp(Fxor,l)) args
         | CCiff -> op2 (fun l -> Fapp(Fiff,l)) args
         | CCimp ->
-          (match args with
+           (match args with
             | [b1;b2] ->
-              let l1 = mk_hform b1 in
-              let l2 = mk_hform b2 in
-              get ~declare:decl reify (Fapp (Fimp, [|l1;l2|]))
+               let l1 = mk_hform b1 in
+               let l2 = mk_hform b2 in
+               get ~declare:decl reify (Fapp (Fimp, [|l1;l2|]))
             | _ -> Structures.error "SmtForm.Form.of_coq: wrong number of arguments for implb")
         | CCifb ->
-            (* We should also be able to reify if then else *)
-            begin match args with
-            | [b1;b2;b3] ->
-        	let l1 = mk_hform b1 in
-        	let l2 = mk_hform b2 in
-        	let l3 = mk_hform b3 in
-        	get ~declare:decl reify (Fapp (Fite, [|l1;l2;l3|]))
-            | _ -> Structures.error "SmtForm.Form.of_coq: wrong number of arguments for ifb"
-            end
+           (* We should also be able to reify if then else *)
+           begin match args with
+           | [b1;b2;b3] ->
+              let l1 = mk_hform b1 in
+              let l2 = mk_hform b2 in
+              let l3 = mk_hform b3 in
+              get ~declare:decl reify (Fapp (Fite, [|l1;l2;l3|]))
+           | _ -> Structures.error "SmtForm.Form.of_coq: wrong number of arguments for ifb"
+           end
         | _ ->
-            let a = atom_of_coq h in
-            get ~declare:decl reify (Fatom a)
-      
+           let a = atom_of_coq h in
+           get ~declare:decl reify (Fatom a)
+               
       and op2 f args =
         match args with
         | [b1;b2] ->
-            let l1 = mk_hform b1 in
-            let l2 = mk_hform b2 in
-            get ~declare:decl reify (f [|l1; l2|])
+           let l1 = mk_hform b1 in
+           let l2 = mk_hform b2 in
+           get ~declare:decl reify (f [|l1; l2|])
         | _ ->  Structures.error "SmtForm.Form.of_coq: wrong number of arguments"
-      
+                                 
       and mk_fnot i args =
         match args with
         | [t] ->
-            let c,args = Term.decompose_app t in
-            if Term.eq_constr c (Lazy.force cnegb) then
-              mk_fnot (i+1) args
-            else
-              let q,r = i lsr 1 , i land 1 in
-              let l = mk_hform t in
-              let l = if r = 0 then l else neg l in
-              if q = 0 then l
-              else get ~declare:decl reify (Fapp(Fnot2 q, [|l|]))
+           let c,args = Term.decompose_app t in
+           if Term.eq_constr c (Lazy.force cnegb) then
+             mk_fnot (i+1) args
+           else
+             let q,r = i lsr 1 , i land 1 in
+             let l = mk_hform t in
+             let l = if r = 0 then l else neg l in
+             if q = 0 then l
+             else get ~declare:decl reify (Fapp(Fnot2 q, [|l|]))
         | _ -> Structures.error "SmtForm.Form.mk_hform: wrong number of arguments for negb"
-      
+                                
       and mk_fand acc args =
         match args with
         | [t1;t2] ->
-            let l2 = mk_hform t2 in
-            let c, args = Term.decompose_app t1 in
-            if Term.eq_constr c (Lazy.force candb) then
-              mk_fand (l2::acc) args
-            else
-              let l1 = mk_hform t1 in
-              get ~declare:decl reify (Fapp(Fand, Array.of_list  (l1::l2::acc)))
+           let l2 = mk_hform t2 in
+           let c, args = Term.decompose_app t1 in
+           if Term.eq_constr c (Lazy.force candb) then
+             mk_fand (l2::acc) args
+           else
+             let l1 = mk_hform t1 in
+             get ~declare:decl reify (Fapp(Fand, Array.of_list  (l1::l2::acc)))
         | _ -> Structures.error "SmtForm.Form.mk_hform: wrong number of arguments for andb"
-      
+                                
       and mk_for acc args =
         match args with
         | [t1;t2] ->
-            let l2 = mk_hform t2 in
-            let c, args = Term.decompose_app t1 in
-            if Term.eq_constr c (Lazy.force corb) then
-              mk_for (l2::acc) args
-            else
-              let l1 = mk_hform t1 in
-              get ~declare:decl reify (Fapp(For, Array.of_list (l1::l2::acc)))
+           let l2 = mk_hform t2 in
+           let c, args = Term.decompose_app t1 in
+           if Term.eq_constr c (Lazy.force corb) then
+             mk_for (l2::acc) args
+           else
+             let l1 = mk_hform t1 in
+             get ~declare:decl reify (Fapp(For, Array.of_list (l1::l2::acc)))
         | _ -> Structures.error "SmtForm.Form.mk_hform: wrong number of arguments for orb" in
 
       mk_hform c
+               
+    let of_coq_lemma atom_of_coq reify c =
+      let f, args = Term.decompose_app c in
+      let concl = match args with
+        | [a] when (Term.eq_constr f (Lazy.force cis_true)) -> a
+        | _ -> failwith ("SmtAtom.of_coq_lemma : axiom form unsupported") in
+      of_coq ~declare:false atom_of_coq reify concl
 
                
     (** Flattening of Fand and For, removing of Fnot2 *)
@@ -392,30 +402,30 @@ module Make (Atom:ATOM) =
       | Fapp(Fand, args) -> set_sign f (flatten_and reify [] (Array.to_list args))
       | Fapp(For,args) -> set_sign f (flatten_or reify [] (Array.to_list args))
       | Fapp(op,args) ->
-          (* TODO change Fimp into For ? *)
-	  set_sign f (get reify (Fapp(op, Array.map (flatten reify) args)))
+         (* TODO change Fimp into For ? *)
+	 set_sign f (get reify (Fapp(op, Array.map (flatten reify) args)))
 
     and flatten_and reify acc args =
       match args with
       | [] -> get reify (Fapp(Fand, Array.of_list (List.rev acc)))
       | a::args ->
-	  (* TODO change (not For) and (not Fimp) into Fand *)
-	  match pform a with
-	  | Fapp(Fand, args') when is_pos a ->
-	      let args = Array.fold_right (fun a args -> a::args) args' args in
-	      flatten_and reify acc args
-	  | _ -> flatten_and reify (flatten reify a :: acc) args
+	 (* TODO change (not For) and (not Fimp) into Fand *)
+	 match pform a with
+	 | Fapp(Fand, args') when is_pos a ->
+	    let args = Array.fold_right (fun a args -> a::args) args' args in
+	    flatten_and reify acc args
+	 | _ -> flatten_and reify (flatten reify a :: acc) args
 
     and flatten_or reify acc args =
       (* TODO change Fimp and (not Fand) into For *)
       match args with
       | [] -> get reify (Fapp(For, Array.of_list (List.rev acc)))
       | a::args ->
-	  match pform a with
-	  | Fapp(For, args') when is_pos a ->
-	      let args = Array.fold_right (fun a args -> a::args) args' args in
-	      flatten_or reify acc args
-	  | _ -> flatten_or reify (flatten reify a :: acc) args
+	 match pform a with
+	 | Fapp(For, args') when is_pos a ->
+	    let args = Array.fold_right (fun a args -> a::args) args' args in
+	    flatten_or reify acc args
+	 | _ -> flatten_or reify (flatten reify a :: acc) args
 
     (** Producing Coq terms *)
 
@@ -429,16 +439,16 @@ module Make (Atom:ATOM) =
     let pf_to_coq = function
       | Fatom a -> mklApp cFatom [|mkInt (Atom.index a)|]
       | Fapp(op,args) ->
-        match op with
-	| Ftrue -> Lazy.force cFtrue
-	| Ffalse -> Lazy.force cFfalse
-	| Fand -> mklApp cFand [| args_to_coq args|]
-	| For  -> mklApp cFor [| args_to_coq args|]
-	| Fimp -> mklApp cFimp [| args_to_coq args|]
-	| Fxor -> mklApp cFxor (Array.map to_coq args)
-	| Fiff -> mklApp cFiff (Array.map to_coq args)
-	| Fite -> mklApp cFite (Array.map to_coq args)
-	| Fnot2 i -> mklApp cFnot2 [|mkInt i; to_coq args.(0)|]
+         match op with
+	 | Ftrue -> Lazy.force cFtrue
+	 | Ffalse -> Lazy.force cFfalse
+	 | Fand -> mklApp cFand [| args_to_coq args|]
+	 | For  -> mklApp cFor [| args_to_coq args|]
+	 | Fimp -> mklApp cFimp [| args_to_coq args|]
+	 | Fxor -> mklApp cFxor (Array.map to_coq args)
+	 | Fiff -> mklApp cFiff (Array.map to_coq args)
+	 | Fite -> mklApp cFite (Array.map to_coq args)
+	 | Fnot2 i -> mklApp cFnot2 [|mkInt i; to_coq args.(0)|]
 
     let pform_tbl reify =
       let t = Array.make reify.count pform_true in
@@ -471,44 +481,45 @@ module Make (Atom:ATOM) =
 	let l = to_lit f in
 	try Hashtbl.find form_tbl l
 	with Not_found ->
-	  if is_neg f then
-	    let pc = interp_form (neg f) in
-	    let nc = mklApp cnegb [|pc|] in
-	    Hashtbl.add form_tbl l nc;
-	    nc
-	  else
-	    let pc =
-	      match pform f with
-	      | Fatom a -> interp_atom a
-	      | Fapp(op, args) ->
-		  match op with
-		  | Ftrue -> Lazy.force ctrue
-		  | Ffalse -> Lazy.force cfalse
-		  | Fand -> interp_args candb args
-		  | For -> interp_args corb args
-		  | Fxor -> interp_args cxorb args
-		  | Fimp ->
-		     let r = ref (interp_form args.(Array.length args - 1)) in
-		     for i = Array.length args - 2 downto 0 do
-		       r := mklApp cimplb [|interp_form args.(i); !r|]
-		     done;
-		     !r
-		  | Fiff -> interp_args ceqb args
-		  | Fite ->
-		      (* TODO with if here *)
-		      mklApp cifb (Array.map interp_form args)
-		  | Fnot2 n ->
-		      let r = ref (interp_form args.(0)) in
-		      for i = 1 to n do	r := mklApp cnegb [|!r|] done;
-		      !r in
-	    Hashtbl.add form_tbl l pc;
-	    pc
+	      if is_neg f then
+	        let pc = interp_form (neg f) in
+	        let nc = mklApp cnegb [|pc|] in
+	        Hashtbl.add form_tbl l nc;
+	        nc
+	      else
+	        let pc =
+	          match pform f with
+	          | Fatom a -> interp_atom a
+	          | Fapp(op, args) ->
+		     match op with
+		     | Ftrue -> Lazy.force ctrue
+		     | Ffalse -> Lazy.force cfalse
+		     | Fand -> interp_args candb args
+		     | For -> interp_args corb args
+		     | Fxor -> interp_args cxorb args
+		     | Fimp ->
+		        let r = ref (interp_form args.(Array.length args - 1)) in
+		        for i = Array.length args - 2 downto 0 do
+		          r := mklApp cimplb [|interp_form args.(i); !r|]
+		        done;
+		        !r
+		     | Fiff -> interp_args ceqb args
+		     | Fite ->
+		        (* TODO with if here *)
+		        mklApp cifb (Array.map interp_form args)
+		     | Fnot2 n ->
+		        let r = ref (interp_form args.(0)) in
+		        for i = 1 to n do
+                          r := mklApp cnegb [|!r|]
+                        done;
+		        !r in
+	        Hashtbl.add form_tbl l pc;
+	        pc
       and interp_args op args =
 	let r = ref (interp_form args.(0)) in
-	for i = 1 to Array.length args - 1 do
-	  r := mklApp op [|!r;interp_form args.(i)|]
-	done;
-	!r in
-      interp_form f
-
-  end
+	  for i = 1 to Array.length args - 1 do
+	    r := mklApp op [|!r;interp_form args.(i)|]
+	  done;
+	  !r in
+        interp_form f
+end
