@@ -384,7 +384,7 @@ let core_tactic call_solver rt ro ra rf lpl env sigma concl =
   List.iter (fun t -> Printer.pr_constr t |> Pp.string_of_ppcmds |> Printf.fprintf oc "%s\n") lclemma;
   close_out oc ;
   
-  let ls_smtc = List.map (Form.of_coq_lemma (Atom.of_coq_lemma rt ro ra env sigma) rf) lclemma in
+  let ls_smtc = List.map (Form.of_coq_lemma (Atom.of_coq ~declare:false rt ro ra env sigma) rf) lclemma in
   let l_pl = List.combine lclemma lcpl in
 
   let (body_cast, body_nocast, cuts) =
@@ -410,7 +410,6 @@ let core_tactic call_solver rt ro ra rf lpl env sigma concl =
       (Structures.tclTHEN
          (Structures.set_evars_tac body_nocast)
          (Structures.vm_cast_no_check body_cast))
-
 
       
 let tactic call_solver rt ro ra rf lpl =

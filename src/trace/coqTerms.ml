@@ -199,3 +199,7 @@ let vm_cast_true t =
   Term.mkCast(eq_refl_true (),
 	      Term.VMcast, 
 	      SmtMisc.mklApp ceq [|Lazy.force cbool; t; Lazy.force ctrue|])
+
+
+
+                             

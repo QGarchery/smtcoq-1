@@ -40,7 +40,8 @@ type fop =
   | Fiff
   | Fite
   | Fnot2 of int
-
+  (* | Fforall of (string * btype) list *)
+               
 type ('a,'f) gen_pform =
   | Fatom of 'a
   | Fapp of fop * 'f array
@@ -387,7 +388,7 @@ module Make (Atom:ATOM) =
       let f, args = Term.decompose_app c in
       let concl = match args with
         | [a] when (Term.eq_constr f (Lazy.force cis_true)) -> a
-        | _ -> failwith ("SmtAtom.of_coq_lemma : axiom form unsupported") in
+        | _ -> failwith ("SmtForm.of_coq_lemma : axiom form unsupported") in
       of_coq ~declare:false atom_of_coq reify concl
 
                

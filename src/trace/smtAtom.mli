@@ -13,44 +13,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-
-type indexed_type
-
-val dummy_indexed_type: int -> indexed_type
-val indexed_type_index : indexed_type -> int
-
-type btype =
-  | TZ
-  | Tbool
-  | Tpositive
-  | Tindex of indexed_type
-
-module Btype : 
-    sig
-      
-      val equal : btype -> btype -> bool
-	  
-      val to_coq : btype -> Term.constr
-
-      val to_smt : Format.formatter -> btype -> unit
-
-      type reify_tbl
-	  
-      val create : unit -> reify_tbl
-
-      val declare : reify_tbl -> Term.constr -> Term.constr -> btype
-
-      val of_coq : reify_tbl -> Term.constr -> btype
-
-      val interp_tbl : reify_tbl -> Term.constr
-
-      val to_list : reify_tbl -> (int * indexed_type) list
-
-      val interp_to_coq : reify_tbl -> btype -> Term.constr
-
-      val get_cuts : reify_tbl -> (Structures.names_id_t * Term.types) list
-
-    end
+open SmtBtype
 
 (** Operators *)
 
@@ -64,8 +27,6 @@ type uop =
    | UO_Zpos 
    | UO_Zneg
    | UO_Zopp
-   | UO_Fora of (string * btype) list
-
 
 type bop = 
    | BO_Zplus
@@ -147,11 +108,11 @@ module Atom :
                                        
       (** Given a coq term, build the corresponding atom *)
       val of_coq :
-        ?declare:bool -> Btype.reify_tbl -> Op.reify_tbl ->
+        ?declare:bool -> SmtBtype.reify_tbl -> Op.reify_tbl ->
         reify_tbl -> Environ.env -> Evd.evar_map -> Term.constr -> t
 
       val of_coq_lemma:
-        Btype.reify_tbl -> Op.reify_tbl -> reify_tbl ->
+        SmtBtype.reify_tbl -> Op.reify_tbl -> reify_tbl ->
         Environ.env -> Evd.evar_map -> Term.constr -> t
                                                                                 
       val to_coq : hatom -> Term.constr
@@ -186,5 +147,5 @@ module Trace : sig
 end
 
 
-val make_t_i : Btype.reify_tbl -> Term.constr
+val make_t_i : SmtBtype.reify_tbl -> Term.constr
 val make_t_func : Op.reify_tbl -> Term.constr -> Term.constr
