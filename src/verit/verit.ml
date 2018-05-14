@@ -24,7 +24,7 @@ open SmtForm
 open SmtCertif
 open SmtTrace
 open SmtAtom
-
+open SmtBtype
 
 let debug = false
 
@@ -108,7 +108,7 @@ let clear_all () =
 
 let import_all fsmt fproof =
   clear_all ();
-  let rt = Btype.create () in
+  let rt = SmtBtype.create () in
   let ro = Op.create () in
   let ra = VeritSyntax.ra in
   let rf = VeritSyntax.rf in
@@ -137,16 +137,16 @@ let export out_channel rt ro ls_stmc =
     let s = "Tindex_"^(string_of_int i) in
     VeritSyntax.add_btype s (Tindex t);
     Format.fprintf fmt "(declare-sort %s 0)@." s
-  ) (Btype.to_list rt);
+  ) (SmtBtype.to_list rt);
 
   List.iter (fun (i,dom,cod,op) ->
     let s = "op_"^(string_of_int i) in
     VeritSyntax.add_fun s op;
     Format.fprintf fmt "(declare-fun %s (" s;
     let is_first = ref true in
-    Array.iter (fun t -> if !is_first then is_first := false else Format.fprintf fmt " "; Btype.to_smt fmt t) dom;
+    Array.iter (fun t -> if !is_first then is_first := false else Format.fprintf fmt " "; SmtBtype.to_smt fmt t) dom;
     Format.fprintf fmt ") ";
-    Btype.to_smt fmt cod;
+    SmtBtype.to_smt fmt cod;
     Format.fprintf fmt ")@."
   ) (Op.to_list ro);
 
@@ -189,7 +189,7 @@ let call_verit rt ro fl root ls_smtc =
 
 let tactic lpl =
   clear_all ();
-  let rt = Btype.create () in
+  let rt = SmtBtype.create () in
   let ro = Op.create () in
   let ra = VeritSyntax.ra in
   let rf = VeritSyntax.rf in

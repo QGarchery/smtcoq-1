@@ -111,10 +111,6 @@ module Atom :
         ?declare:bool -> SmtBtype.reify_tbl -> Op.reify_tbl ->
         reify_tbl -> Environ.env -> Evd.evar_map -> Term.constr -> t
 
-      val of_coq_lemma:
-        SmtBtype.reify_tbl -> Op.reify_tbl -> reify_tbl ->
-        Environ.env -> Evd.evar_map -> Term.constr -> t
-                                                                                
       val to_coq : hatom -> Term.constr
 
       val to_array : reify_tbl -> 'a -> (atom -> 'a) -> 'a array

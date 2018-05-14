@@ -402,7 +402,7 @@ let core_tactic call_solver rt ro ra rf lpl env sigma concl =
       let max_id_confl = make_proof call_solver rt ro rf l ls_smtc in
       build_body_eq rt ro ra rf (Form.to_coq l1) (Form.to_coq l2) (Form.to_coq l) max_id_confl l_pl in
 
-  let cuts = (Btype.get_cuts rt)@cuts in
+  let cuts = (SmtBtype.get_cuts rt)@cuts in
 
   List.fold_right (fun (eqn, eqt) tac ->
       Structures.tclTHENLAST (Structures.assert_before (Names.Name eqn) eqt) tac

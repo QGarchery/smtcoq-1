@@ -7,6 +7,7 @@ S ../../native-coq/tactics
 S ../../native-coq/library
 S ../../native-coq/parsing
 S ../../native-coq/lib
+S ../../native-coq/proofs
 
 B src/**
 B ../../native-coq/interp
@@ -17,6 +18,7 @@ B ../../native-coq/tactics
 B ../../native-coq/library
 B ../../native-coq/parsing
 B ../../native-coq/lib
+B ../../native-coq/proofs
 
 PKG str unix num
 FLG -rectypes
