@@ -364,12 +364,6 @@ module Atom =
         Format.fprintf fmt "(- ";
         to_smt fmt h;
         Format.fprintf fmt ")"
-      (* | Auop (UO_Fora lsb, h) ->
-       *    Format.fprintf fmt "(forall (";
-       *    to_smt_args fmt lsb;
-       *    Format.fprintf fmt ") ";
-       *    to_smt fmt h;
-       *    Format.fprintf fmt ")" *)
       | Auop _ as a -> to_smt_int fmt (compute_int a)
       | Abop (op,h1,h2) -> to_smt_bop fmt op h1 h2
       | Anop (op,a) -> to_smt_nop fmt op a
@@ -385,12 +379,6 @@ module Atom =
           Format.fprintf fmt ")"
         )
                  
-    and to_smt_args fmt = function
-      | [] -> ()
-      | (s, t)::rest -> Format.fprintf fmt "(%s " s;
-                        SmtBtype.to_smt fmt t;
-                        Format.fprintf fmt ") ";
-                        to_smt_args fmt rest
                                        
     and to_smt_bop fmt op h1 h2 =
       let s = match op with
@@ -513,11 +501,6 @@ module Atom =
 
     let op_tbl = lazy (op_tbl ())
 
-
-    let string_of_name = function
-        Names.Name id -> Names.string_of_id id
-      | _ -> failwith "unnamed rel"
-
     let of_coq ?declare:(decl=true) rt ro reify env sigma c =
       let op_tbl = Lazy.force op_tbl in
       let get_cst c =
@@ -584,16 +567,6 @@ module Atom =
         get ~declare:decl reify (Aapp (op,hargs)) in
       mk_hatom c
 
-    (* let of_coq_lemma rt ro ra env sigma clemma =
-     *   let (rel_context, qf_lemma) = Term.decompose_prod_assum clemma in
-     *   let env_lemma = List.fold_right Environ.push_rel rel_context env in
-     *   let ha = of_coq ~declare:false rt ro ra env_lemma sigma qf_lemma in
-     *   let forall_args =
-     *     let fmap (n, _, t) = string_of_name n, SmtBtype.of_coq rt t in
-     *     List.map fmap rel_context in
-     *   if List.length forall_args = 0
-     *   then ha
-     *   else {index = 0; hval = Auop (UO_Fora forall_args, ha)} *)
 
                
     let to_coq h = mkInt h.index

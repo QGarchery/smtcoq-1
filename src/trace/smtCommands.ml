@@ -373,7 +373,24 @@ let make_proof call_solver rt ro rf l ls_smtc=
   let root = SmtTrace.mkRootV [l] in
   call_solver rt ro fl (root,l) ls_smtc
 
+let of_coq_lemma rt ro ra rf env sigma clemma = 
+  let (rel_context, qf_lemma) = Term.decompose_prod_assum clemma in
+  let env_lemma = List.fold_right Environ.push_rel rel_context env in
+  let forall_args =
+    let fmap (n, _, t) = string_of_name n, SmtBtype.of_coq rt t in
+    List.map fmap rel_context in
+  let f, args = Term.decompose_app qf_lemma in
+  let core_f = match args with
+    | [a] when (Term.eq_constr f (Lazy.force cis_true)) -> a
+    | _ -> failwith ("SmtForm.of_coq_lemma : axiom form unsupported") in
+  let core_smt = Form.of_coq ~declare:false
+                   (Atom.of_coq ~declare:false rt ro ra env_lemma sigma)
+                   rf core_f in
+  match forall_args with
+    [] -> core_smt
+  | _ -> Form.get ~declare:false rf (Fapp (Fforall forall_args, [|core_smt|]))
 
+              
 let core_tactic call_solver rt ro ra rf lpl env sigma concl =
   let a, b = get_arguments concl in
   
@@ -384,7 +401,7 @@ let core_tactic call_solver rt ro ra rf lpl env sigma concl =
   List.iter (fun t -> Printer.pr_constr t |> Pp.string_of_ppcmds |> Printf.fprintf oc "%s\n") lclemma;
   close_out oc ;
   
-  let ls_smtc = List.map (Form.of_coq_lemma (Atom.of_coq ~declare:false rt ro ra env sigma) rf) lclemma in
+  let ls_smtc = List.map (of_coq_lemma rt ro ra rf env sigma) lclemma in
   let l_pl = List.combine lclemma lcpl in
 
   let (body_cast, body_nocast, cuts) =

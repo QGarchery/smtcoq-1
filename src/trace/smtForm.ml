@@ -17,7 +17,9 @@
 open Util
 open SmtMisc
 open CoqTerms
+open SmtBtype
 
+       
 module type ATOM =
   sig
 
@@ -40,7 +42,7 @@ type fop =
   | Fiff
   | Fite
   | Fnot2 of int
-  (* | Fforall of (string * btype) list *)
+  | Fforall of (string * btype) list 
                
 type ('a,'f) gen_pform =
   | Fatom of 'a
@@ -81,7 +83,6 @@ module type FORM =
     val of_coq : ?declare:bool -> (Term.constr -> hatom) ->
                  reify -> Term.constr -> t
 
-    val of_coq_lemma : (Term.constr -> hatom) -> reify -> Term.constr -> t
                                            
     (** Flattening of [Fand] and [For], removing of [Fnot2]  *)
     val flatten : reify -> t -> t
@@ -163,21 +164,31 @@ module Make (Atom:ATOM) =
       | Fapp (op,args) -> to_smt_op atom_to_smt fmt op args
 
     and to_smt_op atom_to_smt fmt op args =
-      let s = match op with
-        | Ftrue -> "true"
-        | Ffalse -> "false"
-        | Fand -> "and"
-        | For -> "or"
-        | Fxor -> "xor"
-        | Fimp -> "=>"
-        | Fiff -> "="
-        | Fite -> "ite"
-        | Fnot2 _ -> "" in
+      let print_op = function
+        | Ftrue -> Format.fprintf fmt "true"
+        | Ffalse -> Format.fprintf fmt "false"
+        | Fand -> Format.fprintf fmt "and"
+        | For -> Format.fprintf fmt "or"
+        | Fxor -> Format.fprintf fmt "xor"
+        | Fimp -> Format.fprintf fmt "=>"
+        | Fiff -> Format.fprintf fmt "="
+        | Fite -> Format.fprintf fmt "ite"
+        | Fnot2 _ -> Format.fprintf fmt ""
+        | Fforall l -> Format.fprintf fmt "forall (";
+                       to_smt_args fmt l;
+                       Format.fprintf fmt ")" in
       let (s1,s2) = if Array.length args = 0 then ("","") else ("(",")") in
-      Format.fprintf fmt "%s%s" s1 s;
+      Format.fprintf fmt "%s" s1;
+      print_op op;
       Array.iter (fun h -> Format.fprintf fmt " "; to_smt atom_to_smt fmt h) args;
       Format.fprintf fmt "%s" s2
 
+    and to_smt_args fmt = function
+      | [] -> ()
+      | (s, t)::rest -> Format.fprintf fmt "(%s " s;
+                        SmtBtype.to_smt fmt t;
+                        Format.fprintf fmt ") ";
+                        to_smt_args fmt rest
 
     module HashedForm =
       struct
@@ -237,6 +248,7 @@ module Make (Atom:ATOM) =
 	    if Array.length args <> 2 then raise (NotWellTyped pf)
 	 | Fite ->
 	    if Array.length args <> 3 then raise (NotWellTyped pf)
+         | Fforall _ -> failwith "check on forall"
 
     let declare reify pf =
       check pf;
@@ -384,12 +396,7 @@ module Make (Atom:ATOM) =
 
       mk_hform c
                
-    let of_coq_lemma atom_of_coq reify c =
-      let f, args = Term.decompose_app c in
-      let concl = match args with
-        | [a] when (Term.eq_constr f (Lazy.force cis_true)) -> a
-        | _ -> failwith ("SmtForm.of_coq_lemma : axiom form unsupported") in
-      of_coq ~declare:false atom_of_coq reify concl
+
 
                
     (** Flattening of Fand and For, removing of Fnot2 *)
@@ -450,6 +457,7 @@ module Make (Atom:ATOM) =
 	 | Fiff -> mklApp cFiff (Array.map to_coq args)
 	 | Fite -> mklApp cFite (Array.map to_coq args)
 	 | Fnot2 i -> mklApp cFnot2 [|mkInt i; to_coq args.(0)|]
+         | Fforall _ -> failwith "pf_to_coq on forall"
 
     let pform_tbl reify =
       let t = Array.make reify.count pform_true in
@@ -513,7 +521,8 @@ module Make (Atom:ATOM) =
 		        for i = 1 to n do
                           r := mklApp cnegb [|!r|]
                         done;
-		        !r in
+                        !r                     
+                     |Fforall _ -> failwith "interp_to_coq on forall" in
 	        Hashtbl.add form_tbl l pc;
 	        pc
       and interp_args op args =

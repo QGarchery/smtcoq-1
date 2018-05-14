@@ -35,13 +35,13 @@ Parameter mult4 : Z -> Z.
 Axiom mult4_0 : Zeq_bool (mult4 0) 0.
 Axiom mult4_Sn : forall n, Zeq_bool (mult4 (n+1)) (mult4 n + 4).
 
-(* Lemma mult4_1 : Zeq_bool (mult4 1) 4. *)
+Lemma mult4_1 : Zeq_bool (mult4 1) 4.
 
-(* Proof. *)
-(*   verit mult4_0 mult4_Sn. *)
-(*   intros [H1 H2]. *)
-(*   apply H2. *)
-(* Qed. *)
+Proof.
+  verit mult4_0 mult4_Sn.
+  intros [H1 H2].
+  apply H2.
+Qed.
 
 Close Scope Z_scope.
 Parameter app1024435598 :
