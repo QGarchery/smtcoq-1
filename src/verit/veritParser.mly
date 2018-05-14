@@ -201,7 +201,7 @@ term:   /* returns a SmtAtom.Form.pform or a SmtAtom.hatom */
   | VAR args                                               { Atom (Atom.get ra (Aapp (get_fun $1, Array.of_list $2))) }
 
   /* Both */
-  | EQ name_term name_term                                 { let t1 = $2 in let t2 = $3 in match t1,t2 with | Atom h1, Atom h2 when (match Atom.type_of h1 with | Tbool -> false | _ -> true) -> Atom (Atom.mk_eq ra (Atom.type_of h1) h1 h2) | _, _ -> Form (Fapp (Fiff, [|lit_of_atom_form_lit rf t1; lit_of_atom_form_lit rf t2|])) }
+  | EQ name_term name_term                                 { let t1 = $2 in let t2 = $3 in match t1,t2 with | Atom h1, Atom h2 when (match Atom.type_of h1 with | SmtBtype.Tbool -> false | _ -> true) -> Atom (Atom.mk_eq ra (Atom.type_of h1) h1 h2) | _, _ -> Form (Fapp (Fiff, [|lit_of_atom_form_lit rf t1; lit_of_atom_form_lit rf t2|])) }
   | EQ nlit lit                                            { let t1 = $2 in let t2 = $3 in Form (Fapp (Fiff, [|t1; t2|])) }
   | EQ name_term nlit                                      { let t1 = $2 in let t2 = $3 in Form (Fapp (Fiff, [|lit_of_atom_form_lit rf t1; t2|])) }	
   | LET LPAR bindlist RPAR name_term                       { $3; $5 }

@@ -133,7 +133,7 @@ module Op =
       | TZ -> Lazy.force ceqbZ
       | Tbool -> Lazy.force ceqb
       | Tpositive -> Lazy.force ceqbP
-      | Tindex i -> mklApp cte_eqb [|i.hval|]
+      | Tindex i -> mklApp cte_eqb [|indexed_type_hval i|]
 
     let interp_bop = function
       | BO_Zplus -> Lazy.force cadd
@@ -158,7 +158,7 @@ module Op =
       | TZ -> Lazy.force cZ
       | Tbool -> Lazy.force cbool
       | Tpositive -> Lazy.force cpositive
-      | Tindex i -> mklApp cte_carrier [|i.hval|]
+      | Tindex i -> mklApp cte_carrier [|indexed_type_hval i|]
 
     let interp_nop = function
       | NO_distinct ty -> mklApp cdistinct [|interp_distinct ty;interp_eq ty|]

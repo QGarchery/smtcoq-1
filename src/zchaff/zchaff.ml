@@ -49,7 +49,8 @@ let string_of_op = function
   | Fiff -> "iff"
   | Fite -> "ite"
   | Fnot2 i -> "!"^string_of_int i
-
+  | Fforall _ -> assert false
+                                 
 let rec pp_form fmt l =
   Format.fprintf fmt "(#%i %a %a)" (Form.to_lit l)pp_sign l pp_pform (Form.pform l)
 and pp_sign fmt l =

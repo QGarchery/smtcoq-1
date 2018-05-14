@@ -212,6 +212,7 @@ MLIFILES:=lia/lia.mli\
   trace/smtCommands.mli\
   trace/smtCnf.mli\
   trace/smtCertif.mli\
+  trace/smtBtype.mli\
   trace/smtAtom.mli\
   trace/satAtom.mli\
   trace/coqTerms.mli\

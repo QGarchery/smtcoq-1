@@ -83,8 +83,10 @@ let rec import_trace filename first =
     | Parsing.Parse_error -> failwith ("Verit.import_trace: parsing error line " ^ (string_of_int !line))
 
 and print_certif c where=
+
   let r = ref c in
   let out_channel = open_out where in
+  let fmt = Format.formatter_of_out_channel out_channel in
   let continue = ref true in
   while !continue do
     let kind = to_string (!r.kind) in
@@ -93,12 +95,17 @@ and print_certif c where=
       | None -> "None"
       | Some p -> string_of_int p in
     let used = !r.used in
-    Printf.fprintf out_channel "id:%i kind:%s pos:%s used:%i\n" id kind pos used;
+    Format.fprintf fmt "id:%i kind:%s pos:%s used:%i value:" id kind pos used;
+    begin match !r.value with
+      None -> Format.fprintf fmt "None"
+    | Some l -> List.iter (fun f -> Form.to_smt Atom.to_smt fmt f;
+                                    Format.fprintf fmt " ") l end;
+    Format.fprintf fmt "\n";
     match !r.next with
     | None -> continue := false
     | Some n -> r := n 
   done;
-  flush out_channel; close_out out_channel
+  Format.fprintf fmt "@."; close_out out_channel
 
                                
 let clear_all () =

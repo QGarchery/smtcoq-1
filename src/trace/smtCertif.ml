@@ -148,13 +148,13 @@ let used_clauses r =
 let to_string r =
   match r with
             Root -> "Root"
-          | Same c -> "Same (" ^ string_of_int (c.id) ^ ")"
+          | Same c -> "Same(" ^ string_of_int (c.id) ^ ")"
           | Res r ->
              let id1 = string_of_int r.rc1.id in
              let id2 = string_of_int r.rc2.id in
              let rest_ids = List.fold_left (fun str rc -> str ^ "; " ^ string_of_int rc.id) "" r.rtail in
              "Res [" ^ id1 ^ "; " ^ id2 ^ rest_ids ^"]"
-          | Other x -> "Other (" ^
+          | Other x -> "Other(" ^
                          begin match x with
                          | True -> "True"
                          | False -> "False"
