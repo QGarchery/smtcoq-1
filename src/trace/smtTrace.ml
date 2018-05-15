@@ -150,15 +150,16 @@ let rec get_pos c =
 let eq_clause c1 c2 = (repr c1).id = (repr c2).id
 
 
-                                              
+(* <add_scertifs> adds the clauses <to_add> after the roots and makes sure that 
+the following clauses target those clauses instead of the roots.*)
 let add_scertifs to_add c =
   let r = ref c in
-  clear ();
+  clear (); ignore (next_id ());
   while isRoot !r.kind do
     ignore (next_id ());
     r := next !r;
   done;
-  let after_root = !r in
+  let after_roots = !r in
   r := prev !r;
   let tbl : ('a SmtCertif.clause, 'a SmtCertif.clause) Hashtbl.t =
     Hashtbl.create 17 in
@@ -167,8 +168,9 @@ let add_scertifs to_add c =
     | (kind, ov, t_cl)::t -> let cl = mk_scertif kind ov in
                              Hashtbl.add tbl t_cl cl;
                              link !r cl;
-                             r := next !r in
-  push_all to_add; link !r after_root; r:= after_root;
+                             r := next !r;
+                             push_all t in
+  push_all to_add; link !r after_roots; r:= after_roots;
   let uc c =
     try Hashtbl.find tbl c
     with Not_found -> c in
@@ -202,11 +204,10 @@ let add_scertifs to_add c =
   done;
   !r
 
-                                              
-(* Selection of useful rules *)
-(* For select, occur and alloc we assume that the roots and only the roots are
-   at the beginning of the smtcoq certif *)
-                                              
+(* Selection of useful rules. *)
+(* For <select>, <occur> and <alloc> we assume that the roots and only the 
+roots are at the beginning of the smtcoq certif. *)
+(* After <select> no selected clauses are used so that <occur> works properly.*)
 let select c =
   let mark c =
     if not (isRoot c.kind) then c.used <- 1 in
@@ -238,8 +239,8 @@ let select c =
     r := p
   done
 
-(* Compute the number of occurence of each_clause *)
-
+(* Compute the number of occurence of each clause so that <alloc> works 
+properly. *)
 let rec occur c =
   match c.kind with
   | Root -> c.used <- c.used + 1
@@ -254,13 +255,11 @@ let rec occur c =
     occur c';
     c.used <- c.used + 1
 
-(* Allocate clause *)
-
+(* Allocate clauses. *)
 let alloc c =
   let free_pos = ref [] in
 
   (* free the unused roots *)
-
   let r = ref c in
   while isRoot !r.kind do
     if !r.used == notUsed then begin
@@ -306,8 +305,7 @@ let alloc c =
   !last_set
 
 
-(* A naive allocation for debugging *)
-
+(* A naive allocation for debugging. *)
 let naive_alloc c =
   let r = ref c in
   while isRoot !r.kind do

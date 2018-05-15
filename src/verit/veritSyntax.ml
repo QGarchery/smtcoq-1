@@ -233,7 +233,7 @@ let merge ids_params =
   with Not_found -> ids_params
 
 let first_root = ref true 
-let clauses_to_add = ref []
+let to_add = ref []
                      
 let rec mk_clause (id,typ,value,ids_params) =
   let kind =
@@ -274,7 +274,7 @@ let rec mk_clause (id,typ,value,ids_params) =
     (* Roots *)
     | Inpu -> if !first_root
               then first_root := false
-              else clauses_to_add := (id, value) :: !clauses_to_add;
+              else to_add := (id, value) :: !to_add;
               Root
     (* Cnf conversion *)
     | True -> Other SmtCertif.True
@@ -415,7 +415,7 @@ let hlets : (string, atom_form_lit) Hashtbl.t = Hashtbl.create 17
 
 let clear_mk_clause () = 
   first_root := true;
-  clauses_to_add := [];
+  to_add := [];
   Hashtbl.clear ref_cl
                 
 let clear () =

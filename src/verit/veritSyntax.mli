@@ -23,7 +23,8 @@ val add_clause : int -> SmtAtom.Form.t SmtCertif.clause -> unit
 
 val add_ref : int -> int -> unit
 val get_ref : int -> int
-                                                             
+val to_add : (int * SmtAtom.Form.t list) list ref
+                       
 val mk_clause : SmtCertif.clause_id * typ * SmtAtom.Form.t list * SmtCertif.clause_id list -> SmtCertif.clause_id
 
 type atom_form_lit =

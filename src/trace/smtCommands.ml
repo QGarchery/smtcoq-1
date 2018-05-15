@@ -397,9 +397,9 @@ let core_tactic call_solver rt ro ra rf lpl env sigma concl =
   let lcpl = List.map (fun pl -> Lazy.force (gen_constant [["Top"]] (Names.string_of_id pl))) lpl in
   let lclemma = List.map (Retyping.get_type_of env sigma) lcpl in
 
-  let oc = open_out "/tmp/lemmas.log" in
-  List.iter (fun t -> Printer.pr_constr t |> Pp.string_of_ppcmds |> Printf.fprintf oc "%s\n") lclemma;
-  close_out oc ;
+  (* let oc = open_out "/tmp/lemmas.log" in
+   * List.iter (fun t -> Printer.pr_constr t |> Pp.string_of_ppcmds |> Printf.fprintf oc "%s\n") lclemma;
+   * close_out oc ; *)
   
   let ls_smtc = List.map (of_coq_lemma rt ro ra rf env sigma) lclemma in
   let l_pl = List.combine lclemma lcpl in

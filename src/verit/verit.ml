@@ -61,7 +61,10 @@ let rec import_trace filename first =
     | VeritLexer.Eof ->
        close_in chan;
        let certif_first = VeritSyntax.get_clause !first_num in
-       let to_add = [] in
+       print_certif certif_first "/tmp/certif_parsing.log";
+       let f (id, value) = let t_cl = VeritSyntax.get_clause id in
+                           Other (Hole ([t_cl], value)), Some value, t_cl in
+       let to_add = List.map f !VeritSyntax.to_add in
        let to_add = match first, certif_first.value with
          | Some (root,l), Some (fl::nil) when not (Form.equal l fl) ->
             let certif_first_value = certif_first.value in
@@ -70,9 +73,14 @@ let rec import_trace filename first =
                        :: to_add
          | _,_ -> to_add in
        let confl = add_scertifs to_add certif_first in
+       print_certif certif_first "/tmp/certif_add_scertifs.log";
        select confl;
+       print_certif certif_first "/tmp/certif_select.log";
        occur confl;
-       (alloc certif_first, confl)
+       print_certif certif_first "/tmp/certif_occur.log";
+       let u = alloc certif_first in
+       print_certif certif_first "/tmp/certif_alloc.log";
+       (u, confl)
     | Parsing.Parse_error -> failwith ("Verit.import_trace: parsing error line " ^ (string_of_int !line))
 
 and print_certif c where=
