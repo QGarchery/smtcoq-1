@@ -17,6 +17,17 @@ Proof.
   unfold is_true. rewrite <- ? Zeq_is_eq_bool.
   split; intro H; now rewrite H.
 Qed.
+(* Parameter f : Z -> Z. *)
+(* Axiom f_is_constant : forall x, Zeq_bool (f x) (f 2%Z). *)
+
+
+(* Lemma apply_lemma : *)
+(*   forall y, *)
+(*   Zeq_bool (f y) (f 2%Z). *)
+
+(* Proof. *)
+(*   verit f_is_constant. auto. *)
+(* Qed. *)
 
 Parameter mult4 : Z -> Z.
 Axiom mult4_0 : Zeq_bool (mult4 0) 0.
@@ -28,28 +39,17 @@ Proof.
   verit mult4_0 mult4_Sn.
   intros [H1 H2].
   apply H2.
-  auto.
+  apply sym_zeq_bool.
+  apply mult4_0.
 Qed.
-
-
-Parameter f : Z -> Z.
-Axiom f_is_constant : forall x, Zeq_bool (f x) (f 2%Z).
-
-
-Lemma apply_lemma :
-  forall y,
-  Zeq_bool (f y) (f 2%Z).
-
-Proof.
-  verit f_is_constant. auto.
-Qed.
-
-
 
 Close Scope Z_scope.
+
 Parameter app1024435598 :
 Zeq_bool (mult4 0) 0 /\ (forall n : Z, Zeq_bool (mult4 (n + 1)) (mult4 n + 4)) ->
 Zeq_bool (mult4 (0 + 1)) (mult4 0 + 4).
+
+Parameter ass1045277882 : Zeq_bool 0 (mult4 0) -> Zeq_bool 0 (mult4 0).
 Definition t_i := [! | unit_typ_eqb !] : array typ_eqb.
 Definition t_func :=
 [!Tval t_i (Typ.TZ :: nil, Typ.TZ) mult4 | Tval t_i (nil, Typ.Tbool) true !] :
@@ -63,12 +63,17 @@ Abop (BO_eq Typ.TZ) 11 12;Abop (BO_eq Typ.TZ) 2 11;
 Abop (BO_eq Typ.TZ) 5 12;Abop (BO_eq Typ.TZ) 1 10;Abop BO_Zle 5 12;
 Abop BO_Zle 12 5;Abop BO_Zle 1 10;Abop BO_Zle 10 1 | 
 Acop CO_xH !] : array atom.
+
 Definition t_form :=
 [!Ftrue;Ffalse;Fatom 6;Fatom 9;Fatom 13;Fatom 14;Fatom 15;
 Fatom 16;Fatom 17;Fatom 18;For [!12;17;19 | 0 !];Fatom 19;
 Fatom 20;For [!14;23;25 | 0 !] | Ftrue !] : array form.
-Definition t := [![!ForallInst (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 3
-        (conj mult4_0 mult4_Sn) (concl:=8 :: nil) app1024435598;
+Definition t := [![!Hole (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 2
+        (2 :: nil) (prem:=(6 :: nil) :: nil) (concl:=
+        6 :: nil) ass1045277882;ForallInst (t_i:=t_i) (t_func:=t_func)
+                                  (t_atom:=t_atom) (t_form:=t_form) 3
+                                  (conj mult4_0 mult4_Sn) (concl:=
+                                  8 :: nil) app1024435598;
     EqTr (t_i:=t_i) t_func t_atom t_form 4 4 (13 :: 9 :: 11 :: nil);
     EqCgr (t_i:=t_i) t_func t_atom t_form 5 10 (Some 15 :: nil);
     Res (t_i:=t_i) t_func t_atom t_form 5 [!4;5 | 0 !];
@@ -89,14 +94,14 @@ Definition t := [![!ForallInst (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_f
       (16 :: 7 :: nil)
       (ZMicromega.RatProof
          (RingMicromega.PsatzAdd
-            (RingMicromega.PsatzMulC (EnvRing.Pc ((-1)%Z)) (RingMicromega.PsatzIn Z 0))
-            (RingMicromega.PsatzIn Z 1)) ZMicromega.DoneProof :: nil);
-    Res (t_i:=t_i) t_func t_atom t_form 4 [!6;2;4 | 0 !] |
+            (RingMicromega.PsatzMulC (EnvRing.Pc ((-1)%Z))
+               (RingMicromega.PsatzIn Z 0)) (RingMicromega.PsatzIn Z 1))
+         ZMicromega.DoneProof :: nil);Res (t_i:=t_i) t_func t_atom t_form 4
+                                        [!6;2;4 | 0 !] |
     Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !] !] |
   [! | Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !] !] !].
 Definition c :=
-  Certif (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form)
-         8 t 4 :
+Certif (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 8 t 4 :
 certif (t_i:=t_i) t_func t_atom t_form.
   
 (* c = Certif nclauses t confl 
@@ -147,6 +152,8 @@ Compute (List.length l_t).
 
 Compute (up_to 0).
 Compute (up_to 1).
+Compute (nth 1).
+
 Compute (up_to 2).
 Compute (up_to 3).
 Compute (up_to 4).

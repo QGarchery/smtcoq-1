@@ -63,7 +63,7 @@ let rec import_trace filename first =
        let certif_first = VeritSyntax.get_clause !first_num in
        print_certif certif_first "/tmp/certif_parsing.log";
        let f (id, value) = let t_cl = VeritSyntax.get_clause id in
-                           Other (Hole ([t_cl], value)), Some value, t_cl in
+                           Other (Hole ([], value)), Some value, t_cl in
        let to_add = List.map f !VeritSyntax.to_add in
        let to_add = match first, certif_first.value with
          | Some (root,l), Some (fl::nil) when not (Form.equal l fl) ->
