@@ -60,30 +60,22 @@ let rec import_trace filename first =
   with
     | VeritLexer.Eof ->
        close_in chan;
-       let first =
-         let aux = VeritSyntax.get_clause !first_num in
-         match first, aux.value with
-         | Some (root,l), Some (fl::nil) ->
-            if Form.equal l fl then
-              aux
-            else (
-              aux.kind <- Other (ImmFlatten(root,fl));
-              SmtTrace.link root aux;
-              root
-            )
-         | _,_ -> aux in
-       let confl = VeritSyntax.get_clause !confl_num in
-       print_certif first "/tmp/certif_parsing.log";
-       SmtTrace.select confl;
-       (* Trace.share_prefix first (2 * last.id); *)
+       let certif_first = VeritSyntax.get_clause !first_num in
+       let to_add = [] in
+       let to_add = match first, certif_first.value with
+         | Some (root,l), Some (fl::nil) when not (Form.equal l fl) ->
+            let certif_first_value = certif_first.value in
+            certif_first.value <- root.value;
+            (Other (ImmFlatten(root,fl)), certif_first_value, certif_first)
+                       :: to_add
+         | _,_ -> to_add in
+       let confl = add_scertifs to_add certif_first in
+       select confl;
        occur confl;
-       let last_set = alloc first in
-       (* qf_holes first; *)
-       (last_set, confl)
+       (alloc certif_first, confl)
     | Parsing.Parse_error -> failwith ("Verit.import_trace: parsing error line " ^ (string_of_int !line))
 
 and print_certif c where=
-
   let r = ref c in
   let out_channel = open_out where in
   let fmt = Format.formatter_of_out_channel out_channel in

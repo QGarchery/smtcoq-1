@@ -1,8 +1,8 @@
 val notUsed : int
 val clear : unit -> unit
 val next_id : unit -> SmtCertif.clause_id
-val mk_scertif :
-  'a SmtCertif.clause_kind -> 'a list option -> 'a SmtCertif.clause
+val mk_scertif :  'a SmtCertif.clause_kind -> 'a list option ->
+                  'a SmtCertif.clause
 val mkRootGen : 'a list option -> 'a SmtCertif.clause
 val mkRootV : 'a list -> 'a SmtCertif.clause
 val isRoot : 'a SmtCertif.clause_kind -> bool
@@ -25,6 +25,8 @@ val repr : 'a SmtCertif.clause -> 'a SmtCertif.clause
 val set_same : 'a SmtCertif.clause -> 'a SmtCertif.clause -> unit
 val get_pos : 'a SmtCertif.clause -> int
 val eq_clause : 'a SmtCertif.clause -> 'b SmtCertif.clause -> bool
+val add_scertifs : ('a SmtCertif.clause_kind * 'a list option * 'a SmtCertif.clause) list ->
+                   'a SmtCertif.clause -> 'a SmtCertif.clause
 val select : 'a SmtCertif.clause -> unit
 val occur : 'a SmtCertif.clause -> unit
 val alloc : 'a SmtCertif.clause -> int

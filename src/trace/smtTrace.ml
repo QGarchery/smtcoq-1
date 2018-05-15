@@ -149,10 +149,64 @@ let rec get_pos c =
 
 let eq_clause c1 c2 = (repr c1).id = (repr c2).id
 
-(* Selection of useful rules *)
-(* for select, occur and alloc we assume that the roots and only the roots are
-   at the beginning of the smtcoq certif *)
 
+                                              
+let add_scertifs to_add c =
+  let r = ref c in
+  clear ();
+  while isRoot !r.kind do
+    ignore (next_id ());
+    r := next !r;
+  done;
+  let after_root = !r in
+  r := prev !r;
+  let tbl : ('a SmtCertif.clause, 'a SmtCertif.clause) Hashtbl.t =
+    Hashtbl.create 17 in
+  let rec push_all = function
+      [] -> ()
+    | (kind, ov, t_cl)::t -> let cl = mk_scertif kind ov in
+                             Hashtbl.add tbl t_cl cl;
+                             link !r cl;
+                             r := next !r in
+  push_all to_add; link !r after_root; r:= after_root;
+  let uc c =
+    try Hashtbl.find tbl c
+    with Not_found -> c in
+  let update_kind = function
+    | Root -> Root
+    | Same c -> Same (uc c)
+    | Res {rc1 = r1; rc2 = r2; rtail = rt} ->
+       Res {rc1 = uc r1;
+            rc2 = uc r2;
+            rtail = List.map uc rt}
+    | Other u ->
+       Other begin match u with
+         | ImmBuildProj (c, x) -> ImmBuildProj (uc c, x)
+         | ImmBuildDef c -> ImmBuildDef (uc c)
+         | ImmBuildDef2 c -> ImmBuildDef2 (uc c)
+         | Forall_inst (c, x) -> Forall_inst (uc c, x) 
+         | ImmFlatten (c, x) -> ImmFlatten (uc c, x) 
+         | SplArith (c, x, y) -> SplArith (uc c, x, y) 
+         | SplDistinctElim (c, x) -> SplDistinctElim (uc c, x) 
+
+         | Hole (cs, x) -> Hole (List.map uc cs, x)
+
+         | x -> x end in
+  let continue = ref true in
+  while !continue do
+    !r.kind <- update_kind !r.kind;
+    !r.id <- next_id ();
+    match !r.next with 
+      None -> continue := false
+    | Some n -> r := n
+  done;
+  !r
+
+                                              
+(* Selection of useful rules *)
+(* For select, occur and alloc we assume that the roots and only the roots are
+   at the beginning of the smtcoq certif *)
+                                              
 let select c =
   let mark c =
     if not (isRoot c.kind) then c.used <- 1 in

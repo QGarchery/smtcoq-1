@@ -23,13 +23,13 @@ type 'hform rule =
   | Forall_inst of 'hform clause * 'hform
 
 and 'hform clause = {
-  id : clause_id;
-  mutable kind : 'hform clause_kind;
-  mutable pos : int option;
-  mutable used : used;
-  mutable prev : 'hform clause option;
-  mutable next : 'hform clause option;
-  value : 'hform list option;
+    mutable id    : clause_id;
+    mutable kind  : 'hform clause_kind;
+    mutable pos   : int option;
+    mutable used  : used;
+    mutable prev  : 'hform clause option;
+    mutable next  : 'hform clause option;
+    mutable value : 'hform list option;
 }
 and 'hform clause_kind =
     Root
