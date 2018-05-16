@@ -111,7 +111,9 @@ type 'hform rule =
   (* Possibility to introduce "holes" in proofs (that should be filled in Coq) *)
   | Hole of ('hform clause) list * 'hform list
   | Forall_inst of 'hform clause * 'hform
+  | Qf_lemma of 'hform
 
+                                     
                                           
 and 'hform clause = {
     mutable id    : clause_id;
@@ -142,7 +144,7 @@ let used_clauses r =
   | ImmFlatten (c,_)  | SplArith (c,_,_) | SplDistinctElim (c,_) -> [c]
   | Hole (cs, _) -> cs
   | True | False | BuildDef _ | BuildDef2 _ | BuildProj _ 
-  | EqTr _ | EqCgr _ | EqCgrP _
+  | EqTr _ | EqCgr _ | EqCgrP _ | Qf_lemma _
   | LiaMicromega _ | LiaDiseq _   -> []
                                        
 let to_string r =
@@ -173,5 +175,6 @@ let to_string r =
                          | SplArith _ -> "SplArith"
                          | SplDistinctElim _ -> "SplDistinctElim"
                          | Hole _ -> "Hole"
-                         | Forall_inst _ -> "Forall_inst" end ^ ")"
+                         | Forall_inst _ -> "Forall_inst"
+                         | Qf_lemma _ -> "Qf_lemma" end ^ ")"
                                        

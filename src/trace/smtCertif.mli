@@ -21,7 +21,8 @@ type 'hform rule =
   | SplDistinctElim of 'hform clause * 'hform
   | Hole of 'hform clause list * 'hform list
   | Forall_inst of 'hform clause * 'hform
-
+  | Qf_lemma of 'hform
+                                     
 and 'hform clause = {
     mutable id    : clause_id;
     mutable kind  : 'hform clause_kind;

@@ -415,7 +415,8 @@ let to_coq to_lit interp (cstep,
            let prem' = List.fold_right (fun cl l -> mklApp ccons [|Lazy.force cState_C_t; out_cl cl; l|]) prem (mklApp cnil [|Lazy.force cState_C_t|]) in
            let concl' = out_cl concl in
            mklApp cHole [|out_c c; prem_id'; prem'; concl'; ass_var|]
-        | Forall_inst (_, concl) ->
+
+        | Forall_inst (_, concl) | Qf_lemma concl ->
            let clemmas, cplemmas = fr (fun (clemma, cpl) (acc_clemma, acc_cpl) ->
                                        mklApp cand [| clemma; acc_clemma |],
                                        mklApp cconj [| clemma; acc_clemma; cpl; acc_cpl |]) l_pl in

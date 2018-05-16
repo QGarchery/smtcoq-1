@@ -273,9 +273,11 @@ let rec mk_clause (id,typ,value,ids_params) =
 
     (* Roots *)
     | Inpu -> if !first_root
-              then first_root := false
-              else to_add := (id, value) :: !to_add;
-              Root
+              then (first_root := false; Root)
+              else begin match value with
+                     [lemma] -> Other (Qf_lemma lemma)
+                   | _ -> failwith "mk_clause: lemma with multiple clauses?"
+                   end
     (* Cnf conversion *)
     | True -> Other SmtCertif.True
     | Fals -> Other False
