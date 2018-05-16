@@ -61,12 +61,18 @@ let rec import_trace filename first =
     | VeritLexer.Eof ->
        close_in chan;
        let cfirst = VeritSyntax.get_clause !first_num in
-       let to_add = match first, cfirst.value with
+       let f (id, value) = let t_cl = VeritSyntax.get_clause id in
+                           match value with
+                           | [lemma] ->
+                              Other (Qf_lemma lemma), Some value, t_cl
+                           | _ -> failwith "lemma has multiple clauses" in
+       let to_add = List.map f !VeritSyntax.to_add in
+       let to_add = begin match first, cfirst.value with
          | Some (root,l), Some (fl::nil) when not (Form.equal l fl) ->
             let cfirst_value = cfirst.value in
             cfirst.value <- root.value;
             [Other (ImmFlatten(root,fl)), cfirst_value, cfirst]
-         | _, _ -> [] in
+         | _, _ -> [] end @ to_add in
        let confl = match to_add with
          | [] -> VeritSyntax.get_clause !confl_num
          | _  -> add_scertifs to_add cfirst in

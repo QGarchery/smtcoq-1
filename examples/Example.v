@@ -10,6 +10,22 @@ Local Open Scope int63_scope.
 
 Open Scope Z_scope.
 
+
+(* Parameter f : Z -> Z. *)
+(* Parameter g : Z -> Z. *)
+(* Parameter k : Z. *)
+(* Axiom g_k_linear : forall x, Zeq_bool (g (x + 1)) ((g x) + k). *)
+(* Axiom f_equal_k : forall x, Zeq_bool (f x) k. *)
+
+
+(* Lemma apply_lemma_multiple : *)
+(*   forall x y, Zeq_bool (g (x + 1)) (g x + f y). *)
+
+(* Proof. *)
+(*   verit g_k_linear f_equal_k. *)
+(* Qed. *)
+
+
 Lemma sym_zeq_bool x y :
   Zeq_bool x y = Zeq_bool y x.
 
@@ -22,17 +38,17 @@ Proof.
   rewrite H in H1. discriminate H1.
 Qed.
 
-(* Parameter f : Z -> Z. *)
-(* Axiom f_is_constant : forall x, Zeq_bool (f x) (f 2%Z). *)
+Parameter f : Z -> Z.
+Axiom f_is_constant : forall x, Zeq_bool (f x) (f 2%Z).
 
 
-(* Lemma apply_lemma : *)
-(*   forall y, *)
-(*   Zeq_bool (f y) (f 2%Z). *)
+Lemma apply_lemma :
+  forall y,
+  Zeq_bool (f y) (f 2%Z).
 
-(* Proof. *)
-(*   verit f_is_constant. auto. *)
-(* Qed. *)
+Proof.
+  verit f_is_constant. auto.
+Qed.
 
 Parameter mult4 : Z -> Z.
 Axiom mult4_0 : Zeq_bool (mult4 0) 0.
@@ -41,11 +57,10 @@ Axiom mult4_Sn : forall n, Zeq_bool (mult4 (n+1)) (mult4 n + 4).
 Lemma mult4_1 : Zeq_bool (mult4 1) 4.
 
 Proof.
-  verit mult4_0 mult4_Sn.
-  intros [H1 H2].
+  verit mult4_0 mult4_Sn; auto; intros [H1 H2].
   apply H2.
-  apply sym_zeq_bool.
-  apply mult4_0.
+  rewrite sym_zeq_bool.
+  apply H1.
 Qed.
 
 Close Scope Z_scope.
@@ -185,8 +200,6 @@ Compute (up_to 19).
 
 
 
-*)
-
 
 (* Lemma f_const_is_eq_val_0 : *)
 (*   forall x, (forall f : Z -> Z, forall a b, Zeq_bool (f a) (f b)) -> *)
@@ -199,22 +212,10 @@ Lemma find_inst :
   implb (Zeq_bool (f 2) 5) (Zeq_bool (f 3) 5).
 
 Proof.
-  verit f_is_constant.
-  intro H. apply H.
+  verit f_is_constant; auto.
+  rewrite sym_zeq_bool. auto.
 Qed.  
 
-Parameter g : Z -> Z.
-Parameter k : Z.
-Axiom g_k_linear : forall x, Zeq_bool (g (x + 1)) ((g x) + k).
-Axiom f_equal_k : forall x, Zeq_bool (f x) k.
-
-
-Lemma apply_lemma_multiple :
-  forall x y, Zeq_bool (g (x + 1)) (g x + f y).
-
-Proof.
-  verit g_k_linear f_equal_k; intro H; repeat destruct H; auto.
-Qed.
 
 (* c = Certif nclauses t confl 
    checker_b l true c = checker (PArray.make nclauses nl) None c
