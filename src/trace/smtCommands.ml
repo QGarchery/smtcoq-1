@@ -373,6 +373,10 @@ let make_proof call_solver rt ro rf l ls_smtc=
   let root = SmtTrace.mkRootV [l] in
   call_solver rt ro fl (root,l) ls_smtc
 
+(* <of_coq_lemma> reifies the coq lemma given, we can then easily print it in a
+ .smt2 file. We need the reify tables to correctly recognize unbound variables
+ of the lemma. We also need to make sure to leave unchanged the tables because
+ the new objects may contain bound (by forall of the lemma) variables. *)
 let of_coq_lemma rt ro ra rf env sigma clemma = 
   let rel_context, qf_lemma = Term.decompose_prod_assum clemma in
   let env_lemma = List.fold_right Environ.push_rel rel_context env in

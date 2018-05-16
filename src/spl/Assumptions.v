@@ -104,8 +104,7 @@ Section Checker_correct.
     forallb2 (fun i j => i == j) (S.get s cid) (S.sort_uniq c) ->
     interp_uf rho c.
   Proof.
-    intro H.
-    rewrite <- interp_equiv, <- S.sort_uniq_correct; auto.
+    intro H. rewrite <- interp_equiv, <- S.sort_uniq_correct; auto.
     rewrite <- (interp_check_clause _ _ H). now apply Hs.
   Qed.
 
@@ -132,8 +131,7 @@ Section Checker_correct.
 
   Lemma valid_check_hole: C.valid rho (check_hole s prem_id prem concl).
   Proof.
-    unfold check_hole. revert prem p.
-    induction prem_id as [ |pid pids IHpids]; simpl;
+    unfold check_hole. revert prem p. induction prem_id as [ |pid pids IHpids]; simpl;
       intros [ |p ps]; simpl; intro H.
     - unfold C.valid. now rewrite interp_equiv.
     - now apply C.interp_true.

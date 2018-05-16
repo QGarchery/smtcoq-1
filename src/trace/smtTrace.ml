@@ -203,10 +203,10 @@ let add_scertifs to_add c =
   done;
   !r
 
-(* Selection of useful rules. *)
+(* Selection of useful rules *)
 (* For <select>, <occur> and <alloc> we assume that the roots and only the 
-roots are at the beginning of the smtcoq certif. *)
-(* After <select> no selected clauses are used so that <occur> works properly.*)
+roots are at the beginning of the smtcoq certif *)
+(* After <select> no selected clauses are used so that <occur> works properly*)
 let select c =
   let mark c =
     if not (isRoot c.kind) then c.used <- 1 in
@@ -239,7 +239,7 @@ let select c =
   done
 
 (* Compute the number of occurence of each clause so that <alloc> works 
-properly. *)
+properly *)
 let rec occur c =
   match c.kind with
   | Root -> c.used <- c.used + 1
@@ -254,7 +254,7 @@ let rec occur c =
     occur c';
     c.used <- c.used + 1
 
-(* Allocate clauses. *)
+(* Allocate clauses *)
 let alloc c =
   let free_pos = ref [] in
 
@@ -304,7 +304,7 @@ let alloc c =
   !last_set
 
 
-(* A naive allocation for debugging. *)
+(* A naive allocation for debugging *)
 let naive_alloc c =
   let r = ref c in
   while isRoot !r.kind do

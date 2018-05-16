@@ -39,7 +39,7 @@ let get_val = function
   | None -> assert false
 
                             
-let rec import_trace filename first =
+let import_trace filename first =
   let chan = open_in filename in
   let lexbuf = Lexing.from_channel chan in
   let confl_num = ref (-1) in

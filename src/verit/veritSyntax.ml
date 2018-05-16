@@ -195,23 +195,20 @@ let mkDistinctElim old value =
 
 
 (* Generating clauses *)
-
 let clauses : (int,Form.t clause) Hashtbl.t = Hashtbl.create 17
-
 let get_clause id =
   try Hashtbl.find clauses id
   with | Not_found -> failwith ("VeritSyntax.get_clause : clause number "^(string_of_int id)^" not found\n")
 let add_clause id cl = Hashtbl.add clauses id cl
 let clear_clauses () = Hashtbl.clear clauses
 
+(* Recognizing and modifying clauses depending on a forall_inst clause. *)
+(* <ref_cl> maps solver integers to id integers. *)
 let ref_cl : (int, int) Hashtbl.t = Hashtbl.create 17
-
-let add_ref i j =
-  Hashtbl.add ref_cl i j
-
-let get_ref i =
-  Hashtbl.find ref_cl i
-
+let get_ref i = Hashtbl.find ref_cl i
+let add_ref i j = Hashtbl.add ref_cl i j
+let clear_ref () = Hashtbl.clear ref_cl
+                             
 let rec fins_lemma ids_params =
   match ids_params with
     [] -> raise Not_found
@@ -223,7 +220,6 @@ let rec fins_lemma ids_params =
 let rec find_remove_lemma lemma ids_params =
   let eq_lemma h = eq_clause lemma (get_clause h) in
   list_find_remove eq_lemma ids_params
-
 
 let merge ids_params =
   try
@@ -416,7 +412,7 @@ let hlets : (string, atom_form_lit) Hashtbl.t = Hashtbl.create 17
 let clear_mk_clause () = 
   first_root := true;
   to_add := [];
-  Hashtbl.clear ref_cl
+  clear_ref ()
                 
 let clear () =
   clear_mk_clause ();

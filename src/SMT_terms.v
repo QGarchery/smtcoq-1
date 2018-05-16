@@ -321,23 +321,11 @@ Module Typ.
         intros;apply iff_reflect;symmetry;apply i_eqb_spec.
       Qed.
 
-
-      (* Lemma neg_eq_true_eq_false b : *)
-      (*   b = false <-> ~ (b = true). *)
-      (* Proof. destruct b; intuition. Qed. *)
-      (* Lemma is_true_iff e : *)
-      (*   e = true <-> is_true e. *)
-      (* Proof. now unfold is_true. Qed. *)
-
-        
-      Lemma i_eqb_sym : forall t x y, i_eqb t x y = i_eqb t y x.
-      Proof.
-        intros t x y; case_eq (i_eqb t x y); case_eq (i_eqb t y x); auto.
-        (* rewrite neg_eq_true_eq_false, is_true_iff, is_true_iff; *)
-        (* rewrite i_eqb_spec, i_eqb_spec; *)
-        (* intros; exfalso; intuition. *)
-          now change (i_eqb t x y = true) with (is_true (i_eqb t x y)); rewrite i_eqb_spec; intros H1 H2; subst y; pose (H:=reflect_i_eqb t x x); inversion H; [rewrite <- H0 in H1|elim H2].
-        change (i_eqb t y x = true) with (is_true (i_eqb t y x)); rewrite i_eqb_spec; intros H1 H2; subst y; pose (H:=reflect_i_eqb t x x); inversion H; [rewrite <- H0 in H2; discriminate|elim H1; auto].
+     Lemma i_eqb_sym : forall t x y, i_eqb t x y = i_eqb t y x.
+     Proof.
+       intros t x y; case_eq (i_eqb t x y); intro H1; symmetry;
+          [ | rewrite neg_eq_true_eq_false in *; intro H2; apply H1];
+          rewrite is_true_iff in *; now rewrite i_eqb_spec in *.
       Qed.
 
     End Interp_Equality.

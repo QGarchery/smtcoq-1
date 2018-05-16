@@ -19,7 +19,6 @@ open SmtMisc
 open CoqTerms
 open SmtBtype
 
-       
 module type ATOM =
   sig
 
@@ -42,8 +41,8 @@ type fop =
   | Fiff
   | Fite
   | Fnot2 of int
-  | Fforall of (string * btype) list 
-               
+  | Fforall of (string * btype) list
+
 type ('a,'f) gen_pform =
   | Fatom of 'a
   | Fapp of fop * 'f array
@@ -64,7 +63,7 @@ module type FORM =
     val index : t -> int
     val pform : t -> pform
 
-                       
+
     val neg : t -> t
     val is_pos : t -> bool
     val is_neg : t -> bool
@@ -83,10 +82,10 @@ module type FORM =
     val of_coq : ?declare:bool -> (Term.constr -> hatom) ->
                  reify -> Term.constr -> t
 
-                                           
+
     (** Flattening of [Fand] and [For], removing of [Fnot2]  *)
     val flatten : reify -> t -> t
-                                  
+
     (** Producing Coq terms *)
 
     val to_coq : t -> Term.constr
@@ -274,7 +273,7 @@ module Make (Atom:ATOM) =
 
     let get ?declare:(decl=true) reify pf =
       if decl
-      then try HashForm.find reify.tbl pf 
+      then try HashForm.find reify.tbl pf
            with Not_found -> declare reify pf
       else Pos {index = -1; hval = pf}
 
@@ -347,7 +346,7 @@ module Make (Atom:ATOM) =
         | _ ->
            let a = atom_of_coq h in
            get ~declare:decl reify (Fatom a)
-               
+
       and op2 f args =
         match args with
         | [b1;b2] ->
@@ -355,7 +354,7 @@ module Make (Atom:ATOM) =
            let l2 = mk_hform b2 in
            get ~declare:decl reify (f [|l1; l2|])
         | _ ->  Structures.error "SmtForm.Form.of_coq: wrong number of arguments"
-                                 
+
       and mk_fnot i args =
         match args with
         | [t] ->
@@ -369,7 +368,7 @@ module Make (Atom:ATOM) =
              if q = 0 then l
              else get ~declare:decl reify (Fapp(Fnot2 q, [|l|]))
         | _ -> Structures.error "SmtForm.Form.mk_hform: wrong number of arguments for negb"
-                                
+
       and mk_fand acc args =
         match args with
         | [t1;t2] ->
@@ -381,7 +380,7 @@ module Make (Atom:ATOM) =
              let l1 = mk_hform t1 in
              get ~declare:decl reify (Fapp(Fand, Array.of_list  (l1::l2::acc)))
         | _ -> Structures.error "SmtForm.Form.mk_hform: wrong number of arguments for andb"
-                                
+
       and mk_for acc args =
         match args with
         | [t1;t2] ->
@@ -395,10 +394,10 @@ module Make (Atom:ATOM) =
         | _ -> Structures.error "SmtForm.Form.mk_hform: wrong number of arguments for orb" in
 
       mk_hform c
-               
 
 
-               
+
+
     (** Flattening of Fand and For, removing of Fnot2 *)
     let set_sign f f' =
       if is_pos f then f' else neg f'
@@ -521,7 +520,7 @@ module Make (Atom:ATOM) =
 		        for i = 1 to n do
                           r := mklApp cnegb [|!r|]
                         done;
-                        !r                     
+                        !r
                      |Fforall _ -> failwith "interp_to_coq on forall" in
 	        Hashtbl.add form_tbl l pc;
 	        pc
