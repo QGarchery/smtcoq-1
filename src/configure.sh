@@ -1,7 +1,19 @@
 #!/bin/sh
 
-set -e
+rm -f Makefile
+rm -f smtcoq_plugin.ml4
+rm -f versions/native/Structures.v
+rm -f g_smtcoq.ml4
+rm -f smtcoq_plugin.mlpack
+rm -f versions/standard/Int63/Int63.v
+rm -f versions/standard/Int63/Int63Native.v
+rm -f versions/standard/Int63/Int63Op.v
+rm -f versions/standard/Int63/Int63Axioms.v
+rm -f versions/standard/Int63/Int63Properties.v
+rm -f versions/standard/Array/PArray.v
+rm -f versions/standard/Structures.v
 
+set -e
 if [ $@ -a $@ = -native ]; then
     cp versions/native/Makefile Makefile
     cp versions/native/smtcoq_plugin_native.ml4 smtcoq_plugin.ml4
