@@ -175,6 +175,11 @@ src/trace/smtAtom.cmx
 src/trace/smtAtom.ml.d
 src/trace/smtAtom.mli.d
 src/trace/smtAtom.o
+src/trace/smtBtype.cmi
+src/trace/smtBtype.cmx
+src/trace/smtBtype.ml.d
+src/trace/smtBtype.mli.d
+src/trace/smtBtype.o
 src/trace/smtCertif.cmi
 src/trace/smtCertif.cmx
 src/trace/smtCertif.ml.d

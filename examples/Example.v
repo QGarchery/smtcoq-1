@@ -22,16 +22,6 @@ Proof.
   rewrite H in H1. discriminate H1.
 Qed.
 
-Parameter f : Z -> Z.
-Axiom f1 : orb (Zeq_bool (f 1) (f 2)) (Zeq_bool (f 1) 3).
-
-Lemma f23_f13 :
-  implb (Zeq_bool (f 2) 3) (Zeq_bool (f 1) 3).
-Proof.
-  verit f1.
-  now rewrite sym_zeq_bool.
-Qed.
-
 (* Parameter f : Z -> Z. *)
 (* Axiom f_is_constant : forall x, Zeq_bool (f x) (f 2%Z). *)
 

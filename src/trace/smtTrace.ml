@@ -151,7 +151,7 @@ let eq_clause c1 c2 = (repr c1).id = (repr c2).id
 
 
 (* <add_scertifs> adds the clauses <to_add> after the roots and makes sure that 
-the following clauses target those clauses instead of the roots.*)
+the following clauses reference those clauses instead of the roots.*)
 let add_scertifs to_add c =
   let r = ref c in
   clear (); ignore (next_id ());
@@ -164,16 +164,15 @@ let add_scertifs to_add c =
   let tbl : ('a SmtCertif.clause, 'a SmtCertif.clause) Hashtbl.t =
     Hashtbl.create 17 in
   let rec push_all = function
-      [] -> ()
+    | [] -> ()
     | (kind, ov, t_cl)::t -> let cl = mk_scertif kind ov in
                              Hashtbl.add tbl t_cl cl;
                              link !r cl;
                              r := next !r;
                              push_all t in
   push_all to_add; link !r after_roots; r:= after_roots;
-  let uc c =
-    try Hashtbl.find tbl c
-    with Not_found -> c in
+  let uc c = try Hashtbl.find tbl c
+             with Not_found -> c in
   let update_kind = function
     | Root -> Root
     | Same c -> Same (uc c)
@@ -199,7 +198,7 @@ let add_scertifs to_add c =
     !r.kind <- update_kind !r.kind;
     !r.id <- next_id ();
     match !r.next with 
-      None -> continue := false
+    | None -> continue := false
     | Some n -> r := n
   done;
   !r
@@ -320,22 +319,8 @@ let naive_alloc c =
   incr last_set; !r.pos <- Some !last_set;
   !last_set
 
-let qf_holes c =
-  let r = ref c in
-  let continue = ref true in
-  while !continue do
-    if isRoot !r.kind
-    then begin match !r.value with
-         | Some [t] (* when not (SmtAtom.Form.is_pos t) *) ->
-            !r.kind <- Other (Hole ([], [t]))
-         | _ -> () end;
-    match !r.next with
-    | None -> continue := false
-    | Some n -> r := n 
-  done
 
 (* This function is currently inlined in verit/verit.ml and zchaff/zchaff.ml *)
-
 let build_certif first_root confl =
   select confl;
   occur confl;

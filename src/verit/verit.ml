@@ -60,27 +60,19 @@ let rec import_trace filename first =
   with
     | VeritLexer.Eof ->
        close_in chan;
-       let certif_first = VeritSyntax.get_clause !first_num in
-       print_certif certif_first "/tmp/certif_parsing.log";
-       let f (id, value) = let t_cl = VeritSyntax.get_clause id in
-                           Other (Hole ([], value)), Some value, t_cl in
-       let to_add = List.map f !VeritSyntax.to_add in
-       let to_add = match first, certif_first.value with
+       let cfirst = VeritSyntax.get_clause !first_num in
+       let to_add = match first, cfirst.value with
          | Some (root,l), Some (fl::nil) when not (Form.equal l fl) ->
-            let certif_first_value = certif_first.value in
-            certif_first.value <- root.value;
-            (Other (ImmFlatten(root,fl)), certif_first_value, certif_first)
-                       :: to_add
-         | _,_ -> to_add in
-       let confl = add_scertifs to_add certif_first in
-       print_certif certif_first "/tmp/certif_add_scertifs.log";
+            let cfirst_value = cfirst.value in
+            cfirst.value <- root.value;
+            [Other (ImmFlatten(root,fl)), cfirst_value, cfirst]
+         | _, _ -> [] in
+       let confl = match to_add with
+         | [] -> VeritSyntax.get_clause !confl_num
+         | _  -> add_scertifs to_add cfirst in
        select confl;
-       print_certif certif_first "/tmp/certif_select.log";
        occur confl;
-       print_certif certif_first "/tmp/certif_occur.log";
-       let u = alloc certif_first in
-       print_certif certif_first "/tmp/certif_alloc.log";
-       (u, confl)
+       (alloc cfirst, confl)
     | Parsing.Parse_error -> failwith ("Verit.import_trace: parsing error line " ^ (string_of_int !line))
 
 and print_certif c where=
