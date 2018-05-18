@@ -46,13 +46,19 @@ type nop =
 type op_def = {
     tparams : btype array;
     tres : btype;
-    op_val : Term.constr;
-    rel_name : string option}
+    op_val : Term.constr
+  }
 
-type indexed_op = op_def gen_hashed
+type index = Index of int
+           | Rel_name of string
+                
+type indexed_op = index * op_def
 
+let destruct (i, hval) = match i with
+  | Index index -> index, hval
+  | Rel_name _ -> failwith "destruct on a Rel"
 
-let dummy_indexed_op i dom codom = {index = i; hval = {tparams = dom; tres = codom; op_val = Term.mkProp; rel_name = None}}
+let dummy_indexed_op i dom codom = {index = i; hval = {tparams = dom; tres = codom; op_val = Term.mkProp}}
 let indexed_op_index op = op.index
 
 type op =
@@ -177,13 +183,15 @@ module Op =
       { count = 0;
 	tbl =  Hashtbl.create 17 }
 
-    let declare reify op tparams tres =
+    let declare reify op tparams tres os=
       assert (not (Hashtbl.mem reify.tbl op));
-      let v = { tparams = tparams; tres = tres; op_val = op ; rel_name = None} in
-      let res = {index = reify.count; hval = v } in
-      Hashtbl.add reify.tbl op res;
-      reify.count <- reify.count + 1;
-      res
+      let opa = { tparams = tparams; tres = tres; op_val = op} in
+      match os with
+      | None ->  let res = Index reify.count, opa in
+                 Hashtbl.add reify.tbl op res;
+                 reify.count <- reify.count + 1;
+                 res
+      | Some name -> Rel_name name, opa
 
     let of_coq reify op =
       Hashtbl.find reify.tbl op
@@ -192,15 +200,18 @@ module Op =
     let interp_tbl tval mk_Tval reify =
       let t = Array.make (reify.count + 1)
 	        (mk_Tval [||] Tbool (Lazy.force ctrue)) in
-      let set _ v =
-	t.(v.index) <- mk_Tval v.hval.tparams v.hval.tres v.hval.op_val in
+      let set _ op =
+        let index, hval = destruct op in
+        t.(index) <- mk_Tval hval.tparams hval.tres hval.op_val in
       Hashtbl.iter set reify.tbl;
       Structures.mkArray (tval, t)
 
     let to_list reify =
       let set _ op acc =
-        let value = op.hval in
-        (op.index,value.tparams,value.tres,op)::acc in
+        let i, hval = op in
+        match i with
+        | Index index -> (index, hval.tparams, hval.tres, op)::acc
+        | Rel_name _ -> assert false in
       Hashtbl.fold set reify.tbl []
 
     let c_equal op1 op2 = op1 == op2
@@ -229,7 +240,6 @@ type atom =
   | Abop of bop * hatom * hatom
   | Anop of nop * hatom array
   | Aapp of indexed_op * hatom array
-(* | Aapprel of named_op * hatom array *)
 
 and hatom = atom gen_hashed
 
@@ -553,12 +563,11 @@ module Atom =
                            tres = SmtBtype.of_coq rt t;
                            op_val = c;
                            rel_name = Some sn}}
-                 else
-                   try Op.of_coq ro c
-                   with | Not_found ->
-                           let targs = Array.map type_of hargs in
-                           let tres = SmtBtype.of_coq rt ty in
-                           Op.declare ro c targs tres in
+                 else try Op.of_coq ro c
+                      with Not_found ->
+                        let targs = Array.map type_of hargs in
+                        let tres = SmtBtype.of_coq rt ty in
+                        Op.declare ro c targs tres in
         get ~declare:decl reify (Aapp (op,hargs)) in
       mk_hatom c
 
