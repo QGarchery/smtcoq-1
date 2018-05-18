@@ -50,7 +50,9 @@ line:
   | INT COLON LPAR FINS LPAR SHARP INT COLON LPAR OR LPAR NOT SHARP INT RPAR lit RPAR RPAR RPAR EOL { mk_clause ($1, Fins, [$16], [get_ref $14]) } 
 ;
 
+
 typ:
+  | TPBR                                                   { Tpbr  }
   | INPU                                                   { Inpu  }
   | DEEP                                                   { Deep  }
   | TRUE                                                   { True  }
@@ -116,7 +118,6 @@ typ:
   | TPSA                                                   { Tpsa  }
   | TPIE                                                   { Tpie  }
   | TPMA                                                   { Tpma  }
-  | TPBR                                                   { Tpbr  }
   | TPBE                                                   { Tpbe  }
   | TPSC                                                   { Tpsc  }
   | TPPP                                                   { Tppp  }
@@ -181,8 +182,7 @@ term:   /* returns a SmtAtom.Form.pform or a SmtAtom.hatom */
   | IMP lit_list                                           { Form (Fapp (Fimp, Array.of_list $2)) }
   | XOR lit_list                                           { Form (Fapp (Fxor, Array.of_list $2)) }
   | ITE lit_list                                           { Form (Fapp (Fite, Array.of_list $2)) }
-  | forall_decl 					   { $1 }
-
+  | forall_decl                                            { $1 }
 
   /* Atoms */
   | INT                                                    { Atom (Atom.hatom_Z_of_int ra $1) }

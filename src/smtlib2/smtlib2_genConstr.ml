@@ -93,7 +93,7 @@ let declare_fun rt ro sym arg cod =
   let coqTy = List.fold_right (fun typ c -> Term.mkArrow (interp_to_coq rt (fst typ)) c) tyl (interp_to_coq rt (fst ty)) in
   let cons_v = declare_new_variable (Names.id_of_string ("Smt_var_"^s)) coqTy in
 
-  let op = Op.declare ro cons_v (Array.of_list (List.map fst tyl)) (fst ty) in
+  let op = Op.declare ro cons_v (Array.of_list (List.map fst tyl)) (fst ty) None in
   VeritSyntax.add_fun s op;
   op
 

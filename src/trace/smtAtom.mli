@@ -53,7 +53,8 @@ module Op :
 
     val create : unit -> reify_tbl
 
-    val declare : reify_tbl -> Term.constr -> btype array -> btype -> indexed_op
+    val declare : reify_tbl -> Term.constr -> btype array ->
+                  btype -> string option -> indexed_op
 
     val of_coq : reify_tbl -> Term.constr -> indexed_op
 

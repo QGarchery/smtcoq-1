@@ -58,8 +58,9 @@ let destruct (i, hval) = match i with
   | Index index -> index, hval
   | Rel_name _ -> failwith "destruct on a Rel"
 
-let dummy_indexed_op i dom codom = {index = i; hval = {tparams = dom; tres = codom; op_val = Term.mkProp}}
-let indexed_op_index op = op.index
+let dummy_indexed_op i dom codom = Index i, {tparams = dom; tres = codom; op_val = Term.mkProp}
+let indexed_op_index i = let index, _ = destruct i in
+                         index
 
 type op =
   | Cop of cop
@@ -167,11 +168,12 @@ module Op =
     let interp_nop = function
       | NO_distinct ty -> mklApp cdistinct [|interp_distinct ty;interp_eq ty|]
 
-    let i_to_coq i = mkInt i.index
+    let i_to_coq i = let index, _ = destruct i in
+                     mkInt index
 
-    let i_type_of i = i.hval.tres
+    let i_type_of (_, hval) = hval.tres
 
-    let i_type_args i = i.hval.tparams
+    let i_type_args (_, hval) = hval.tparams
 
     (* reify table *)
     type reify_tbl =
@@ -208,10 +210,8 @@ module Op =
 
     let to_list reify =
       let set _ op acc =
-        let i, hval = op in
-        match i with
-        | Index index -> (index, hval.tparams, hval.tres, op)::acc
-        | Rel_name _ -> assert false in
+        let index, hval = destruct op in
+        (index, hval.tparams, hval.tres, op)::acc in
       Hashtbl.fold set reify.tbl []
 
     let c_equal op1 op2 = op1 == op2
@@ -227,7 +227,7 @@ module Op =
       match op1,op2 with
       | NO_distinct t1, NO_distinct t2 -> SmtBtype.equal t1 t2
 
-    let i_equal op1 op2 = op1.index == op2.index
+    let i_equal (i1, _) (i2, _) = i1 == i2
 
   end
 
@@ -308,13 +308,14 @@ module HashedAtom =
            | _ -> args.(2).index lsl 4 + args.(1).index lsl 2 + args.(0).index in
          (hash_args lsl 5 + (Hashtbl.hash op) lsl 3) lxor 4
       | Aapp (op, args) ->
+         let op_index, _ = destruct op in
          let hash_args =
            match Array.length args with
            | 0 -> 0
            | 1 -> args.(0).index
            | 2 -> args.(1).index lsl 2 + args.(0).index
            | _ -> args.(2).index lsl 4 + args.(1).index lsl 2 + args.(0).index in
-         (hash_args lsl 5 + op.index lsl 3) lxor 4
+         (hash_args lsl 5 + op_index lsl 3) lxor 4
 
   end
 
@@ -374,10 +375,10 @@ module Atom =
       | Auop _ as a -> to_smt_int fmt (compute_int a)
       | Abop (op,h1,h2) -> to_smt_bop fmt op h1 h2
       | Anop (op,a) -> to_smt_nop fmt op a
-      | Aapp (op,a) ->
-         let op_string = match op.hval.rel_name with
-             None -> "op_" ^ string_of_int op.index
-           | Some na -> na in
+      | Aapp ((i, _), a) ->
+         let op_string = match i with
+             Index index -> "op_" ^ string_of_int index
+           | Rel_name name -> name in
          if Array.length a = 0 then (
            Format.fprintf fmt "%s" op_string;
          ) else (
@@ -553,22 +554,18 @@ module Atom =
 
       and mk_unknown c args ty =
         let hargs = Array.of_list (List.map mk_hatom args) in
-        let op = if Term.isRel c
-                 then let i = Term.destRel c in
-                      let (n, _, t) = Environ.lookup_rel i env in
-                      let sn = string_of_name n in
-                      {index = -1;
-                       hval =
-                         { tparams = [||];
-                           tres = SmtBtype.of_coq rt t;
-                           op_val = c;
-                           rel_name = Some sn}}
-                 else try Op.of_coq ro c
-                      with Not_found ->
-                        let targs = Array.map type_of hargs in
-                        let tres = SmtBtype.of_coq rt ty in
-                        Op.declare ro c targs tres in
+        let op = try Op.of_coq ro c
+                 with Not_found ->
+                   let targs = Array.map type_of hargs in
+                   let tres = SmtBtype.of_coq rt ty in
+                   let os = if Term.isRel c
+                            then let i = Term.destRel c in
+                                 let n, _, _ = Environ.lookup_rel i env in
+                                 Some (string_of_name n)
+                            else None in
+                   Op.declare ro c targs tres os in
         get ~declare:decl reify (Aapp (op,hargs)) in
+
       mk_hatom c
 
 
@@ -620,7 +617,7 @@ module Atom =
                let typ = Op.interp_distinct ty in
                let cargs = Array.fold_right (fun h l -> mklApp ccons [|typ; interp_atom h; l|]) ha (mklApp cnil [|typ|]) in
                Term.mkApp (cop,[|cargs|])
-            | Aapp (op,t) -> Term.mkApp (op.hval.op_val, Array.map interp_atom t) in
+            | Aapp ((_, hval),t) -> Term.mkApp (hval.op_val, Array.map interp_atom t) in
 	  Hashtbl.add atom_tbl l pc;
 	  pc in
       interp_atom a
