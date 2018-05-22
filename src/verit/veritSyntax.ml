@@ -270,7 +270,10 @@ let rec mk_clause (id,typ,value,ids_params) =
     (* Roots *)
     | Inpu -> if !first_root
               then first_root := false
-              else to_add := (id, value) :: !to_add;
+              else
+                begin match List.map Form.pform value with
+                | [Fapp (Ftrue, [||])] -> ()
+                | _ -> to_add := (id, value) :: !to_add end;
               Root
     (* Cnf conversion *)
     | True -> Other SmtCertif.True
