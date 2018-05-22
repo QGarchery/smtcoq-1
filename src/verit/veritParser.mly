@@ -220,7 +220,7 @@ lit_local:
 
 name_term_local:   
   | SHARP INT                                              { () }
-  | SHARP INT COLON LPAR term_local RPAR                   { () }
+  | SHARP INT COLON LPAR STRING RPAR                   { Hashtbl.add $2 $5 }
   | TRUE                                                   { () }
   | FALS                                                   { () }
   | maybeatvar						   { () }

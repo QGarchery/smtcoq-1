@@ -345,8 +345,8 @@ Inductive step :=
      WARNING: this breaks extraction. *)
   | Hole (pos:int) (prem_id:list clause_id) (prem:list C.t) (concl:C.t)
     (p:interp_conseq_uf (Form.interp_state_var (Atom.interp_form_hatom t_i t_func t_atom) t_form) prem concl)
-  | ForallInst (pos:int) (lemmas:Prop) (plemmas:lemmas) (concl:C.t)
-    (p: lemmas -> interp_conseq_uf (Form.interp_state_var (Atom.interp_form_hatom t_i t_func t_atom) t_form) nil concl).
+  | ForallInst (pos:int) (lemma:Prop) (plemma:lemma) (concl:C.t)
+    (p: lemma -> interp_conseq_uf (Form.interp_state_var (Atom.interp_form_hatom t_i t_func t_atom) t_form) nil concl).
 
 
   Local Open Scope list_scope.
