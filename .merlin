@@ -1,5 +1,5 @@
 S src/**
-1;4205;0cS ../../native-coq/interp
+S ../../native-coq/interp
 S ../../native-coq/kernel
 S ../../native-coq/plugins/micromega
 S ../../native-coq/pretyping
