@@ -62,12 +62,12 @@ let dummy_indexed_op i dom codom = Index i, {tparams = dom; tres = codom; op_val
 let indexed_op_index i = let index, _ = destruct i in
                          index
 
-type op =
-  | Cop of cop
-  | Uop of uop
-  | Bop of bop
-  | Nop of nop
-  | Iop of indexed_op
+(* type op =
+ *   | Cop of cop
+ *   | Uop of uop
+ *   | Bop of bop
+ *   | Nop of nop
+ *   (\* | Iop of indexed_op *\) *)
 
 
 module Op =

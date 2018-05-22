@@ -88,7 +88,7 @@ let import_trace filename first =
        let f (id, value) = let t_cl = VeritSyntax.get_clause id in
                            match value with
                            | [lemma] ->
-                              Other (Qf_lemma lemma), Some value, t_cl
+                              Other (Qf_lemma (id, lemma)), Some value, t_cl
                            | _ -> failwith "lemma has multiple clauses" in
        let to_add = List.map f !VeritSyntax.to_add in
        let to_add = begin match first, cfirst.value with
@@ -186,7 +186,7 @@ let call_verit rt ro fl root ls_smtc =
     try let _ = input_line win in
         Structures.error "veriT returns 'unknown'"
     with End_of_file ->
-          close_in win; Sys.remove wname;
+          (* close_in win; Sys.remove wname; *)
           try
             import_trace logfilename (Some root)
           with

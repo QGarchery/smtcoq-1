@@ -110,8 +110,8 @@ type 'hform rule =
 
   (* Possibility to introduce "holes" in proofs (that should be filled in Coq) *)
   | Hole of ('hform clause) list * 'hform list
-  | Forall_inst of 'hform clause * 'hform
-  | Qf_lemma of 'hform
+  | Forall_inst of 'hform clause * int * 'hform
+  | Qf_lemma of int * 'hform
 
                                      
                                           
@@ -123,7 +123,7 @@ and 'hform clause = {
     mutable prev  : 'hform clause option;
     mutable next  : 'hform clause option;
     mutable value : 'hform list option
-              (* This field should be defined for rules which can create atoms :
+    (* This field should be defined for rules which can create atoms :
                  EqTr, EqCgr, EqCgrP, Lia, Dlde, Lra *)
 }
 
@@ -140,7 +140,7 @@ and 'hform resolution = {
 
 let used_clauses r =
   match r with
-  | ImmBuildProj (c, _) | ImmBuildDef c | ImmBuildDef2 c | Forall_inst (c, _)
+  | ImmBuildProj (c, _) | ImmBuildDef c | ImmBuildDef2 c | Forall_inst (c, _, _)
   | ImmFlatten (c,_)  | SplArith (c,_,_) | SplDistinctElim (c,_) -> [c]
   | Hole (cs, _) -> cs
   | True | False | BuildDef _ | BuildDef2 _ | BuildProj _ 
@@ -160,21 +160,24 @@ let to_string r =
                          begin match x with
                          | True -> "True"
                          | False -> "False"
-                         | ImmFlatten _ -> "ImmFlatten"
                          | BuildDef _ -> "BuildDef"
                          | BuildDef2 _ -> "BuildDef2"
                          | BuildProj _ -> "BuildProj"
-                         | ImmBuildDef _ -> "ImmBuildDef"
-                         | ImmBuildDef2 _ -> "ImmBuildDef2"
-                         | ImmBuildProj _ -> "ImmBuildProj"
                          | EqTr _ -> "EqTr"
                          | EqCgr _ -> "EqCgr"
                          | EqCgrP _ -> "EqCgrP"
                          | LiaMicromega _ -> "LiaMicromega"
                          | LiaDiseq _ -> "LiaDiseq"
+                         | Qf_lemma _ -> "Qf_lemma"
+                                         
+                         | Hole _ -> "Hole"
+
+                         | ImmFlatten _ -> "ImmFlatten"
+                         | ImmBuildDef _ -> "ImmBuildDef"
+                         | ImmBuildDef2 _ -> "ImmBuildDef2"
+                         | ImmBuildProj _ -> "ImmBuildProj"
                          | SplArith _ -> "SplArith"
                          | SplDistinctElim _ -> "SplDistinctElim"
-                         | Hole _ -> "Hole"
-                         | Forall_inst _ -> "Forall_inst"
-                         | Qf_lemma _ -> "Qf_lemma" end ^ ")"
-                                       
+                         | Forall_inst _ -> "Forall_inst"  end ^ ")"
+
+

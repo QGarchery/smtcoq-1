@@ -377,7 +377,7 @@ let make_proof call_solver rt ro rf l ls_smtc=
  .smt2 file. We need the reify tables to correctly recognize unbound variables
  of the lemma. We also need to make sure to leave unchanged the tables because
  the new objects may contain bound (by forall of the lemma) variables. *)
-let of_coq_lemma rt ro ra rf env sigma clemma = 
+let of_coq_lemma rt ro ra rf env sigma clemma =
   let rel_context, qf_lemma = Term.decompose_prod_assum clemma in
   let env_lemma = List.fold_right Environ.push_rel rel_context env in
   let forall_args =
@@ -394,23 +394,23 @@ let of_coq_lemma rt ro ra rf env sigma clemma =
     [] -> core_smt
   | _ -> Form.get ~declare:false rf (Fapp (Fforall forall_args, [|core_smt|]))
 
-              
+
 let core_tactic call_solver rt ro ra rf lpl env sigma concl =
   let a, b = get_arguments concl in
-  
+
   let lcpl = List.map (fun pl -> Lazy.force (gen_constant [["Top"]] (Names.string_of_id pl))) lpl in
   let lclemma = List.map (Retyping.get_type_of env sigma) lcpl in
 
   (* let oc = open_out "/tmp/lemmas.log" in
    * List.iter (fun t -> Printer.pr_constr t |> Pp.string_of_ppcmds |> Printf.fprintf oc "%s\n") lclemma;
    * close_out oc ; *)
-  
+
   let ls_smtc = List.map (of_coq_lemma rt ro ra rf env sigma) lclemma in
   let l_pl = List.combine lclemma lcpl in
 
   let (body_cast, body_nocast, cuts) =
     if ((Term.eq_constr b (Lazy.force ctrue)) || (Term.eq_constr b (Lazy.force cfalse)))
-    then      
+    then
       let l = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf a in
       let l' = if (Term.eq_constr b (Lazy.force ctrue))
                then Form.neg l else l in
@@ -423,7 +423,7 @@ let core_tactic call_solver rt ro ra rf lpl env sigma concl =
       let max_id_confl = make_proof call_solver rt ro rf l ls_smtc in
       build_body_eq rt ro ra rf (Form.to_coq l1) (Form.to_coq l2) (Form.to_coq l) max_id_confl l_pl in
 
-  let cuts = (SmtBtype.get_cuts rt)@cuts in
+  let cuts = SmtBtype.get_cuts rt @ cuts in
 
   List.fold_right (fun (eqn, eqt) tac ->
       Structures.tclTHENLAST (Structures.assert_before (Names.Name eqn) eqt) tac
@@ -432,7 +432,7 @@ let core_tactic call_solver rt ro ra rf lpl env sigma concl =
          (Structures.set_evars_tac body_nocast)
          (Structures.vm_cast_no_check body_cast))
 
-      
+
 let tactic call_solver rt ro ra rf lpl =
   Structures.tclTHEN
     Tactics.intros

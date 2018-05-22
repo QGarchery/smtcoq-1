@@ -214,7 +214,7 @@ let rec fins_lemma ids_params =
     [] -> raise Not_found
   | h :: t -> let cl_target = repr (get_clause h) in
               match cl_target.kind with
-                Other (Forall_inst (lemma, _)) -> lemma
+                Other (Forall_inst (lemma, _, _)) -> lemma
               | _ -> fins_lemma t
 
 let rec find_remove_lemma lemma ids_params =
@@ -247,7 +247,8 @@ let rec mk_clause (id,typ,value,ids_params) =
     | Fins ->
        begin match value, ids_params with
         | [inst], [ref_th] when Form.is_pos inst ->
-           Other (Forall_inst (get_clause ref_th, inst))
+           let cl_th = get_clause ref_th in
+           Other (Forall_inst (cl_th, (repr cl_th).id, inst))
         | _ -> failwith "unexpected form of forall_inst" end
     | Or ->
        (match ids_params with

@@ -22,8 +22,8 @@ Lemma apply_lemma_multiple :
   forall x y, Zeq_bool (g (x + 1)) (g x + f' y).
 
 Proof.
-  verit g_k_linear f'_equal_k. intuition.
-  intuition.
+  verit g_k_linear f'_equal_k. auto.
+  auto.
 Qed.
 
 
@@ -58,10 +58,8 @@ Axiom mult4_Sn : forall n, Zeq_bool (mult4 (n+1)) (mult4 n + 4).
 Lemma mult4_1 : Zeq_bool (mult4 1) 4.
 
 Proof.
-  verit mult4_0 mult4_Sn; intros [H1 H2].
-  apply H2.
-  rewrite sym_zeq_bool.
-  apply H1.
+  verit mult4_0 mult4_Sn. auto.
+  rewrite sym_zeq_bool. trivial.
 Qed.
 
 (* c = Certif nclauses t confl 

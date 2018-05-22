@@ -185,7 +185,7 @@ let add_scertifs to_add c =
          | ImmBuildProj (c, x) -> ImmBuildProj (uc c, x)
          | ImmBuildDef c -> ImmBuildDef (uc c)
          | ImmBuildDef2 c -> ImmBuildDef2 (uc c)
-         | Forall_inst (c, x) -> Forall_inst (uc c, x) 
+         | Forall_inst (c, x, y) -> Forall_inst (uc c, x, y) 
          | ImmFlatten (c, x) -> ImmFlatten (uc c, x) 
          | SplArith (c, x, y) -> SplArith (uc c, x, y) 
          | SplDistinctElim (c, x) -> SplDistinctElim (uc c, x) 
@@ -326,11 +326,6 @@ let build_certif first_root confl =
   occur confl;
   alloc first_root
 
-let rec fr f = function
-  | [] -> failwith "smtTrace.ml : fr on empty list"
-  | [x] -> x
-  | h :: t -> f h (fr f t)
-
 let to_coq to_lit interp (cstep,
     cRes, cImmFlatten,
     cTrue, cFalse, cBuildDef, cBuildDef2, cBuildProj,
@@ -401,10 +396,8 @@ let to_coq to_lit interp (cstep,
            let concl' = out_cl concl in
            mklApp cHole [|out_c c; prem_id'; prem'; concl'; ass_var|]
 
-        | Forall_inst (_, concl) | Qf_lemma concl ->
-           let clemmas, cplemmas = fr (fun (clemma, cpl) (acc_clemma, acc_cpl) ->
-                                       mklApp cand [| clemma; acc_clemma |],
-                                       mklApp cconj [| clemma; acc_clemma; cpl; acc_cpl |]) l_pl in
+        | Forall_inst (_ , id, concl) | Qf_lemma (id, concl) ->
+           let clemmas, cplemmas = List.nth l_pl (id-2) in
            let concl' = out_cl [concl] in
            let app_name = Names.id_of_string ("app" ^ (string_of_int (Hashtbl.hash concl))) in
            let app_var = Term.mkVar app_name in
