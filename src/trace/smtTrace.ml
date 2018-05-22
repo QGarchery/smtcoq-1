@@ -151,7 +151,7 @@ let eq_clause c1 c2 = (repr c1).id = (repr c2).id
 
 
 (* <add_scertifs> adds the clauses <to_add> after the roots and makes sure that 
-the following clauses reference those clauses instead of the roots.*)
+the following clauses reference those clauses instead of the roots *)
 let add_scertifs to_add c =
   let r = ref c in
   clear (); ignore (next_id ());

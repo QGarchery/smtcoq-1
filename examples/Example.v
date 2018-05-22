@@ -11,18 +11,18 @@ Local Open Scope int63_scope.
 Open Scope Z_scope.
 
 
-Parameter f : Z -> Z.
+Parameter f' : Z -> Z.
 Parameter g : Z -> Z.
 Parameter k : Z.
 Axiom g_k_linear : forall x, Zeq_bool (g (x + 1)) ((g x) + k).
-Axiom f_equal_k : forall x, Zeq_bool (f x) k.
+Axiom f'_equal_k : forall x, Zeq_bool (f' x) k.
 
 
 Lemma apply_lemma_multiple :
-  forall x y, Zeq_bool (g (x + 1)) (g x + f y).
+  forall x y, Zeq_bool (g (x + 1)) (g x + f' y).
 
 Proof.
-  verit g_k_linear f_equal_k. intuition.
+  verit g_k_linear f'_equal_k. intuition.
   intuition.
 Qed.
 

@@ -38,8 +38,32 @@ let get_val = function
     Some a -> a
   | None -> assert false
 
+(* For debugging certif processing : <add_scertif> <select> <occur> <alloc> *)
+let print_certif c where=
+  let r = ref c in
+  let out_channel = open_out where in
+  let fmt = Format.formatter_of_out_channel out_channel in
+  let continue = ref true in
+  while !continue do
+    let kind = to_string (!r.kind) in
+    let id = !r.id in
+    let pos = match !r.pos with
+      | None -> "None"
+      | Some p -> string_of_int p in
+    let used = !r.used in
+    Format.fprintf fmt "id:%i kind:%s pos:%s used:%i value:" id kind pos used;
+    begin match !r.value with
+      None -> Format.fprintf fmt "None"
+    | Some l -> List.iter (fun f -> Form.to_smt Atom.to_smt fmt f;
+                                    Format.fprintf fmt " ") l end;
+    Format.fprintf fmt "\n";
+    match !r.next with
+    | None -> continue := false
+    | Some n -> r := n 
+  done;
+  Format.fprintf fmt "@."; close_out out_channel
                             
-let rec import_trace filename first =
+let import_trace filename first =
   let chan = open_in filename in
   let lexbuf = Lexing.from_channel chan in
   let confl_num = ref (-1) in
@@ -76,35 +100,11 @@ let rec import_trace filename first =
        let confl = match to_add with
          | [] -> VeritSyntax.get_clause !confl_num
          | _  -> add_scertifs to_add cfirst in
-       print_certif cfirst "/tmp/certif_adds.log";
        select confl;
        occur confl;
        (alloc cfirst, confl)
     | Parsing.Parse_error -> failwith ("Verit.import_trace: parsing error line " ^ (string_of_int !line))
 
-and print_certif c where=
-  let r = ref c in
-  let out_channel = open_out where in
-  let fmt = Format.formatter_of_out_channel out_channel in
-  let continue = ref true in
-  while !continue do
-    let kind = to_string (!r.kind) in
-    let id = !r.id in
-    let pos = match !r.pos with
-      | None -> "None"
-      | Some p -> string_of_int p in
-    let used = !r.used in
-    Format.fprintf fmt "id:%i kind:%s pos:%s used:%i value:" id kind pos used;
-    begin match !r.value with
-      None -> Format.fprintf fmt "None"
-    | Some l -> List.iter (fun f -> Form.to_smt Atom.to_smt fmt f;
-                                    Format.fprintf fmt " ") l end;
-    Format.fprintf fmt "\n";
-    match !r.next with
-    | None -> continue := false
-    | Some n -> r := n 
-  done;
-  Format.fprintf fmt "@."; close_out out_channel
 
                                
 let clear_all () =
