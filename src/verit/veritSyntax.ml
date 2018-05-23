@@ -375,6 +375,16 @@ let rec mk_clause (id,typ,value,ids_params) =
   if id > 1 then SmtTrace.link (get_clause (id-1)) cl;
   id
 
+let apply_opt f = function 
+  | None -> None
+  | Some v -> Some (f v)
+
+let rec list_opt = function
+  | [] -> Some []
+  | None :: t -> None 
+  | Some h :: t -> match list_opt t with
+                   | None -> None
+                   | Some l -> Some (h::l)
 
 type atom_form_lit =
   | Atom of SmtAtom.Atom.t
@@ -407,6 +417,10 @@ let get_fun id =
 let add_fun id cl = Hashtbl.add funs id cl
 let clear_funs () = Hashtbl.clear funs
 
+let qvar_tbl : (string, unit) Hashtbl.t = Hashtbl.create 10
+let mem_qvar s = Hashtbl.mem qvar_tbl s
+let add_qvar s = Hashtbl.add qvar_tbl s ()
+let clear_qvar () = Hashtbl.clear qvar_tbl
 
 let ra = Atom.create ()
 let rf = Form.create ()
@@ -419,6 +433,7 @@ let clear_mk_clause () =
   clear_ref ()
                 
 let clear () =
+  clear_qvar ();
   clear_mk_clause ();
   clear_clauses ();
   clear_solver ();
