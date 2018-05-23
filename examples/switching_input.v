@@ -10,3 +10,4 @@ Lemma cinq_m_0 :
 
 Proof.
   verit m_0.
+Qed.

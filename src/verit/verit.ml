@@ -187,8 +187,8 @@ let call_verit rt ro fl root ls_smtc =
         Structures.error "veriT returns 'unknown'"
     with End_of_file ->
           try
-            close_in win; Sys.remove wname;
-            import_trace logfilename (Some root)
+            let res = import_trace logfilename (Some root) in
+            close_in win; Sys.remove wname; res
           with
           | VeritSyntax.Sat -> Structures.error "veriT found a counter-example"
   with x -> close_in win; Sys.remove wname; raise x

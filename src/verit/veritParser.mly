@@ -37,6 +37,10 @@
 
 /* type de "retour" du parseur : une clause */
 %type <int> line
+/*
+%type <VeritSyntax.atom_form_lit> term
+%start term
+*/
 %start line
 
 

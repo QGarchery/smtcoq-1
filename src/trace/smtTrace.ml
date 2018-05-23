@@ -396,7 +396,7 @@ let to_coq to_lit interp (cstep,
            let concl' = out_cl concl in
            mklApp cHole [|out_c c; prem_id'; prem'; concl'; ass_var|]
 
-        | Forall_inst (_, id, concl) | Qf_lemma (id, concl) ->
+        | Forall_inst (_, id, concl) ->
            let clemma, cplemma = List.nth l_pl (id-2) in
            let concl' = out_cl [concl] in
            let app_name = Names.id_of_string ("app" ^ (string_of_int (Hashtbl.hash concl))) in
@@ -404,6 +404,13 @@ let to_coq to_lit interp (cstep,
            let app_ty = Term.mkArrow clemma (interp ([], [concl])) in
            cuts := (app_name, app_ty)::!cuts;
            mklApp cForallInst [|out_c c; clemma; cplemma; concl'; app_var|]
+
+        | Qf_lemma (id, concl) ->
+           let clemma, cplemma = List.nth l_pl (id-2) in
+           let concl' = out_cl [concl] in
+           let app = Term.mkLambda (Names.Anonymous, clemma, Term.mkRel 1) in
+           mklApp cForallInst [|out_c c; clemma; cplemma; concl'; app|]
+                  
 	end
     | _ -> assert false in
   let step = Lazy.force cstep in
