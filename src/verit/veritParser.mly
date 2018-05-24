@@ -240,7 +240,7 @@ bindlist:
 
 args:
   | name_term                                              { match $1 with Some (Atom h) -> [Some h] | None -> [None] | _ -> assert false }
-  | name_term args                                         { match $1 with Some (Atom h) -> (Some h)::$2 | _ -> assert false }
+  | name_term args                                         { match $1 with Some (Atom h) -> (Some h)::$2 | None -> None::$2 | _ -> assert false }
 ;
 
 clause_ids_params:
