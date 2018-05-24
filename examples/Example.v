@@ -11,12 +11,15 @@ Local Open Scope int63_scope.
 Open Scope Z_scope.
 
 Parameter h : Z -> Z.
-Axiom h1h2 : andb (Zeq_bool (h 1) 3) (Zeq_bool (h 2) 4).
+Axiom h1h2 : andb (Zeq_bool (h 1) 3) (Zeq_bool (h 2) 4) = true.
 
 Lemma h1 :
   Zeq_bool (h 1) 3.
 
 Proof.
+  Set Printing All.
+  Print h1h2.
+  
   verit h1h2.
 Qed.
 
@@ -68,7 +71,9 @@ Axiom mult4_Sn : forall n, Zeq_bool (mult4 (n+1)) (mult4 n + 4).
 Lemma mult4_1 : Zeq_bool (mult4 1) 4.
 
 Proof.
-  verit mult4_0 mult4_Sn. auto.
+  verit mult4_0 mult4_Sn. exact (fun f => f _).
+  Locate Ltac exact.
+  
 Qed.
 
 (* c = Certif nclauses t confl 

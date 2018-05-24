@@ -92,10 +92,10 @@ let import_trace filename first =
                            | _ -> failwith "lemma has multiple clauses" in
        let to_add = List.map f !VeritSyntax.to_add in
        let to_add = begin match first, cfirst.value with
-         | Some (root,l), Some (fl::nil) when not (Form.equal l fl) ->
+         | Some (root, l), Some [fl] when not (Form.equal l fl) ->
             let cfirst_value = cfirst.value in
             cfirst.value <- root.value;
-            [Other (ImmFlatten(root,fl)), cfirst_value, cfirst]
+            [Other (ImmFlatten (root, fl)), cfirst_value, cfirst]
          | _, _ -> [] end @ to_add in
        let confl = match to_add with
          | [] -> VeritSyntax.get_clause !confl_num
@@ -103,7 +103,8 @@ let import_trace filename first =
        select confl;
        occur confl;
        (alloc cfirst, confl)
-    | Parsing.Parse_error -> failwith ("Verit.import_trace: parsing error line " ^ (string_of_int !line))
+    | Parsing.Parse_error -> failwith ("Verit.import_trace: parsing error line "
+                                       ^ (string_of_int !line))
 
 
                                
@@ -124,7 +125,8 @@ let import_all fsmt fproof =
 
 
 let parse_certif t_i t_func t_atom t_form root used_root trace fsmt fproof =
-  SmtCommands.parse_certif t_i t_func t_atom t_form root used_root trace (import_all fsmt fproof)
+  SmtCommands.parse_certif
+    t_i t_func t_atom t_form root used_root trace (import_all fsmt fproof)
 let theorem name fsmt fproof = SmtCommands.theorem name (import_all fsmt fproof)
 let checker fsmt fproof = SmtCommands.checker (import_all fsmt fproof)
 

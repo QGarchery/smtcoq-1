@@ -377,6 +377,8 @@ let make_proof call_solver rt ro rf l ls_smtc=
  .smt2 file. We need the reify tables to correctly recognize unbound variables
  of the lemma. We also need to make sure to leave unchanged the tables because
  the new objects may contain bound (by forall of the lemma) variables. *)
+exception Axiom_form_unsupported
+              
 let of_coq_lemma rt ro ra rf env sigma clemma =
   let rel_context, qf_lemma = Term.decompose_prod_assum clemma in
   let env_lemma = List.fold_right Environ.push_rel rel_context env in
@@ -384,9 +386,18 @@ let of_coq_lemma rt ro ra rf env sigma clemma =
     let fmap (n, _, t) = string_of_name n, SmtBtype.of_coq rt t in
     List.map fmap rel_context in
   let f, args = Term.decompose_app qf_lemma in
-  let core_f = match args with
-    | [a] when (Term.eq_constr f (Lazy.force cis_true)) -> a
-    | _ -> failwith ("SmtCommand.of_coq_lemma : axiom form unsupported") in
+  let core_f =
+    if Term.eq_constr f (Lazy.force cis_true) then
+      match args with
+      | [a] -> a
+      | _ -> raise Axiom_form_unsupported
+    else if Term.eq_constr f (Lazy.force ceq) then
+      match args with
+      | [ty; arg1; arg2] when Term.eq_constr ty (Lazy.force cbool) &&
+                                Term.eq_constr arg2 (Lazy.force ctrue) ->
+         arg1
+      | _ -> raise Axiom_form_unsupported
+    else raise Axiom_form_unsupported in
   let core_smt = Form.of_coq ~declare:false
                    (Atom.of_coq ~declare:false rt ro ra env_lemma sigma)
                    rf core_f in
