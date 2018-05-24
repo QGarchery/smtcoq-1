@@ -169,6 +169,18 @@ maybeatvar:
   | ATVAR			                           { $1 }
 ;
 
+name_term:   /* returns a (SmtAtom.Form.pform or SmtAtom.hatom) option */
+  | SHARP INT                                              { Some (get_solver $2) }
+  | SHARP INT COLON LPAR term RPAR                         { apply_opt (fun x -> add_solver $2 x; x) $5 }
+  | TRUE                                                   { Some (Form Form.pform_true) }
+  | FALS                                                   { Some (Form Form.pform_false) }
+  | maybeatvar							   { let x = $1 in if mem_qvar x then None else 
+    							     Some (Atom (Atom.get ra (Aapp (get_fun $1, [||])))) }
+  | BINDVAR                                                { Some (Hashtbl.find hlets $1) }
+  | INT                                                    { Some (Atom (Atom.hatom_Z_of_int ra $1)) }
+  | BIGINT                                                 { Some (Atom (Atom.hatom_Z_of_bigint ra $1)) }
+;
+
 var_decl_list:
   | LPAR maybeatvar VAR RPAR				   { add_qvar $2 }
   | LPAR maybeatvar VAR RPAR var_decl_list		   { add_qvar $2 }
@@ -177,19 +189,6 @@ var_decl_list:
 forall_decl:
   | FORALL LPAR var_decl_list RPAR name_term		   { clear_qvar (); Form Form.pform_true }
 ; 
-
-name_term:   /* returns a (SmtAtom.Form.pform or SmtAtom.hatom) option */
-  | SHARP INT                                              { Some (get_solver $2) }
-  | SHARP INT COLON LPAR term RPAR                         { apply_opt (fun x -> add_solver $2 x; x) $5 }
-  | TRUE                                                   { Some (Form Form.pform_true) }
-  | FALS                                                   { Some (Form Form.pform_false) }
-  | VAR							   { let x = $1 in if mem_qvar x then None else 
-    							     Some (Atom (Atom.get ra (Aapp (get_fun $1, [||])))) }
-  | BINDVAR                                                { Some (Hashtbl.find hlets $1) }
-  | INT                                                    { Some (Atom (Atom.hatom_Z_of_int ra $1)) }
-  | BIGINT                                                 { Some (Atom (Atom.hatom_Z_of_bigint ra $1)) }
-;
-
 
 term:   /* returns a (SmtAtom.Form.pform or SmtAtom.hatom) option */
   | LPAR term RPAR                                         { $2 }
