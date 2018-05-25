@@ -174,7 +174,7 @@ name_term:   /* returns a (SmtAtom.Form.pform or SmtAtom.hatom) option */
   | SHARP INT COLON LPAR term RPAR                         { apply_opt (fun x -> add_solver $2 x; x) $5 }
   | TRUE                                                   { Some (Form Form.pform_true) }
   | FALS                                                   { Some (Form Form.pform_false) }
-  | var_atvar							   { let x = $1 in if mem_qvar x then None else 
+  | var_atvar						   { let x = $1 in if mem_qvar x then None else 
     							     Some (Atom (Atom.get ra (Aapp (get_fun $1, [||])))) }
   | BINDVAR                                                { Some (Hashtbl.find hlets $1) }
   | INT                                                    { Some (Atom (Atom.hatom_Z_of_int ra $1)) }

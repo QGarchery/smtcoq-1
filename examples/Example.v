@@ -11,18 +11,16 @@ Local Open Scope int63_scope.
 Open Scope Z_scope.
 
 Parameter h : Z -> Z.
-Axiom h1h2 : andb (Zeq_bool (h 1) 3) (Zeq_bool (h 2) 4) = true.
+Axiom h1h2 : andb (Zeq_bool (h 1) 3) (Zeq_bool (h 2) 4).
 
 Lemma h1 :
   Zeq_bool (h 1) 3.
 
 Proof.
-  Set Printing All.
   Print h1h2.
-  
-  verit h1h2.
+  assert (G := h1h2).
+  verit G.
 Qed.
-
 
 Parameter f' : Z -> Z.
 Parameter g : Z -> Z.

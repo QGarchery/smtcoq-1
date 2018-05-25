@@ -399,21 +399,24 @@ let lit_of_atom_form_lit rf = function
 let solver : (int,atom_form_lit) Hashtbl.t = Hashtbl.create 17
 let get_solver id =
   try Hashtbl.find solver id
-  with | Not_found -> failwith ("VeritSyntax.get_solver : solver variable number "^(string_of_int id)^" not found\n")
+  with | Not_found -> failwith ("VeritSyntax.get_solver : solver variable"^
+                                  "number "^(string_of_int id)^" not found\n")
 let add_solver id cl = Hashtbl.add solver id cl
 let clear_solver () = Hashtbl.clear solver
 
 let btypes : (string, SmtBtype.btype) Hashtbl.t = Hashtbl.create 17
 let get_btype id =
   try Hashtbl.find btypes id
-  with | Not_found -> failwith ("VeritSyntax.get_btype : sort symbol \""^id^"\" not found\n")
+  with | Not_found -> failwith ("VeritSyntax.get_btype : sort symbol \""^
+                                  id^"\" not found\n")
 let add_btype id cl = Hashtbl.add btypes id cl
 let clear_btypes () = Hashtbl.clear btypes
 
 let funs : (string,indexed_op) Hashtbl.t = Hashtbl.create 17
 let get_fun id =
   try Hashtbl.find funs id
-  with | Not_found -> failwith ("VeritSyntax.get_fun : function symbol \""^id^"\" not found\n")
+  with | Not_found -> failwith ("VeritSyntax.get_fun : function symbol \""
+                                ^id^"\" not found\n")
 let add_fun id cl = Hashtbl.add funs id cl
 let clear_funs () = Hashtbl.clear funs
 

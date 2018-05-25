@@ -406,21 +406,25 @@ let of_coq_lemma rt ro ra rf env sigma clemma =
   | _ -> Form.get ~declare:false rf (Fapp (Fforall forall_args, [|core_smt|]))
 
 
-let core_tactic call_solver rt ro ra rf lpl env sigma concl =
+let core_tactic call_solver rt ro ra rf lpl_id env sigma concl =
   let a, b = get_arguments concl in
 
-  (* let lcpl = List.map (fun pl -> Lazy.force (gen_constant [["Top"]] (Names.string_of_id pl))) lpl in *)
-
-  let lcpl = List.map (fun id -> Term.mkVar id) lpl in
-
-  let lclemma = List.map (Retyping.get_type_of env sigma) lcpl in
-
+  let lemma_plemma id =
+    let type_of= Retyping.get_type_of env sigma in
+    try
+      let t = Term.mkVar id in
+      type_of t, t
+    with _ -> 
+      let t = Lazy.force (gen_constant [["Top"]] (Names.string_of_id id)) in
+      type_of t, t in
+  let l_pl = List.map lemma_plemma lpl_id in
+  let lclemma, _ = List.split l_pl in
+  
   (* let oc = open_out "/tmp/lemmas.log" in
    * List.iter (fun t -> Printer.pr_constr t |> Pp.string_of_ppcmds |> Printf.fprintf oc "%s\n") lclemma;
    * close_out oc ; *)
 
   let ls_smtc = List.map (of_coq_lemma rt ro ra rf env sigma) lclemma in
-  let l_pl = List.combine lclemma lcpl in
 
   let (body_cast, body_nocast, cuts) =
     if ((Term.eq_constr b (Lazy.force ctrue)) || (Term.eq_constr b (Lazy.force cfalse)))
