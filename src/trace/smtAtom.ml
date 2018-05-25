@@ -58,7 +58,7 @@ let destruct (i, hval) = match i with
   | Index index -> index, hval
   | Rel_name _ -> failwith "destruct on a Rel"
 
-let dummy_indexed_op i dom codom = Index i, {tparams = dom; tres = codom; op_val = Term.mkProp}
+let dummy_indexed_op i dom codom = i, {tparams = dom; tres = codom; op_val = Term.mkProp}
 let indexed_op_index i = let index, _ = destruct i in
                          index
 

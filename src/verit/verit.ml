@@ -21,10 +21,10 @@ open Decl_kinds
 open SmtMisc
 open CoqTerms
 open SmtForm
-open SmtCertif
 open SmtTrace
 open SmtAtom
 open SmtBtype
+open SmtCertif
 
 let debug = false
 

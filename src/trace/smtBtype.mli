@@ -5,6 +5,7 @@ val indexed_type_hval : indexed_type -> Term.constr
 type btype = TZ | Tbool | Tpositive | Tindex of indexed_type
 val equal : btype -> btype -> bool
 val to_coq : btype -> Term.constr
+val to_string : btype -> string
 val to_smt : Format.formatter -> btype -> unit
 type reify_tbl
 val create : unit -> reify_tbl

@@ -247,7 +247,7 @@ module Make (Atom:ATOM) =
 	    if Array.length args <> 2 then raise (NotWellTyped pf)
 	 | Fite ->
 	    if Array.length args <> 3 then raise (NotWellTyped pf)
-         | Fforall _ -> failwith "check on forall"
+         | Fforall l -> failwith ("check on forall: " ^ List.fold_left (fun acc (s, b) -> acc ^ "(" ^ s ^ ", " ^ SmtBtype.to_string b ^ ") ") "" l)
 
     let declare reify pf =
       check pf;

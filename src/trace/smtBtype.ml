@@ -2,23 +2,23 @@ open SmtMisc
 open CoqTerms
 
 (** Syntaxified version of Coq type *)
-       
+
 type indexed_type = Term.constr gen_hashed
 
 let dummy_indexed_type i = {index = i; hval = Term.mkProp}
 let indexed_type_index i = i.index
-let indexed_type_hval i = i.hval 
-                             
+let indexed_type_hval i = i.hval
+
 type btype =
   | TZ
   | Tbool
   | Tpositive
   | Tindex of indexed_type
-                
-let index_tbl = Hashtbl.create 17 
+
+let index_tbl = Hashtbl.create 17
 
 let index_to_coq i =
-  let i = i.index in 
+  let i = i.index in
   try Hashtbl.find index_tbl i
   with Not_found ->
     let interp = mklApp cTindex [|mkInt i|] in
@@ -30,27 +30,29 @@ let equal t1 t2 =
   | Tindex i, Tindex j -> i.index == j.index
   | _ -> t1 == t2
 
-let to_coq = function 
+let to_coq = function
   | TZ -> Lazy.force cTZ
   | Tbool -> Lazy.force cTbool
   | Tpositive -> Lazy.force cTpositive
   | Tindex i -> index_to_coq i
 
-let to_smt fmt = function
-  | TZ -> Format.fprintf fmt "Int"
-  | Tbool -> Format.fprintf fmt "Bool"
-  | Tpositive -> Format.fprintf fmt "Int"
-  | Tindex i -> Format.fprintf fmt "Tindex_%i" i.index
+let to_string = function
+  | TZ -> "Int"
+  | Tbool -> "Bool"
+  | Tpositive -> "Int"
+  | Tindex i -> "Tindex_%" ^ string_of_int i.index
+
+let to_smt fmt b = Format.fprintf fmt "%s" (to_string b)
 
 (* reify table *)
-type reify_tbl = 
+type reify_tbl =
   { mutable count : int;
     tbl : (Term.constr, btype) Hashtbl.t;
     mutable cuts : (Structures.names_id_t * Term.types) list
   }
 
-let create () = 
-  let htbl = Hashtbl.create 17 in  
+let create () =
+  let htbl = Hashtbl.create 17 in
   Hashtbl.add htbl (Lazy.force cZ) TZ;
   Hashtbl.add htbl (Lazy.force cbool) Tbool;
   (* Hashtbl.add htbl (Lazy.force cpositive) Tpositive; *)
@@ -94,7 +96,7 @@ let of_coq reify t =
 
 let interp_tbl reify =
   let t = Array.make (reify.count + 1) (Lazy.force cunit_typ_eqb) in
-  let set _ = function 
+  let set _ = function
     | Tindex it -> t.(it.index) <- it.hval
     | _ -> () in
   Hashtbl.iter set reify.tbl;
@@ -111,7 +113,3 @@ let interp_to_coq reify = function
   | Tbool -> Lazy.force cbool
   | Tpositive -> Lazy.force cpositive
   | Tindex c -> mklApp cte_carrier [|c.hval|]
-
-
-
-

@@ -43,7 +43,11 @@ type nop =
 
 type indexed_op
 
-val dummy_indexed_op: int -> btype array -> btype -> indexed_op
+type index = Index of int
+           | Rel_name of string
+
+       
+val dummy_indexed_op: index -> btype array -> btype -> indexed_op
 val indexed_op_index : indexed_op -> int
 
 module Op :

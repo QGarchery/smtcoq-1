@@ -24,18 +24,19 @@ val add_clause : int -> SmtAtom.Form.t SmtCertif.clause -> unit
 val add_ref : int -> int -> unit
 val get_ref : int -> int
 val to_add : (int * SmtAtom.Form.t list) list ref
-                       
+
 val mk_clause : SmtCertif.clause_id * typ * SmtAtom.Form.t list * SmtCertif.clause_id list -> SmtCertif.clause_id
 
-val apply_opt : ('a -> 'b) -> 'a option -> 'b option
-val list_opt : 'a option list -> 'a list option
+val apply_dec : ('a -> 'b) -> bool * 'a -> bool * 'b
+val list_dec : (bool * 'a) list -> bool * 'a list
 
-                                              
+
 type atom_form_lit =
   | Atom of SmtAtom.Atom.t
   | Form of SmtAtom.Form.pform
   | Lit of SmtAtom.Form.t
-val lit_of_atom_form_lit : SmtAtom.Form.reify -> atom_form_lit -> SmtAtom.Form.t
+val lit_of_atom_form_lit : SmtAtom.Form.reify -> bool * atom_form_lit ->
+                           SmtAtom.Form.t
 val get_solver : int -> atom_form_lit
 val add_solver : int -> atom_form_lit -> unit
 
@@ -45,10 +46,10 @@ val add_btype : string -> SmtBtype.btype -> unit
 val get_fun : string -> SmtAtom.indexed_op
 val add_fun : string -> SmtAtom.indexed_op -> unit
 
-val mem_qvar : string -> bool                                                
-val add_qvar : string -> unit
+val find_opt_qvar : string -> SmtBtype.btype option 
+val add_qvar : string -> SmtBtype.btype -> unit
 val clear_qvar : unit -> unit
-                           
+
 val ra : SmtAtom.Atom.reify_tbl
 val rf : SmtAtom.Form.reify
 

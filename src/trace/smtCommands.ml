@@ -410,7 +410,7 @@ let core_tactic call_solver rt ro ra rf lpl_id env sigma concl =
   let a, b = get_arguments concl in
 
   let lemma_plemma id =
-    let type_of= Retyping.get_type_of env sigma in
+    let type_of = Retyping.get_type_of env sigma in
     try
       let t = Term.mkVar id in
       type_of t, t

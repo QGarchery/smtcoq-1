@@ -18,8 +18,7 @@ Lemma h1 :
 
 Proof.
   Print h1h2.
-  assert (G := h1h2).
-  verit G.
+  verit h1h2.
 Qed.
 
 Parameter f' : Z -> Z.
@@ -36,6 +35,7 @@ Proof.
   verit g_k_linear f'_equal_k. auto.
   auto.
 Qed.
+
 
 
 Lemma sym_zeq_bool x y :

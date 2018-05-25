@@ -273,7 +273,7 @@ let rec mk_clause (id,typ,value,ids_params) =
               then first_root := false
               else
                 begin match List.map Form.pform value with
-                | [Fapp (Ftrue, [||])] -> ()
+                | [Fapp (Fforall _, _)] -> ()
                 | _ -> to_add := (id, value) :: !to_add end;
               Root
     (* Cnf conversion *)
@@ -375,16 +375,13 @@ let rec mk_clause (id,typ,value,ids_params) =
   if id > 1 then SmtTrace.link (get_clause (id-1)) cl;
   id
 
-let apply_opt f = function 
-  | None -> None
-  | Some v -> Some (f v)
+let apply_dec f (decl, a) = decl, f a
 
-let rec list_opt = function
-  | [] -> Some []
-  | None :: t -> None 
-  | Some h :: t -> match list_opt t with
-                   | None -> None
-                   | Some l -> Some (h::l)
+let rec list_dec = function
+  | [] -> true, []
+  | (decl_h, h) :: t ->
+     let decl_t, l_t = list_dec t in
+     decl_h && decl_t, h :: l_t
 
 type atom_form_lit =
   | Atom of SmtAtom.Atom.t
@@ -392,9 +389,9 @@ type atom_form_lit =
   | Lit of SmtAtom.Form.t
 
 let lit_of_atom_form_lit rf = function
-  | Atom a -> Form.get rf (Fatom a)
-  | Form f -> Form.get rf f
-  | Lit l -> l
+  | decl, Atom a -> Form.get ~declare:decl rf (Fatom a)
+  | decl, Form f -> Form.get ~declare:decl rf f
+  | decl, Lit l -> l
 
 let solver : (int,atom_form_lit) Hashtbl.t = Hashtbl.create 17
 let get_solver id =
@@ -420,9 +417,10 @@ let get_fun id =
 let add_fun id cl = Hashtbl.add funs id cl
 let clear_funs () = Hashtbl.clear funs
 
-let qvar_tbl : (string, unit) Hashtbl.t = Hashtbl.create 10
-let mem_qvar s = Hashtbl.mem qvar_tbl s
-let add_qvar s = Hashtbl.add qvar_tbl s ()
+let qvar_tbl : (string, SmtBtype.btype) Hashtbl.t = Hashtbl.create 10
+let find_opt_qvar s = try Some (Hashtbl.find qvar_tbl s)
+                      with Not_found -> None
+let add_qvar s bt = Hashtbl.add qvar_tbl s bt
 let clear_qvar () = Hashtbl.clear qvar_tbl
 
 let ra = Atom.create ()
