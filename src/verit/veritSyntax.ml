@@ -390,7 +390,9 @@ type atom_form_lit =
 
 let lit_of_atom_form_lit rf = function
   | decl, Atom a -> Form.get ~declare:decl rf (Fatom a)
-  | decl, Form f -> Form.get ~declare:decl rf f
+  | decl, Form f -> begin match f with
+                    | Fapp (Fforall _, _) when decl -> failwith "decl is true on a forall"
+                    | _ -> Form.get ~declare:decl rf f end
   | decl, Lit l -> l
 
 let solver : (int,atom_form_lit) Hashtbl.t = Hashtbl.create 17
