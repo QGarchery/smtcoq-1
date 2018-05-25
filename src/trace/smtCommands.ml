@@ -409,7 +409,10 @@ let of_coq_lemma rt ro ra rf env sigma clemma =
 let core_tactic call_solver rt ro ra rf lpl env sigma concl =
   let a, b = get_arguments concl in
 
-  let lcpl = List.map (fun pl -> Lazy.force (gen_constant [["Top"]] (Names.string_of_id pl))) lpl in
+  (* let lcpl = List.map (fun pl -> Lazy.force (gen_constant [["Top"]] (Names.string_of_id pl))) lpl in *)
+
+  let lcpl = List.map (fun id -> Term.mkVar id) lpl in
+
   let lclemma = List.map (Retyping.get_type_of env sigma) lcpl in
 
   (* let oc = open_out "/tmp/lemmas.log" in

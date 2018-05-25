@@ -23,7 +23,6 @@ Lemma f23_f13 :
   implb (Zeq_bool (f 2) 3) (Zeq_bool (f 1) 3).
 Proof.
   verit f1.
-  now rewrite sym_zeq_bool.
 Qed.
 
   

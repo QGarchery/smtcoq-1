@@ -11,7 +11,10 @@ Lemma f1f2 :
   Zeq_bool (f 1) 3.
 
 Proof.
-  verit f1.
-  
+  assert (G : Zeq_bool (f 1) 3).
+  assert (H := f1). apply andb_true_iff in H.
+  intuition.
+  verit G.
+Qed.  
 
   
