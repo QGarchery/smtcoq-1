@@ -149,16 +149,20 @@ let rec get_pos c =
 
 let eq_clause c1 c2 = (repr c1).id = (repr c2).id
 
-let rec find_initial_id f = function
-  | [] -> assert false
-  | h::t -> if f = h then 1 else 1 + find_initial_id f t
+let rec find_initial_id to_string f = function
+  | [] -> let oc = open_out "/tmp/unfound_clause.log" in
+          let fmt = Format.formatter_of_out_channel oc in
+          Format.fprintf fmt "%s\n@." (to_string f); assert false
+  | h::t -> if to_string f = to_string h then 1 else
+              begin failwith (to_string f ^ "\n" ^ to_string h);
+              1 + find_initial_id to_string f t end 
   
-let order_roots first ls_smtc =
+let order_roots to_string first ls_smtc =
   let r = ref first in
   let acc = ref [] in
   while isRoot !r.kind do
     begin match !r.value with
-    | Some [f] -> !r.id <- find_initial_id f ls_smtc;
+    | Some [f] -> !r.id <- find_initial_id to_string f ls_smtc;
                   let n = next !r in
                   clear_links !r; r := n;
                   acc := !r :: !acc

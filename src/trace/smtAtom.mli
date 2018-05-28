@@ -97,6 +97,8 @@ module Atom :
  
       val type_of : hatom -> btype
 
+      val to_string : hatom -> string
+                               
       val to_smt : Format.formatter -> t -> unit
 
       exception NotWellTyped of atom

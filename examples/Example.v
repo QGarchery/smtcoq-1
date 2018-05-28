@@ -17,7 +17,6 @@ Lemma h1 :
   Zeq_bool (h 1) 3.
 
 Proof.
-  
   verit h1h2.
 Qed.
 

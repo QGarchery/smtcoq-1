@@ -54,7 +54,7 @@ let print_certif c where=
     Format.fprintf fmt "id:%i kind:%s pos:%s used:%i value:" id kind pos used;
     begin match !r.value with
       None -> Format.fprintf fmt "None"
-    | Some l -> List.iter (fun f -> Form.to_smt Atom.to_smt fmt f;
+    | Some l -> List.iter (fun f -> Form.to_smt Atom.to_string fmt f;
                                     Format.fprintf fmt " ") l end;
     Format.fprintf fmt "\n";
     match !r.next with
@@ -84,7 +84,8 @@ let import_trace filename first ls_smtc =
   with
     | VeritLexer.Eof ->
        close_in chan;
-       let cfirst = order_roots (VeritSyntax.get_clause !first_num) ls_smtc in
+       let cfirst = order_roots (Form.to_string Atom.to_string)
+                      (VeritSyntax.get_clause !first_num) ls_smtc in
        let f (id, value) = let t_cl = VeritSyntax.get_clause id in
                            match value with
                            | [lemma] ->
@@ -112,7 +113,6 @@ let clear_all () =
   SmtTrace.clear ();
   VeritSyntax.clear ()
 
-
 let import_all fsmt fproof =
   clear_all ();
   let rt = SmtBtype.create () in
@@ -136,7 +136,7 @@ let checker fsmt fproof = SmtCommands.checker (import_all fsmt fproof)
 (** Given a Coq formula build the proof                                       *)
 (******************************************************************************)
 
-let export out_channel rt ro ls_stmc =
+let export out_channel rt ro ls_smtc =
   let fmt = Format.formatter_of_out_channel out_channel in
   Format.fprintf fmt "(set-logic UFLIA)@.";
 
@@ -159,8 +159,8 @@ let export out_channel rt ro ls_stmc =
   ) (Op.to_list ro);
 
   List.iter (fun u -> Format.fprintf fmt "(assert ";
-                      Form.to_smt Atom.to_smt fmt u;
-                      Format.fprintf fmt ")\n") ls_stmc;
+                      Form.to_smt Atom.to_string fmt u;
+                      Format.fprintf fmt ")\n") ls_smtc;
 
   Format.fprintf fmt "(check-sat)\n";
   Format.fprintf fmt "(exit)@."

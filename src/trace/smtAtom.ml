@@ -358,37 +358,37 @@ module Atom =
 
     and compute_hint h = compute_int (atom h)
 
-    let to_smt_int fmt i =
+    let to_string_int i =
       let s1 = if i < 0 then "(- " else "" in
       let s2 = if i < 0 then ")" else "" in
       let j = if i < 0 then -i else i in
-      Format.fprintf fmt "%s%i%s" s1 j s2
+      s1 ^ string_of_int j ^ s2
 
-    let rec to_smt fmt h = to_smt_atom fmt (atom h)
+    let rec to_string h = to_string_atom (atom h)
 
-    and to_smt_atom fmt = function
-      | Acop _ as a -> to_smt_int fmt (compute_int a)
+    and to_string_atom = function
+      | Acop _ as a -> to_string_int (compute_int a)
       | Auop (UO_Zopp,h) ->
-         Format.fprintf fmt "(- ";
-         to_smt fmt h;
-         Format.fprintf fmt ")"
-      | Auop _ as a -> to_smt_int fmt (compute_int a)
-      | Abop (op,h1,h2) -> to_smt_bop fmt op h1 h2
-      | Anop (op,a) -> to_smt_nop fmt op a
+         "(- " ^ 
+         to_string h ^
+         ")"
+      | Auop _ as a -> to_string_int (compute_int a)
+      | Abop (op,h1,h2) -> to_string_bop op h1 h2
+      | Anop (op,a) -> to_string_nop op a
       | Aapp ((i, _), a) ->
          let op_string = match i with
              Index index -> "op_" ^ string_of_int index
            | Rel_name name -> name in
          if Array.length a = 0 then (
-           Format.fprintf fmt "%s" op_string;
+           op_string
          ) else (
-           Format.fprintf fmt "(%s" op_string;
-           Array.iter (fun h -> Format.fprintf fmt " "; to_smt fmt h) a;
-           Format.fprintf fmt ")"
+           "(" ^ op_string ^
+           Array.fold_left (fun acc h -> acc ^ " " ^ to_string h) "" a ^
+           ")"
          )
 
 
-    and to_smt_bop fmt op h1 h2 =
+    and to_string_bop op h1 h2 =
       let s = match op with
         | BO_Zplus -> "+"
         | BO_Zminus -> "-"
@@ -398,18 +398,20 @@ module Atom =
         | BO_Zge -> ">="
         | BO_Zgt -> ">"
         | BO_eq _ -> "=" in
-      Format.fprintf fmt "(%s " s;
-      to_smt fmt h1;
-      Format.fprintf fmt " ";
-      to_smt fmt h2;
-      Format.fprintf fmt ")"
+      "(" ^ s ^ " " ^
+      to_string h1 ^
+      " " ^
+      to_string h2 ^
+      ")"
 
-    and to_smt_nop fmt op a =
+    and to_string_nop op a =
       let s = match op with
         | NO_distinct _ -> "distinct" in
-      Format.fprintf fmt "(%s" s;
-      Array.iter (fun h -> Format.fprintf fmt " "; to_smt fmt h) a;
-      Format.fprintf fmt ")"
+      "(" ^ s ^
+      Array.fold_left (fun acc h -> acc ^ " " ^ to_string h) "" a ^
+        ")"
+
+    let to_smt fmt t = Format.fprintf fmt "%s@." (to_string t)
 
 
     exception NotWellTyped of atom
@@ -468,7 +470,7 @@ module Atom =
       let list = HashAtom.fold accumulate reify.tbl [] in
       let compare ha1 ha2 = compare ha1.index ha2.index in
       let slist = List.sort compare list in
-      let print ha = to_smt_atom fmt (atom ha); Format.fprintf fmt "\n" in
+      let print ha = to_smt fmt ha; Format.fprintf fmt "\n" in
       List.iter print slist;
       Format.fprintf fmt "@.";
       close_out oc

@@ -68,7 +68,8 @@ module type FORM =
     val is_pos : t -> bool
     val is_neg : t -> bool
 
-    val to_smt : (Format.formatter -> hatom -> unit) -> Format.formatter ->
+    val to_string : (hatom -> string) -> t -> string                         
+    val to_smt : (hatom -> string) -> Format.formatter ->
                  t -> unit
 
     (* Building formula from positive formula *)
@@ -151,43 +152,43 @@ module Make (Atom:ATOM) =
       | Pos hp -> hp.hval
       | Neg hp -> hp.hval
 
-    let rec to_smt atom_to_smt fmt = function
-      | Pos hp -> to_smt_pform atom_to_smt fmt hp.hval
-      | Neg hp ->
-         Format.fprintf fmt "(not ";
-         to_smt_pform atom_to_smt fmt hp.hval;
-         Format.fprintf fmt ")"
+    let rec to_string atom_to_string = function
+      | Pos hp -> to_string_pform atom_to_string hp.hval
+      | Neg hp -> "(not " ^
+                  to_string_pform atom_to_string hp.hval^ 
+                  ")"
 
-    and to_smt_pform atom_to_smt fmt = function
-      | Fatom a -> atom_to_smt fmt a
-      | Fapp (op,args) -> to_smt_op atom_to_smt fmt op args
+    and to_string_pform atom_to_string = function
+      | Fatom a -> atom_to_string a
+      | Fapp (op,args) -> to_string_op atom_to_string op args
 
-    and to_smt_op atom_to_smt fmt op args =
+    and to_string_op atom_to_string op args =
       let print_op = function
-        | Ftrue -> Format.fprintf fmt "true"
-        | Ffalse -> Format.fprintf fmt "false"
-        | Fand -> Format.fprintf fmt "and"
-        | For -> Format.fprintf fmt "or"
-        | Fxor -> Format.fprintf fmt "xor"
-        | Fimp -> Format.fprintf fmt "=>"
-        | Fiff -> Format.fprintf fmt "="
-        | Fite -> Format.fprintf fmt "ite"
-        | Fnot2 _ -> Format.fprintf fmt ""
-        | Fforall l -> Format.fprintf fmt "forall (";
-                       to_smt_args fmt l;
-                       Format.fprintf fmt ")" in
+        | Ftrue -> "true"
+        | Ffalse -> "false"
+        | Fand -> "and"
+        | For -> "or"
+        | Fxor -> "xor"
+        | Fimp -> "=>"
+        | Fiff -> "="
+        | Fite -> "ite"
+        | Fnot2 _ -> ""
+        | Fforall l -> "forall (" ^
+                       to_string_args l ^
+                       ")" in
       let (s1,s2) = if Array.length args = 0 then ("","") else ("(",")") in
-      Format.fprintf fmt "%s" s1;
-      print_op op;
-      Array.iter (fun h -> Format.fprintf fmt " "; to_smt atom_to_smt fmt h) args;
-      Format.fprintf fmt "%s" s2
+      s1 ^ print_op op ^
+        Array.fold_left (fun acc h -> acc ^ " " ^ to_string atom_to_string h) "" args ^ s2
 
-    and to_smt_args fmt = function
-      | [] -> ()
-      | (s, t)::rest -> Format.fprintf fmt "(%s " s;
-                        SmtBtype.to_smt fmt t;
-                        Format.fprintf fmt ") ";
-                        to_smt_args fmt rest
+    and to_string_args = function
+      | [] -> ""
+      | (s, t)::rest -> " " ^ s ^
+                        SmtBtype.to_string t ^
+                        ") " ^
+                        to_string_args rest
+
+    let to_smt atom_to_string fmt f =
+      Format.fprintf fmt "%s" (to_string atom_to_string f)
 
     module HashedForm =
       struct
