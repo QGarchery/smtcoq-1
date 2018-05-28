@@ -63,7 +63,7 @@ let print_certif c where=
   done;
   Format.fprintf fmt "@."; close_out out_channel
                             
-let import_trace filename first =
+let import_trace filename first ls_smtc =
   let chan = open_in filename in
   let lexbuf = Lexing.from_channel chan in
   let confl_num = ref (-1) in
@@ -84,7 +84,7 @@ let import_trace filename first =
   with
     | VeritLexer.Eof ->
        close_in chan;
-       let cfirst = VeritSyntax.get_clause !first_num in
+       let cfirst = order_roots (VeritSyntax.get_clause !first_num) ls_smtc in
        let f (id, value) = let t_cl = VeritSyntax.get_clause id in
                            match value with
                            | [lemma] ->
@@ -120,7 +120,7 @@ let import_all fsmt fproof =
   let ra = VeritSyntax.ra in
   let rf = VeritSyntax.rf in
   let roots = Smtlib2_genConstr.import_smtlib2 rt ro ra rf fsmt in
-  let (max_id, confl) = import_trace fproof None in
+  let (max_id, confl) = import_trace fproof None [] in
   (rt, ro, ra, rf, roots, max_id, confl)
 
 
@@ -189,7 +189,7 @@ let call_verit rt ro fl root ls_smtc =
         Structures.error "veriT returns 'unknown'"
     with End_of_file ->
           try
-            let res = import_trace logfilename (Some root) in
+            let res = import_trace logfilename (Some root) ls_smtc in
             close_in win; Sys.remove wname; res
           with
           | VeritSyntax.Sat -> Structures.error "veriT found a counter-example"

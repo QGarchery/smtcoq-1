@@ -2,7 +2,7 @@ val debug : bool
 val import_trace :
   string ->
   (SmtAtom.Form.t SmtCertif.clause * SmtAtom.Form.t) option ->
-  int * SmtAtom.Form.t SmtCertif.clause
+  SmtAtom.Form.t list -> int * SmtAtom.Form.t SmtCertif.clause
 val clear_all : unit -> unit
 val import_all :
   string ->

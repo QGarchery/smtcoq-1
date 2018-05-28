@@ -17,7 +17,7 @@ Lemma h1 :
   Zeq_bool (h 1) 3.
 
 Proof.
-  Print h1h2.
+  
   verit h1h2.
 Qed.
 
@@ -28,13 +28,13 @@ Axiom g_k_linear : forall x, Zeq_bool (g (x + 1)) ((g x) + k).
 Axiom f'_equal_k : forall x, Zeq_bool (f' x) k.
 
 
-(* Lemma apply_lemma_multiple : *)
-(*   forall x y, Zeq_bool (g (x + 1)) (g x + f' y). *)
+Lemma apply_lemma_multiple :
+  forall x y, Zeq_bool (g (x + 1)) (g x + f' y).
 
-(* Proof. *)
-(*   verit g_k_linear f'_equal_k. auto. *)
-(*   auto. *)
-(* Qed. *)
+Proof.
+  verit g_k_linear f'_equal_k. auto.
+  auto.
+Qed.
 
 (* c = Certif nclauses t confl 
    checker_b l true c = checker (PArray.make nclauses nl) None c

@@ -149,6 +149,25 @@ let rec get_pos c =
 
 let eq_clause c1 c2 = (repr c1).id = (repr c2).id
 
+let rec find_initial_id f = function
+  | [] -> assert false
+  | h::t -> if f = h then 1 else 1 + find_initial_id f t
+  
+let order_roots first ls_smtc =
+  let r = ref first in
+  let acc = ref [] in
+  while isRoot !r.kind do
+    begin match !r.value with
+    | Some [f] -> !r.id <- find_initial_id f ls_smtc;
+                  let n = next !r in
+                  clear_links !r; r := n;
+                  acc := !r :: !acc
+    | _ -> failwith "root value has unexpected form" end;
+  done;
+  let l = List.sort (fun c1 c2 -> Pervasives.compare c1.id c2.id) !acc in
+  List.fold_right (fun c1 c2 -> link c1 c2; c1) l !r
+  
+                                                     
 
 (* <add_scertifs> adds the clauses <to_add> after the roots and makes sure that 
 the following clauses reference those clauses instead of the roots *)
