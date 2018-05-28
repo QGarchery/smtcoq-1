@@ -223,8 +223,11 @@ term:   /* returns a (SmtAtom.Form.pform or SmtAtom.hatom) option */
     							     | Some bt -> false, Atom (Atom.get ~declare:false ra (Aapp (dummy_indexed_op (Rel_name x) [||] bt, [||])))
 							     | None -> true, Atom (Atom.get ra (Aapp (get_fun $1, [||])))}
   | VAR args                                               { let f = $1 in let a = $2 in match find_opt_qvar f with
-    							     | Some bt -> false, Atom (Atom.get ~declare:false ra (Aapp (dummy_indexed_op (Rel_name f) [||] bt, Array.of_list (snd (list_dec a)))))
-      							     | None -> apply_dec (fun l -> Atom (Atom.get ra (Aapp (get_fun f, Array.of_list l)))) (list_dec $2) }
+    							     | Some bt -> let op = dummy_indexed_op (Rel_name f) [||] bt in
+							       	       	  false, Atom (Atom.get ~declare:false ra (Aapp (op, Array.of_list (snd (list_dec a)))))
+      							     | None -> let dl, l = list_dec $2 in
+							       	       dl, Atom (Atom.get ra ~declare:dl (Aapp (get_fun f, Array.of_list l))) }
+
 
   /* Both */
   | EQ name_term name_term                                 { let t1 = $2 in let t2 = $3 in match t1,t2 with | (decl1, Atom h1), (decl2, Atom h2) when (match Atom.type_of h1 with | SmtBtype.Tbool -> false | _ -> true) -> let decl = decl1 && decl2 in decl, Atom (Atom.mk_eq ra decl (Atom.type_of h1) h1 h2) | (decl1, t1), (decl2, t2) -> decl1 && decl2, Form (Fapp (Fiff, [|lit_of_atom_form_lit rf (decl1, t1); lit_of_atom_form_lit rf (decl2, t2)|])) }
