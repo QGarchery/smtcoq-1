@@ -40,7 +40,7 @@ let to_string = function
   | TZ -> "Int"
   | Tbool -> "Bool"
   | Tpositive -> "Int"
-  | Tindex i -> "Tindex_%" ^ string_of_int i.index
+  | Tindex i -> "Tindex_" ^ string_of_int i.index
 
 let to_smt fmt b = Format.fprintf fmt "%s" (to_string b)
 
