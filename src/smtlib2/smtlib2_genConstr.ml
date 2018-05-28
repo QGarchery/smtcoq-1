@@ -154,35 +154,35 @@ let make_root ra rf t =
           | Atom a', Atom b' ->
             (match Atom.type_of a' with
               | Tbool -> Form (Form.get rf (Fapp (Fiff, [|Form.get rf (Fatom a'); Form.get rf (Fatom b')|])))
-              | ty -> Atom (Atom.mk_eq ra ty a' b'))
+              | ty -> Atom (Atom.mk_eq ra true ty a' b'))
           | _, _ -> assert false)
       | "<", [a;b] ->
         (match make_root_term a, make_root_term b with
-          | Atom a', Atom b' -> Atom (Atom.mk_lt ra a' b')
+          | Atom a', Atom b' -> Atom (Atom.mk_lt ra true a' b')
           | _, _ -> assert false)
       | "<=", [a;b] ->
         (match make_root_term a, make_root_term b with
-          | Atom a', Atom b' -> Atom (Atom.mk_le ra a' b')
+          | Atom a', Atom b' -> Atom (Atom.mk_le ra true a' b')
           | _, _ -> assert false)
       | ">", [a;b] ->
         (match make_root_term a, make_root_term b with
-          | Atom a', Atom b' -> Atom (Atom.mk_gt ra a' b')
+          | Atom a', Atom b' -> Atom (Atom.mk_gt ra true a' b')
           | _, _ -> assert false)
       | ">=", [a;b] ->
         (match make_root_term a, make_root_term b with
-          | Atom a', Atom b' -> Atom (Atom.mk_ge ra a' b')
+          | Atom a', Atom b' -> Atom (Atom.mk_ge ra true a' b')
           | _, _ -> assert false)
       | "+", [a;b] ->
         (match make_root_term a, make_root_term b with
-          | Atom a', Atom b' -> Atom (Atom.mk_plus ra a' b')
+          | Atom a', Atom b' -> Atom (Atom.mk_plus ra true a' b')
           | _, _ -> assert false)
       | "-", [a;b] ->
         (match make_root_term a, make_root_term b with
-          | Atom a', Atom b' -> Atom (Atom.mk_minus ra a' b')
+          | Atom a', Atom b' -> Atom (Atom.mk_minus ra true a' b')
           | _, _ -> assert false)
       | "*", [a;b] ->
         (match make_root_term a, make_root_term b with
-          | Atom a', Atom b' -> Atom (Atom.mk_mult ra a' b')
+          | Atom a', Atom b' -> Atom (Atom.mk_mult ra true a' b')
           | _, _ -> assert false)
       | "-", [a] ->
         (match make_root_term a with

@@ -128,16 +128,16 @@ module Atom :
       (* Generation of atoms *)
       val hatom_Z_of_int : reify_tbl -> int -> hatom
       val hatom_Z_of_bigint : reify_tbl -> Big_int.big_int -> hatom
-      val mk_eq : reify_tbl -> btype -> hatom -> hatom -> hatom
-      val mk_lt : reify_tbl -> hatom -> hatom -> hatom
-      val mk_le : reify_tbl -> hatom -> hatom -> hatom
-      val mk_gt : reify_tbl -> hatom -> hatom -> hatom
-      val mk_ge : reify_tbl -> hatom -> hatom -> hatom
-      val mk_plus : reify_tbl -> hatom -> hatom -> hatom
-      val mk_minus : reify_tbl -> hatom -> hatom -> hatom
-      val mk_mult : reify_tbl -> hatom -> hatom -> hatom
-      val mk_opp : reify_tbl -> hatom -> hatom
-      val mk_distinct : reify_tbl -> btype -> hatom array -> hatom
+      val mk_eq : reify_tbl -> bool -> btype -> hatom -> hatom -> hatom
+      val mk_lt : reify_tbl -> bool -> hatom -> hatom -> hatom
+      val mk_le : reify_tbl -> bool -> hatom -> hatom -> hatom
+      val mk_gt : reify_tbl -> bool -> hatom -> hatom -> hatom
+      val mk_ge : reify_tbl -> bool -> hatom -> hatom -> hatom
+      val mk_plus : reify_tbl -> bool -> hatom -> hatom -> hatom
+      val mk_minus : reify_tbl -> bool -> hatom -> hatom -> hatom
+      val mk_mult : reify_tbl -> bool -> hatom -> hatom -> hatom
+      val mk_opp : reify_tbl -> ?declare:bool -> hatom -> hatom
+      val mk_distinct : reify_tbl -> btype -> ?declare:bool -> hatom array -> hatom
 
     end
 

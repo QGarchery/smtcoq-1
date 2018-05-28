@@ -21,12 +21,14 @@
   open VeritSyntax
 
   let apply_dec_atom f = function
-  | decl, Atom h -> decl, Atom (f h)
+  | decl, Atom h -> decl, Atom (f decl h)
   | _ -> assert false
 
   let apply_bdec_atom f o1 o2 =
     match o1, o2 with
-    | (decl1, Atom h1), (decl2, Atom h2) -> (decl1 && decl2, Atom (f h1 h2))
+    | (decl1, Atom h1), (decl2, Atom h2) ->
+      let decl = decl1 && decl2 in
+      decl, Atom (f decl h1 h2)
     | _ -> assert false
 
 %}
@@ -61,7 +63,7 @@ line:
   | SAT                                                    { raise Sat }
   | INT COLON LPAR typ clause                   RPAR EOL   { mk_clause ($1,$4,$5,[]) }
   | INT COLON LPAR typ clause clause_ids_params RPAR EOL   { mk_clause ($1,$4,$5,$6) }
-  | INT COLON LPAR TPQT LPAR SHARP INT COLON LPAR forall_decl RPAR RPAR INT RPAR EOL { add_solver $7 (snd $10); add_ref $7 $1; mk_clause ($1, Tpqt, [], [$13]) }
+  | INT COLON LPAR TPQT LPAR SHARP INT COLON LPAR forall_decl RPAR RPAR INT RPAR EOL { add_solver $7 $10; add_ref $7 $1; mk_clause ($1, Tpqt, [], [$13]) }
   | INT COLON LPAR FINS LPAR SHARP INT COLON LPAR OR LPAR NOT SHARP INT RPAR lit RPAR RPAR RPAR EOL
   { mk_clause ($1, Fins, [snd $16], [get_ref $14]) }
 ;
@@ -168,8 +170,8 @@ var_atvar:
 ;
 
 name_term:   /* returns a (SmtAtom.Form.pform or SmtAtom.hatom) option */
-  | SHARP INT                                              { true, get_solver $2 }
-  | SHARP INT COLON LPAR term RPAR                         { apply_dec (fun x -> add_solver $2 x; x) $5 }
+  | SHARP INT                                              { get_solver $2 }
+  | SHARP INT COLON LPAR term RPAR                         { let u = $5 in add_solver $2 u; u }
   | TRUE                                                   { true, Form Form.pform_true }
   | FALS                                                   { true, Form Form.pform_false }
   | var_atvar						   { let x = $1 in match find_opt_qvar x with
@@ -212,9 +214,11 @@ term:   /* returns a (SmtAtom.Form.pform or SmtAtom.hatom) option */
   | PLUS name_term name_term                               { apply_bdec_atom (Atom.mk_plus ra) $2 $3 }
   | MULT name_term name_term                               { apply_bdec_atom (Atom.mk_mult ra) $2 $3 }
   | MINUS name_term name_term                              { apply_bdec_atom (Atom.mk_minus ra) $2 $3}
-  | MINUS name_term                                        { apply_dec_atom (Atom.mk_opp ra) $2 }
-  | OPP name_term                                          { apply_dec_atom (Atom.mk_opp ra) $2 }
-  | DIST args                                              { apply_dec (fun l -> let a = Array.of_list l in Atom (Atom.mk_distinct ra (Atom.type_of a.(0)) a)) (list_dec $2) }
+  | MINUS name_term                                        { apply_dec_atom (fun d a -> Atom.mk_opp ra ~declare:d a) $2 }
+  | OPP name_term                                          { apply_dec_atom (fun d a -> Atom.mk_opp ra ~declare:d a) $2 }
+/*  | DIST args                                              { let da, la = list_dec $2 in
+  let a = Array.of_list la in
+  da, Atom (Atom.mk_distinct ra (Atom.type_of a.(0)) ?declare:da a) } */
   | VAR                                                    {let x = $1 in match find_opt_qvar x with
     							     | Some bt -> false, Atom (Atom.get ~declare:false ra (Aapp (dummy_indexed_op (Rel_name x) [||] bt, [||])))
 							     | None -> true, Atom (Atom.get ra (Aapp (get_fun $1, [||])))}
@@ -223,7 +227,7 @@ term:   /* returns a (SmtAtom.Form.pform or SmtAtom.hatom) option */
       							     | None -> apply_dec (fun l -> Atom (Atom.get ra (Aapp (get_fun f, Array.of_list l)))) (list_dec $2) }
 
   /* Both */
-  | EQ name_term name_term                                 { let t1 = $2 in let t2 = $3 in match t1,t2 with | (decl1, Atom h1), (decl2, Atom h2) when (match Atom.type_of h1 with | SmtBtype.Tbool -> false | _ -> true) -> decl1 && decl2, Atom (Atom.mk_eq ra (Atom.type_of h1) h1 h2) | (decl1, t1), (decl2, t2) -> decl1 && decl2, Form (Fapp (Fiff, [|lit_of_atom_form_lit rf (decl1, t1); lit_of_atom_form_lit rf (decl2, t2)|])) }
+  | EQ name_term name_term                                 { let t1 = $2 in let t2 = $3 in match t1,t2 with | (decl1, Atom h1), (decl2, Atom h2) when (match Atom.type_of h1 with | SmtBtype.Tbool -> false | _ -> true) -> let decl = decl1 && decl2 in decl, Atom (Atom.mk_eq ra decl (Atom.type_of h1) h1 h2) | (decl1, t1), (decl2, t2) -> decl1 && decl2, Form (Fapp (Fiff, [|lit_of_atom_form_lit rf (decl1, t1); lit_of_atom_form_lit rf (decl2, t2)|])) }
   | EQ nlit lit                                            { match $2, $3 with (decl1, t1), (decl2, t2) -> decl1 && decl2, Form (Fapp (Fiff, [|t1; t2|])) }
   | EQ name_term nlit                                      { match $2, $3 with (decl1, t1), (decl2, t2) -> decl1 && decl2, Form (Fapp (Fiff, [|lit_of_atom_form_lit rf (decl1, t1); t2|])) }
   | LET LPAR bindlist RPAR name_term                       { $3; $5 }

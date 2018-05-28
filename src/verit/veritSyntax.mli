@@ -37,8 +37,8 @@ type atom_form_lit =
   | Lit of SmtAtom.Form.t
 val lit_of_atom_form_lit : SmtAtom.Form.reify -> bool * atom_form_lit ->
                            SmtAtom.Form.t
-val get_solver : int -> atom_form_lit
-val add_solver : int -> atom_form_lit -> unit
+val get_solver : int -> bool * atom_form_lit
+val add_solver : int -> bool * atom_form_lit -> unit
 
 val get_btype : string -> SmtBtype.btype
 val add_btype : string -> SmtBtype.btype -> unit

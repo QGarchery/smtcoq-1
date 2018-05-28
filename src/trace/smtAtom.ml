@@ -625,11 +625,11 @@ module Atom =
 
     (* Generation of atoms *)
 
-    let mk_nop op reify a = get reify (Anop (op,a))
+    let mk_nop op reify ?declare:(decl=true) a = get ~declare:decl reify (Anop (op,a))
 
-    let mk_binop op reify h1 h2 = get reify (Abop (op, h1, h2))
+    let mk_binop op reify decl h1 h2 = get ~declare:decl reify (Abop (op, h1, h2))
 
-    let mk_unop op reify h = get reify (Auop (op, h))
+    let mk_unop op reify ?declare:(decl=true) h = get ~declare:decl reify (Auop (op, h))
 
     let rec hatom_pos_of_int reify i =
       if i <= 1 then
@@ -666,17 +666,18 @@ module Atom =
         else
           mk_unop UO_Zneg reify (hatom_pos_of_bigint reify (Big_int.minus_big_int i))
 
-    let mk_eq reify ty h1 h2 =
+    let mk_eq reify decl ty h1 h2 =
       let op = BO_eq ty in
       try
-        HashAtom.find reify.tbl (Abop (op, h1, h2))
+        HashAtom.find reify.tbl (Abop (op, h2, h1))
       with
       | Not_found ->
-         try
-           HashAtom.find reify.tbl (Abop (op, h2, h1))
-         with
-         | Not_found ->
-            declare reify (Abop (op, h1, h2))
+         get ~declare:decl reify (Abop (op, h1, h2))
+         (* try
+          *   HashAtom.find reify.tbl (Abop (op, h1, h2))
+          * with
+          * | Not_found ->
+          *    declare reify (Abop (op, h1, h2)) *)
 
     let mk_lt = mk_binop BO_Zlt
     let mk_le = mk_binop BO_Zle

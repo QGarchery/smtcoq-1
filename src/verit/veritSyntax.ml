@@ -395,7 +395,7 @@ let lit_of_atom_form_lit rf = function
                     | _ -> Form.get ~declare:decl rf f end
   | decl, Lit l -> l
 
-let solver : (int,atom_form_lit) Hashtbl.t = Hashtbl.create 17
+let solver : (int, (bool * atom_form_lit)) Hashtbl.t = Hashtbl.create 17
 let get_solver id =
   try Hashtbl.find solver id
   with | Not_found -> failwith ("VeritSyntax.get_solver : solver variable"^
