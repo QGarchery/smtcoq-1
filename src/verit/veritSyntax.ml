@@ -228,7 +228,6 @@ let merge ids_params =
     rest
   with Not_found -> ids_params
 
-let first_root = ref true 
 let to_add = ref []
                      
 let rec mk_clause (id,typ,value,ids_params) =
@@ -269,13 +268,8 @@ let rec mk_clause (id,typ,value,ids_params) =
         | [] -> assert false)
 
     (* Roots *)
-    | Inpu -> if !first_root
-              then first_root := false
-              else
-                begin match List.map Form.pform value with
-                | [Fapp (Fforall _, _)] -> ()
-                | _ -> to_add := (id, value) :: !to_add end;
-              Root
+    | Inpu -> Root
+                
     (* Cnf conversion *)
     | True -> Other SmtCertif.True
     | Fals -> Other False
@@ -431,7 +425,6 @@ let rf = Form.create ()
 let hlets : (string, atom_form_lit) Hashtbl.t = Hashtbl.create 17
 
 let clear_mk_clause () = 
-  first_root := true;
   to_add := [];
   clear_ref ()
                 

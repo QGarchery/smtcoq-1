@@ -10,43 +10,13 @@ Local Open Scope int63_scope.
 
 Open Scope Z_scope.
 
+Parameter f : Z -> Z.
+Axiom f0 : Zeq_bool 0 (f 0).
 
-Parameter a b c d : bool.
-Axiom andab : andb a b.
-Axiom orcd  : orb c d.
-
-Lemma sat6 :
-  orb c (andb a (andb b d)).
+Lemma justf0 :
+  Zeq_bool 0 (f 0).
 Proof.
-  verit andab orcd.
-Qed.  
-
-
-Verit_Checker "sat6.smt2" "sat6.vtlog".
-
-(* Parameter h : Z -> Z. *)
-(* Axiom h1h2 : andb (Zeq_bool (h 1) 3) (Zeq_bool (h 2) 4). *)
-
-Lemma h1 :
-  Zeq_bool (h 1) 3.
-
-Proof.
-  verit h1h2.
-Qed.
-
-Parameter f' : Z -> Z.
-Parameter g : Z -> Z.
-Parameter k : Z.
-Axiom g_k_linear : forall x, Zeq_bool (g (x + 1)) ((g x) + k).
-Axiom f'_equal_k : forall x, Zeq_bool (f' x) k.
-
-
-Lemma apply_lemma_multiple :
-  forall x y, Zeq_bool (g (x + 1)) (g x + f' y).
-
-Proof.
-  verit g_k_linear f'_equal_k. auto.
-  auto.
+  verit f0.
 Qed.
 
 (* c = Certif nclauses t confl 
@@ -56,48 +26,25 @@ Qed.
    Atom.wt t_i t_func t_atom && 
    euf_checker (* t_atom t_form *) C.is_false (add_roots (S.make nclauses) d used_roots) t confl *)
 Close Scope Z_scope.
-Parameter x : Z.
-Parameter y : Z.
-Parameter app114026857 :
-(forall x : Z, Zeq_bool (g (x + 1)) (g x + k)) -> Zeq_bool (g (x + 1)) (g x + k).
-Parameter app474362299 : (forall x : Z, Zeq_bool (f' x) k) -> Zeq_bool (f' y) k.
+
 Definition t_i := [! | unit_typ_eqb !] : array typ_eqb.
-Definition t_func :=
-[!Tval t_i (Typ.TZ :: nil, Typ.TZ) g;Tval t_i (nil, Typ.TZ) k;
-Tval t_i (Typ.TZ :: nil, Typ.TZ) f';Tval t_i (nil, Typ.TZ) x;
-Tval t_i (nil, Typ.TZ) y | Tval t_i (nil, Typ.Tbool) true !] : 
-array (tval t_i).
-Definition t_atom :=
-[!Aapp 3 nil;Acop CO_xH;Auop UO_Zpos 1;Abop BO_Zplus 0 2;
-Aapp 0 (3 :: nil);Aapp 0 (0 :: nil);Aapp 4 nil;Aapp 2 (6 :: nil);
-Abop BO_Zplus 5 7;Abop (BO_eq Typ.TZ) 4 8;Aapp 0 (9223372036854775807 :: nil);
-Aapp 1 nil;Aapp 2 (9223372036854775807 :: nil);Abop (BO_eq Typ.TZ) 7 11;
-Abop BO_Zplus 5 11;Abop (BO_eq Typ.TZ) 4 14;Abop (BO_eq Typ.TZ) 8 14;
-Abop (BO_eq Typ.TZ) 5 5 | Acop CO_xH !] : array atom.
-Definition t_form := [!Ftrue;Ffalse;Fatom 9;Fatom 13;Fatom 15;Fatom 16;Fatom 17 | Ftrue !] :array form.
-Definition t :=[![!ForallInst (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 3
-        f'_equal_k (concl:=6 :: nil) app474362299;ForallInst (t_i:=t_i)
-                                                  (t_func:=t_func)
-                                                  (t_atom:=t_atom)
-                                                  (t_form:=t_form) 2 g_k_linear
-                                                  (concl:=
-                                                  8 :: nil) app114026857;
-    EqTr (t_i:=t_i) t_func t_atom t_form 4 4 (11 :: 9 :: nil);
-    EqCgr (t_i:=t_i) t_func t_atom t_form 5 10 (Some 13 :: Some 7 :: nil);
-    EqTr (t_i:=t_i) t_func t_atom t_form 6 12 nil;Res (t_i:=t_i) t_func t_atom
-                                                  t_form 6 
-                                                  [!5;6 | 0 !];
-    Res (t_i:=t_i) t_func t_atom t_form 6 [!4;6 | 0 !];
-    Res (t_i:=t_i) t_func t_atom t_form 2 [!6;1;3;2 | 0 !] |
+Definition t_func := [!Tval t_i (Typ.TZ :: nil, Typ.TZ) f | Tval t_i (nil, Typ.Tbool) true !]
+: array (tval t_i).
+Definition t_atom := [!Acop CO_Z0;Aapp 0 (0 :: nil);Abop (BO_eq Typ.TZ) 0 1 | Acop CO_xH !] :
+array atom.
+Definition t_form := [!Ftrue;Ffalse;Fatom 2 | Ftrue !] : array form.
+Definition t := [![!Res (t_i:=t_i) t_func t_atom t_form 1 [!2;1 | 0 !] |
     Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !] !] |
   [! | Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !] !] !].
 Definition c :=
-Certif (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 7 t 2 :
+  Certif (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form)
+         3 t 1 :
 certif (t_i:=t_i) t_func t_atom t_form.
 
+
 Definition l := 4.
-Definition nclauses := 7.
-Definition confl := 2.
+Definition nclauses := 3.
+Definition confl := 1.
 
 Definition nl := Lit.neg l.
 Definition d := (PArray.make nclauses nl).
@@ -146,6 +93,47 @@ Compute (up_to 7).
 Compute (up_to 8).
 Compute (up_to 9).
 Compute (up_to 10).
+
+
+
+(* Parameter a b c d : bool. *)
+(* Axiom andab : andb a b. *)
+(* Axiom orcd  : orb c d. *)
+
+(* Lemma sat6 : *)
+(*   orb c (andb a (andb b d)). *)
+(* Proof. *)
+(*   verit andab orcd. *)
+(* Qed.   *)
+
+
+(* Verit_Checker "sat6.smt2" "sat6.vtlog". *)
+
+(* Parameter h : Z -> Z. *)
+(* Axiom h1h2 : andb (Zeq_bool (h 1) 3) (Zeq_bool (h 2) 4). *)
+
+Lemma h1 :
+  Zeq_bool (h 1) 3.
+
+Proof.
+  verit h1h2.
+Qed.
+
+Parameter f' : Z -> Z.
+Parameter g : Z -> Z.
+Parameter k : Z.
+Axiom g_k_linear : forall x, Zeq_bool (g (x + 1)) ((g x) + k).
+Axiom f'_equal_k : forall x, Zeq_bool (f' x) k.
+
+
+Lemma apply_lemma_multiple :
+  forall x y, Zeq_bool (g (x + 1)) (g x + f' y).
+
+Proof.
+  verit g_k_linear f'_equal_k. auto.
+  auto.
+Qed.
+
 
 
 Lemma sym_zeq_bool x y :

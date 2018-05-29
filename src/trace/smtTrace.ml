@@ -152,26 +152,30 @@ let eq_clause c1 c2 = (repr c1).id = (repr c2).id
 let rec find_initial_id to_string f = function
   | [] -> let oc = open_out "/tmp/unfound_clause.log" in
           let fmt = Format.formatter_of_out_channel oc in
-          Format.fprintf fmt "%s\n@." (to_string f); assert false
+          Format.fprintf fmt "%s\n@." (to_string f); close_out oc; assert false
   | h::t -> if to_string f = to_string h then 1 else
               1 + find_initial_id to_string f t
   
 let order_roots to_string first ls_smtc =
-  first
-  (* let r = ref first in
-   * let acc = ref [] in
-   * while isRoot !r.kind do
-   *   begin match !r.value with
-   *   | Some [f] -> !r.id <- find_initial_id to_string f ls_smtc;
-   *                 let n = next !r in
-   *                 clear_links !r; r := n;
-   *                 acc := !r :: !acc
-   *   | _ -> failwith "root value has unexpected form" end;
-   * done;
-   * let l = List.sort (fun c1 c2 -> Pervasives.compare c1.id c2.id) !acc in
-   * List.fold_right (fun c1 c2 -> link c1 c2; c1) l !r *)
-  
-                                                     
+  let r = ref first in
+  let acc = ref [] in
+  while isRoot !r.kind do
+    begin match !r.value with
+    | Some [f] -> let n = next !r in
+                  clear_links !r;                   
+                  acc := (find_initial_id to_string f ls_smtc, !r) :: !acc;
+                  r := n
+    | _ -> failwith "root value has unexpected form" end
+  done;
+  let _, lr = List.sort (fun (i1, _) (i2, _) -> Pervasives.compare i1 i2) !acc
+             |> List. split in
+  let link_to c1 c2 =
+    let curr_id = c2.id -1 in
+    c1.id <- curr_id;
+    c1.pos <- Some curr_id;
+    link c1 c2; c1 in
+  List.fold_right link_to lr !r, lr
+
 
 (* <add_scertifs> adds the clauses <to_add> after the roots and makes sure that 
 the following clauses reference those clauses instead of the roots *)
@@ -184,17 +188,17 @@ let add_scertifs to_add c =
   done;
   let after_roots = !r in
   r := prev !r;
-  let tbl : ('a SmtCertif.clause, 'a SmtCertif.clause) Hashtbl.t =
+  let tbl : (int, 'a SmtCertif.clause) Hashtbl.t =
     Hashtbl.create 17 in
   let rec push_all = function
     | [] -> ()
     | (kind, ov, t_cl)::t -> let cl = mk_scertif kind ov in
-                             Hashtbl.add tbl t_cl cl;
+                             Hashtbl.add tbl t_cl.id cl;
                              link !r cl;
                              r := next !r;
                              push_all t in
   push_all to_add; link !r after_roots; r:= after_roots;
-  let uc c = try Hashtbl.find tbl c
+  let uc c = try Hashtbl.find tbl c.id
              with Not_found -> c in
   let update_kind = function
     | Root -> Root
@@ -429,7 +433,8 @@ let to_coq to_lit interp (cstep,
            mklApp cForallInst [|out_c c; clemma; cplemma; concl'; app_var|]
 
         | Qf_lemma (id, concl) ->
-           let clemma, cplemma = List.nth l_pl (id-2) in
+           let clemma, cplemma = try List.nth l_pl (id-2)
+                                 with _ -> failwith ("list of length " ^ string_of_int (List.length l_pl) ^ ", trying to get element " ^ string_of_int (id-2)) in
            let concl' = out_cl [concl] in
            let app = Term.mkLambda (Names.Anonymous, clemma, Term.mkRel 1) in
            mklApp cForallInst [|out_c c; clemma; cplemma; concl'; app|]

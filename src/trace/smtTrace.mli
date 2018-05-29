@@ -26,7 +26,7 @@ val set_same : 'a SmtCertif.clause -> 'a SmtCertif.clause -> unit
 val get_pos : 'a SmtCertif.clause -> int
 val eq_clause : 'a SmtCertif.clause -> 'b SmtCertif.clause -> bool
 val order_roots : ('a -> string) -> 'a SmtCertif.clause ->
-                  'a list -> 'a SmtCertif.clause
+                  'a list -> 'a SmtCertif.clause * 'a SmtCertif.clause list
 val add_scertifs : ('a SmtCertif.clause_kind * 'a list option * 'a SmtCertif.clause) list -> 
                    'a SmtCertif.clause -> 'a SmtCertif.clause
 val select : 'a SmtCertif.clause -> unit

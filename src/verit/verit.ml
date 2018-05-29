@@ -53,7 +53,7 @@ let print_certif c where=
     let used = !r.used in
     Format.fprintf fmt "id:%i kind:%s pos:%s used:%i value:" id kind pos used;
     begin match !r.value with
-      None -> Format.fprintf fmt "None"
+    | None -> Format.fprintf fmt "None"
     | Some l -> List.iter (fun f -> Form.to_smt Atom.to_string fmt f;
                                     Format.fprintf fmt " ") l end;
     Format.fprintf fmt "\n";
@@ -84,26 +84,36 @@ let import_trace filename first ls_smtc =
   with
     | VeritLexer.Eof ->
        close_in chan;
-       let cfirst = order_roots (Form.to_string Atom.to_string)
-                      (VeritSyntax.get_clause !first_num) ls_smtc in
-       let f (id, value) = let t_cl = VeritSyntax.get_clause id in
-                           match value with
-                           | [lemma] ->
-                              Other (Qf_lemma (id, lemma)), Some value, t_cl
-                           | _ -> failwith "lemma has multiple clauses" in
-       let to_add = List.map f !VeritSyntax.to_add in
+       let cfirst = (VeritSyntax.get_clause !first_num) in
+       print_certif cfirst "/tmp/parsing.log";
+       let cfirst, lr = order_roots (Form.to_string Atom.to_string)
+                          cfirst ls_smtc in
+       print_certif cfirst "/tmp/order.log";
+       let to_add = ref [] in
+       let add_qf_lemma r = match r.value with
+         | Some [l] ->
+            (match Form.pform l with
+             | Fapp (Fforall _, _) -> ()
+             | _ -> to_add := (Other (Qf_lemma (r.id, l)), r.value, r)::!to_add)
+         | _ -> failwith "value of lemma has unexpected form" in
+       List.iter add_qf_lemma (List.tl lr);
        let to_add = begin match first, cfirst.value with
          | Some (root, l), Some [fl] when not (Form.equal l fl) ->
             let cfirst_value = cfirst.value in
             cfirst.value <- root.value;
             [Other (ImmFlatten (root, fl)), cfirst_value, cfirst]
-         | _, _ -> [] end @ to_add in
+         | _, _ -> [] end @ !to_add in
        let confl = match to_add with
          | [] -> VeritSyntax.get_clause !confl_num
          | _  -> add_scertifs to_add cfirst in
+       print_certif cfirst "/tmp/add_scertif.log";
        select confl;
+       print_certif cfirst "/tmp/select.log";
        occur confl;
-       (alloc cfirst, confl)
+       print_certif cfirst "/tmp/occur.log";
+       let u = (alloc cfirst, confl) in
+       print_certif cfirst "/tmp/alloc.log";
+       u
     | Parsing.Parse_error -> failwith ("Verit.import_trace: parsing error line "
                                        ^ (string_of_int !line))
 
