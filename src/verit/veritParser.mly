@@ -216,9 +216,9 @@ term:   /* returns a (SmtAtom.Form.pform or SmtAtom.hatom) option */
   | MINUS name_term name_term                              { apply_bdec_atom (Atom.mk_minus ra) $2 $3}
   | MINUS name_term                                        { apply_dec_atom (fun d a -> Atom.mk_opp ra ~declare:d a) $2 }
   | OPP name_term                                          { apply_dec_atom (fun d a -> Atom.mk_opp ra ~declare:d a) $2 }
-/*  | DIST args                                              { let da, la = list_dec $2 in
-  let a = Array.of_list la in
-  da, Atom (Atom.mk_distinct ra (Atom.type_of a.(0)) ?declare:da a) } */
+  | DIST args                                              { let da, la = list_dec $2 in
+    	 						     let a = Array.of_list la in
+							     da, Atom (Atom.mk_distinct ra (Atom.type_of a.(0)) ~declare:da a) }
   | VAR                                                    {let x = $1 in match find_opt_qvar x with
     							     | Some bt -> false, Atom (Atom.get ~declare:false ra (Aapp (dummy_indexed_op (Rel_name x) [||] bt, [||])))
 							     | None -> true, Atom (Atom.get ra (Aapp (get_fun $1, [||])))}

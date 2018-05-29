@@ -122,8 +122,6 @@ let get_other c s =
   | Res _ -> failwith "get_other on a Res"
   | Root -> failwith "get_other on a Root"
 
-(* | _ -> Printf.printf "get_other %s\n" s; assert false *)
-
 let get_val c =
   match c.value with
   | None -> assert false
@@ -153,8 +151,8 @@ let rec find_initial_id to_string f = function
   | [] -> let oc = open_out "/tmp/unfound_clause.log" in
           let fmt = Format.formatter_of_out_channel oc in
           Format.fprintf fmt "%s\n@." (to_string f); close_out oc; assert false
-  | h::t -> if to_string f = to_string h then 1 else
-              1 + find_initial_id to_string f t
+  | h::t -> if to_string f = to_string h then 1
+            else 1 + find_initial_id to_string f t
   
 let order_roots to_string first ls_smtc =
   let r = ref first in
