@@ -20,4 +20,5 @@ Export Atom Form Sat_Checker Cnf_Checker Euf_Checker.
 
 Declare ML Module "smtcoq_plugin".
 
-
+Parameter h : Z -> Z.
+Axiom h1h2 : andb (Zeq_bool (h 1) 3) (Zeq_bool (h 2) 4).

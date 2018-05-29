@@ -10,8 +10,22 @@ Local Open Scope int63_scope.
 
 Open Scope Z_scope.
 
-Parameter h : Z -> Z.
-Axiom h1h2 : andb (Zeq_bool (h 1) 3) (Zeq_bool (h 2) 4).
+
+Parameter a b c d : bool.
+Axiom andab : andb a b.
+Axiom orcd  : orb c d.
+
+Lemma sat6 :
+  orb c (andb a (andb b d)).
+Proof.
+  verit andab orcd.
+Qed.  
+
+
+Verit_Checker "sat6.smt2" "sat6.vtlog".
+
+(* Parameter h : Z -> Z. *)
+(* Axiom h1h2 : andb (Zeq_bool (h 1) 3) (Zeq_bool (h 2) 4). *)
 
 Lemma h1 :
   Zeq_bool (h 1) 3.

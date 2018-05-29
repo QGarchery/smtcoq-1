@@ -154,22 +154,22 @@ let rec find_initial_id to_string f = function
           let fmt = Format.formatter_of_out_channel oc in
           Format.fprintf fmt "%s\n@." (to_string f); assert false
   | h::t -> if to_string f = to_string h then 1 else
-              begin failwith (to_string f ^ "\n" ^ to_string h);
-              1 + find_initial_id to_string f t end 
+              1 + find_initial_id to_string f t
   
 let order_roots to_string first ls_smtc =
-  let r = ref first in
-  let acc = ref [] in
-  while isRoot !r.kind do
-    begin match !r.value with
-    | Some [f] -> !r.id <- find_initial_id to_string f ls_smtc;
-                  let n = next !r in
-                  clear_links !r; r := n;
-                  acc := !r :: !acc
-    | _ -> failwith "root value has unexpected form" end;
-  done;
-  let l = List.sort (fun c1 c2 -> Pervasives.compare c1.id c2.id) !acc in
-  List.fold_right (fun c1 c2 -> link c1 c2; c1) l !r
+  first
+  (* let r = ref first in
+   * let acc = ref [] in
+   * while isRoot !r.kind do
+   *   begin match !r.value with
+   *   | Some [f] -> !r.id <- find_initial_id to_string f ls_smtc;
+   *                 let n = next !r in
+   *                 clear_links !r; r := n;
+   *                 acc := !r :: !acc
+   *   | _ -> failwith "root value has unexpected form" end;
+   * done;
+   * let l = List.sort (fun c1 c2 -> Pervasives.compare c1.id c2.id) !acc in
+   * List.fold_right (fun c1 c2 -> link c1 c2; c1) l !r *)
   
                                                      
 

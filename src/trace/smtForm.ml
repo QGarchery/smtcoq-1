@@ -181,11 +181,10 @@ module Make (Atom:ATOM) =
         Array.fold_left (fun acc h -> acc ^ " " ^ to_string atom_to_string h) "" args ^ s2
 
     and to_string_args = function
-      | [] -> ""
-      | (s, t)::rest -> " " ^ s ^
-                        SmtBtype.to_string t ^
-                        ") " ^
-                        to_string_args rest
+      | [] -> " "
+      | (s, t)::rest -> " (" ^ s ^ " " ^ SmtBtype.to_string t ^ ")"
+                        ^ to_string_args rest
+
 
     let to_smt atom_to_string fmt f =
       Format.fprintf fmt "%s" (to_string atom_to_string f)

@@ -30,4 +30,4 @@ val call_verit :
   SmtAtom.Form.t SmtCertif.clause * SmtAtom.Form.t ->
   SmtAtom.Form.t list ->
   int * SmtAtom.Form.t SmtCertif.clause
-val tactic : Names.identifier list -> Proof_type.tactic
+val tactic : Term.constr list -> Proof_type.tactic
