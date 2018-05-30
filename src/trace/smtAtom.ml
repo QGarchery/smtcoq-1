@@ -51,7 +51,7 @@ type op_def = {
 
 type index = Index of int
            | Rel_name of string
-                
+
 type indexed_op = index * op_def
 
 let destruct (i, hval) = match i with
@@ -369,7 +369,7 @@ module Atom =
     and to_string_atom = function
       | Acop _ as a -> to_string_int (compute_int a)
       | Auop (UO_Zopp,h) ->
-         "(- " ^ 
+         "(- " ^
          to_string h ^
          ")"
       | Auop _ as a -> to_string_int (compute_int a)
@@ -671,15 +671,12 @@ module Atom =
     let mk_eq reify decl ty h1 h2 =
       let op = BO_eq ty in
       try
-        HashAtom.find reify.tbl (Abop (op, h2, h1))
-      with
-      | Not_found ->
-         get ~declare:decl reify (Abop (op, h1, h2))
-         (* try
-          *   HashAtom.find reify.tbl (Abop (op, h1, h2))
-          * with
-          * | Not_found ->
-          *    declare reify (Abop (op, h1, h2)) *)
+        HashAtom.find reify.tbl (Abop (op, h1, h2))
+      with Not_found ->
+        try
+          HashAtom.find reify.tbl (Abop (op, h2, h1))
+        with Not_found ->
+          get ~declare:decl reify (Abop (op, h1, h2))
 
     let mk_lt = mk_binop BO_Zlt
     let mk_le = mk_binop BO_Zle
