@@ -146,22 +146,15 @@ let rec get_pos c =
   | Same c -> get_pos c
 
 let eq_clause c1 c2 = (repr c1).id = (repr c2).id
-
-let rec find_initial_id to_string f = function
-  | [] -> let oc = open_out "/tmp/unfound_clause.log" in
-          let fmt = Format.formatter_of_out_channel oc in
-          Format.fprintf fmt "%s\n@." (to_string f); close_out oc; assert false
-  | h::t -> if to_string f = to_string h then 1
-            else 1 + find_initial_id to_string f t
   
-let order_roots to_string first ls_smtc =
+let order_roots init_index first ls_smtc =
   let r = ref first in
   let acc = ref [] in
   while isRoot !r.kind do
     begin match !r.value with
     | Some [f] -> let n = next !r in
                   clear_links !r;                   
-                  acc := (find_initial_id to_string f ls_smtc, !r) :: !acc;
+                  acc := (init_index f, !r) :: !acc;
                   r := n
     | _ -> failwith "root value has unexpected form" end
   done;

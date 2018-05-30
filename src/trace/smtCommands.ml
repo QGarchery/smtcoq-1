@@ -368,10 +368,10 @@ let get_arguments concl =
   | _ -> failwith ("Verit.tactic: can only deal with equality over bool")
 
 
-let make_proof call_solver rt ro rf l ls_smtc=
+let make_proof call_solver rt ro rf ra' rf' l ls_smtc=
   let fl = Form.flatten rf l in
   let root = SmtTrace.mkRootV [l] in
-  call_solver rt ro fl (root,l) ls_smtc
+  call_solver rt ro ra' rf' fl (root,l) ls_smtc
 
 (* <of_coq_lemma> reifies the coq lemma given, we can then easily print it in a
  .smt2 file. We need the reify tables to correctly recognize unbound variables
@@ -379,7 +379,7 @@ let make_proof call_solver rt ro rf l ls_smtc=
  the new objects may contain bound (by forall of the lemma) variables. *)
 exception Axiom_form_unsupported
               
-let of_coq_lemma rt ro ra rf env sigma clemma =
+let of_coq_lemma rt ro ra' rf' env sigma clemma =
   let rel_context, qf_lemma = Term.decompose_prod_assum clemma in
   let env_lemma = List.fold_right Environ.push_rel rel_context env in
   let forall_args =
@@ -398,32 +398,18 @@ let of_coq_lemma rt ro ra rf env sigma clemma =
          arg1
       | _ -> raise Axiom_form_unsupported
     else raise Axiom_form_unsupported in
-  let core_smt = Form.of_coq ~declare:false
-                   (Atom.of_coq ~declare:false rt ro ra env_lemma sigma)
-                   rf core_f in
+  let core_smt = Form.of_coq (Atom.of_coq rt ro ra' env_lemma sigma)
+                   rf' core_f in
   match forall_args with
     [] -> core_smt
-  | _ -> Form.get ~declare:false rf (Fapp (Fforall forall_args, [|core_smt|]))
+  | _ -> Form.get rf' (Fapp (Fforall forall_args, [|core_smt|]))
 
 
-let core_tactic call_solver rt ro ra rf (lcplemma : Term.constr list)  env sigma concl =
+let core_tactic call_solver rt ro ra rf ra' rf' (lcplemma : Term.constr list)  env sigma concl =
   let a, b = get_arguments concl in
   let lclemma = List.map (Retyping.get_type_of env sigma) lcplemma in
   let l_pl = List.combine lclemma lcplemma in
-  (* let lemma_plemma id =
-   *   let type_of = Retyping.get_type_of env sigma in
-   *   try
-   *     let t = Term.mkVar id in
-   *     type_of t, t
-   *   with _ -> 
-   *     let t = Lazy.force (gen_constant [["Top"]] (Names.string_of_id id)) in
-   *     type_of t, t in *)
-  (* let l_pl = List.map lemma_plemma lpl_id in *)
-  (* let oc = open_out "/tmp/lemmas.log" in
-   * List.iter (fun t -> Printer.pr_constr t |> Pp.string_of_ppcmds |> Printf.fprintf oc "%s\n") lclemma;
-   * close_out oc ; *)
-
-  let ls_smtc = List.map (of_coq_lemma rt ro ra rf env sigma) lclemma in
+  let ls_smtc = List.map (of_coq_lemma rt ro ra' rf' env sigma) lclemma in
 
   let (body_cast, body_nocast, cuts) =
     if ((Term.eq_constr b (Lazy.force ctrue)) || (Term.eq_constr b (Lazy.force cfalse)))
@@ -431,13 +417,13 @@ let core_tactic call_solver rt ro ra rf (lcplemma : Term.constr list)  env sigma
       let l = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf a in
       let l' = if (Term.eq_constr b (Lazy.force ctrue))
                then Form.neg l else l in
-      let max_id_confl = make_proof call_solver rt ro rf l' ls_smtc in
+      let max_id_confl = make_proof call_solver rt ro rf ra' rf' l' ls_smtc in
       build_body rt ro ra rf (Form.to_coq l) b max_id_confl l_pl
     else
       let l1 = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf a in
       let l2 = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf b in
       let l = Form.neg (Form.get rf (Fapp(Fiff,[|l1;l2|]))) in
-      let max_id_confl = make_proof call_solver rt ro rf l ls_smtc in
+      let max_id_confl = make_proof call_solver rt ro rf ra' rf' l ls_smtc in
       build_body_eq rt ro ra rf (Form.to_coq l1) (Form.to_coq l2) (Form.to_coq l) max_id_confl l_pl in
 
   let cuts = SmtBtype.get_cuts rt @ cuts in
@@ -450,7 +436,7 @@ let core_tactic call_solver rt ro ra rf (lcplemma : Term.constr list)  env sigma
          (Structures.vm_cast_no_check body_cast))
 
 
-let tactic call_solver rt ro ra rf lpl =
+let tactic call_solver rt ro ra rf ra' rf' lpl =
   Structures.tclTHEN
     Tactics.intros
-    (Structures.mk_tactic (core_tactic call_solver rt ro ra rf lpl))
+    (Structures.mk_tactic (core_tactic call_solver rt ro ra rf ra' rf' lpl))

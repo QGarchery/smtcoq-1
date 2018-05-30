@@ -54,12 +54,12 @@ type index = Index of int
 
 type indexed_op = index * op_def
 
-let destruct (i, hval) = match i with
+let destruct s (i, hval) = match i with
   | Index index -> index, hval
-  | Rel_name _ -> failwith "destruct on a Rel"
+  | Rel_name _ -> failwith s
 
 let dummy_indexed_op i dom codom = i, {tparams = dom; tres = codom; op_val = Term.mkProp}
-let indexed_op_index i = let index, _ = destruct i in
+let indexed_op_index i = let index, _ = destruct "destruct on a Rel: called by indexed_op_index" i in
                          index
 
 (* type op =
@@ -168,7 +168,7 @@ module Op =
     let interp_nop = function
       | NO_distinct ty -> mklApp cdistinct [|interp_distinct ty;interp_eq ty|]
 
-    let i_to_coq i = let index, _ = destruct i in
+    let i_to_coq i = let index, _ = destruct "destruct on a Rel: called by i_to_coq" i in
                      mkInt index
 
     let i_type_of (_, hval) = hval.tres
@@ -203,14 +203,14 @@ module Op =
       let t = Array.make (reify.count + 1)
 	        (mk_Tval [||] Tbool (Lazy.force ctrue)) in
       let set _ op =
-        let index, hval = destruct op in
+        let index, hval = destruct "destruct on a Rel: called by set in interp_tbl" op in
         t.(index) <- mk_Tval hval.tparams hval.tres hval.op_val in
       Hashtbl.iter set reify.tbl;
       Structures.mkArray (tval, t)
 
     let to_list reify =
       let set _ op acc =
-        let index, hval = destruct op in
+        let index, hval = destruct "destruct on a Rel: called by set in to_list" op in
         (index, hval.tparams, hval.tres, op)::acc in
       Hashtbl.fold set reify.tbl []
 
@@ -308,7 +308,7 @@ module HashedAtom =
            | _ -> args.(2).index lsl 4 + args.(1).index lsl 2 + args.(0).index in
          (hash_args lsl 5 + (Hashtbl.hash op) lsl 3) lxor 4
       | Aapp (op, args) ->
-         let op_index, _ = destruct op in
+         let op_index, _ = destruct "destruct on a Rel: called by hash" op in
          let hash_args =
            match Array.length args with
            | 0 -> 0

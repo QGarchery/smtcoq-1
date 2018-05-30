@@ -19,6 +19,47 @@ Proof.
   verit f0.
 Qed.
 
+
+
+(* Parameter a b c d : bool. *)
+(* Axiom andab : andb a b. *)
+(* Axiom orcd  : orb c d. *)
+
+(* Lemma sat6 : *)
+(*   orb c (andb a (andb b d)). *)
+(* Proof. *)
+(*   verit andab orcd. *)
+(* Qed.   *)
+
+
+(* Verit_Checker "sat6.smt2" "sat6.vtlog". *)
+
+(* Parameter h : Z -> Z. *)
+(* Axiom h1h2 : andb (Zeq_bool (h 1) 3) (Zeq_bool (h 2) 4). *)
+
+Lemma h1 :
+  Zeq_bool (h 1) 3.
+
+Proof.
+  verit h1h2.
+Qed.
+
+Parameter f' : Z -> Z.
+Parameter g : Z -> Z.
+Parameter k : Z.
+Axiom g_k_linear : forall x, Zeq_bool (g (x + 1)) ((g x) + k).
+Axiom f'_equal_k : forall x, Zeq_bool (f' x) k.
+
+
+Lemma apply_lemma_multiple :
+  forall x y, Zeq_bool (g (x + 1)) (g x + f' y).
+
+Proof.
+  verit g_k_linear f'_equal_k. auto.
+  auto.
+Qed.
+
+
 (* c = Certif nclauses t confl 
    checker_b l true c = checker (PArray.make nclauses nl) None c
    checker d used_roots c=  
@@ -93,47 +134,6 @@ Compute (up_to 7).
 Compute (up_to 8).
 Compute (up_to 9).
 Compute (up_to 10).
-
-
-
-(* Parameter a b c d : bool. *)
-(* Axiom andab : andb a b. *)
-(* Axiom orcd  : orb c d. *)
-
-(* Lemma sat6 : *)
-(*   orb c (andb a (andb b d)). *)
-(* Proof. *)
-(*   verit andab orcd. *)
-(* Qed.   *)
-
-
-(* Verit_Checker "sat6.smt2" "sat6.vtlog". *)
-
-(* Parameter h : Z -> Z. *)
-(* Axiom h1h2 : andb (Zeq_bool (h 1) 3) (Zeq_bool (h 2) 4). *)
-
-Lemma h1 :
-  Zeq_bool (h 1) 3.
-
-Proof.
-  verit h1h2.
-Qed.
-
-Parameter f' : Z -> Z.
-Parameter g : Z -> Z.
-Parameter k : Z.
-Axiom g_k_linear : forall x, Zeq_bool (g (x + 1)) ((g x) + k).
-Axiom f'_equal_k : forall x, Zeq_bool (f' x) k.
-
-
-Lemma apply_lemma_multiple :
-  forall x y, Zeq_bool (g (x + 1)) (g x + f' y).
-
-Proof.
-  verit g_k_linear f'_equal_k. auto.
-  auto.
-Qed.
-
 
 
 Lemma sym_zeq_bool x y :

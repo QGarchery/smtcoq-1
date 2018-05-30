@@ -63,7 +63,7 @@ let print_certif c where=
   done;
   Format.fprintf fmt "@."; close_out out_channel
                             
-let import_trace filename first ls_smtc =
+let import_trace ra' rf' filename first ls_smtc =
   let chan = open_in filename in
   let lexbuf = Lexing.from_channel chan in
   let confl_num = ref (-1) in
@@ -86,7 +86,7 @@ let import_trace filename first ls_smtc =
        close_in chan;
        let cfirst = (VeritSyntax.get_clause !first_num) in
        print_certif cfirst "/tmp/parsing.log";
-       let cfirst, lr = order_roots (Form.to_string Atom.to_string)
+       let cfirst, lr = order_roots (VeritSyntax.init_index ls_smtc ra' rf')
                           cfirst ls_smtc in
        print_certif cfirst "/tmp/order.log";
        let to_add = ref [] in
@@ -129,8 +129,10 @@ let import_all fsmt fproof =
   let ro = Op.create () in
   let ra = VeritSyntax.ra in
   let rf = VeritSyntax.rf in
+  let ra' = VeritSyntax.ra' in
+  let rf' = VeritSyntax.rf' in
   let roots = Smtlib2_genConstr.import_smtlib2 rt ro ra rf fsmt in
-  let (max_id, confl) = import_trace fproof None [] in
+  let (max_id, confl) = import_trace ra' rf'  fproof None [] in
   (rt, ro, ra, rf, roots, max_id, confl)
 
 
@@ -176,7 +178,7 @@ let export out_channel rt ro ls_smtc =
   Format.fprintf fmt "(exit)@."
 
 (* val call_verit : Btype.reify_tbl -> Op.reify_tbl -> Form.t -> (Form.t clause * Form.t) -> (int * Form.t clause) *)
-let call_verit rt ro fl (root, l) ls_smtc =
+let call_verit rt ro ra' rf' fl (root, l) ls_smtc =
   let filename, outchan = Filename.open_temp_file "verit_coq" ".smt2" in
   export outchan rt ro (fl::ls_smtc);
   close_out outchan;
@@ -199,7 +201,7 @@ let call_verit rt ro fl (root, l) ls_smtc =
         Structures.error "veriT returns 'unknown'"
     with End_of_file ->
           try
-            let res = import_trace logfilename (Some (root, l)) (l::ls_smtc) in
+            let res = import_trace ra' rf' logfilename (Some (root, l)) (l::ls_smtc) in
             close_in win; Sys.remove wname; res
           with
           | VeritSyntax.Sat -> Structures.error "veriT found a counter-example"
@@ -212,4 +214,6 @@ let tactic lpl =
   let ro = Op.create () in
   let ra = VeritSyntax.ra in
   let rf = VeritSyntax.rf in
-  SmtCommands.tactic call_verit rt ro ra rf lpl
+  let ra' = VeritSyntax.ra' in
+  let rf' = VeritSyntax.rf' in
+  SmtCommands.tactic call_verit rt ro ra rf ra' rf' lpl

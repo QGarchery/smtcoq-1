@@ -1,6 +1,6 @@
 val debug : bool
 val import_trace :
-  string ->
+  SmtAtom.Atom.reify_tbl -> SmtAtom.Form.reify -> string ->
   (SmtAtom.Form.t SmtCertif.clause * SmtAtom.Form.t) option ->
   SmtAtom.Form.t list -> int * SmtAtom.Form.t SmtCertif.clause
 val clear_all : unit -> unit
@@ -26,6 +26,8 @@ val export :
 val call_verit :
   SmtBtype.reify_tbl ->
   SmtAtom.Op.reify_tbl ->
+  SmtAtom.Atom.reify_tbl ->
+  SmtAtom.Form.reify ->
   SmtAtom.Form.t ->
   SmtAtom.Form.t SmtCertif.clause * SmtAtom.Form.t ->
   SmtAtom.Form.t list ->

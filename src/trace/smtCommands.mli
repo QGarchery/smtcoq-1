@@ -68,28 +68,34 @@ val build_body_eq :
   Term.constr * Term.constr * (Names.identifier * Term.types) list
 val get_arguments : Term.constr -> Term.constr * Term.constr
 val make_proof :
-  ('a ->  'b -> SmtAtom.Form.t ->
-   SmtAtom.Form.t SmtCertif.clause * SmtAtom.Form.t -> 'c -> 'd) ->
-  'a -> 'b -> SmtAtom.Form.reify -> SmtAtom.Form.t -> 'c -> 'd
-val core_tactic :
-  (SmtBtype.reify_tbl ->
-   SmtAtom.Op.reify_tbl ->
+  (SmtBtype.reify_tbl -> SmtAtom.Op.reify_tbl ->
+   SmtAtom.Atom.reify_tbl -> SmtAtom.Form.reify ->
    SmtAtom.Form.t ->
    SmtAtom.Form.t SmtCertif.clause * SmtAtom.Form.t ->
    SmtAtom.Form.t list -> int * SmtAtom.Form.t SmtCertif.clause) ->
-  SmtBtype.reify_tbl ->
-  SmtAtom.Op.reify_tbl ->
-  SmtAtom.Atom.reify_tbl ->
+  SmtBtype.reify_tbl -> SmtAtom.Op.reify_tbl ->
   SmtAtom.Form.reify ->
+  SmtAtom.Atom.reify_tbl -> SmtAtom.Form.reify ->
+  SmtAtom.Form.t -> SmtAtom.Form.t list -> int * SmtAtom.Form.t SmtCertif.clause
+val core_tactic :
+  (SmtBtype.reify_tbl -> SmtAtom.Op.reify_tbl ->
+   SmtAtom.Atom.reify_tbl -> SmtAtom.Form.reify ->
+   SmtAtom.Form.t ->
+   SmtAtom.Form.t SmtCertif.clause * SmtAtom.Form.t ->
+   SmtAtom.Form.t list -> int * SmtAtom.Form.t SmtCertif.clause) ->
+  SmtBtype.reify_tbl -> SmtAtom.Op.reify_tbl ->
+  SmtAtom.Atom.reify_tbl -> SmtAtom.Form.reify ->
+  SmtAtom.Atom.reify_tbl -> SmtAtom.Form.reify ->
   Term.constr list ->
   Environ.env -> Evd.evar_map -> Term.constr -> Proof_type.tactic
 val tactic :
-  (SmtBtype.reify_tbl ->
-   SmtAtom.Op.reify_tbl ->
+  (SmtBtype.reify_tbl -> SmtAtom.Op.reify_tbl ->
+   SmtAtom.Atom.reify_tbl -> SmtAtom.Form.reify ->
    SmtAtom.Form.t ->
    SmtAtom.Form.t SmtCertif.clause * SmtAtom.Form.t ->
    SmtAtom.Form.t list -> int * SmtAtom.Form.t SmtCertif.clause) ->
   SmtBtype.reify_tbl ->
   SmtAtom.Op.reify_tbl ->
+  SmtAtom.Atom.reify_tbl -> SmtAtom.Form.reify ->
   SmtAtom.Atom.reify_tbl -> SmtAtom.Form.reify ->
   Term.constr list -> Proof_type.tactic

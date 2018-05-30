@@ -421,7 +421,26 @@ let clear_qvar () = Hashtbl.clear qvar_tbl
 
 let ra = Atom.create ()
 let rf = Form.create ()
+let ra' = Atom.create ()
+let rf' = Form.create ()
 
+let hashed_form ra' rf' f = f 
+                      
+let init_index ls_smtc ra' rf'=
+  let form_index_init_index : (int, int) Hashtbl.t = Hashtbl.create 20 in
+  let add = Hashtbl.add form_index_init_index in
+  let find = Hashtbl.find form_index_init_index in
+  let rec walk curr_index = function
+    | [] -> ()
+    | h::t -> add (Form.index h) curr_index;
+              walk (curr_index+1) t in
+  walk 1 ls_smtc;
+  fun form ->
+  let hf = hashed_form ra' rf' form in
+  find (Form.index hf) 
+
+
+                     
 let hlets : (string, atom_form_lit) Hashtbl.t = Hashtbl.create 17
 
 let clear_mk_clause () = 
@@ -437,4 +456,6 @@ let clear () =
   clear_funs ();
   Atom.clear ra;
   Form.clear rf;
+  Atom.clear ra';
+  Form.clear rf';
   Hashtbl.clear hlets
