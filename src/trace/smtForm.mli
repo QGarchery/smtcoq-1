@@ -61,7 +61,7 @@ module type FORM =
       val is_pos : t -> bool
       val is_neg : t -> bool
 
-      val to_string : (hatom -> string) -> t -> string
+      val to_string : ?pi:bool -> (hatom -> string) -> t -> string
       val to_smt : (hatom -> string) -> Format.formatter -> t -> unit
 
       (* Building formula from positive formula *)

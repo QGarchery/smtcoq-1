@@ -419,14 +419,10 @@ let find_opt_qvar s = try Some (Hashtbl.find qvar_tbl s)
 let add_qvar s bt = Hashtbl.add qvar_tbl s bt
 let clear_qvar () = Hashtbl.clear qvar_tbl
 
-let ra = Atom.create ()
-let rf = Form.create ()
-let ra' = Atom.create ()
-let rf' = Form.create ()
 
-let hashed_form ra' rf' f = f
+let string_hform = Form.to_string ~pi:true (Atom.to_string ~pi:true)
                       
-let init_index ls_smtc ra' rf'=
+let init_index ls_smtc ra' rf' =
   let form_index_init_index : (int, int) Hashtbl.t = Hashtbl.create 20 in
   let add = Hashtbl.add form_index_init_index in
   let find = Hashtbl.find form_index_init_index in
@@ -436,9 +432,19 @@ let init_index ls_smtc ra' rf'=
               walk (curr_index+1) t in
   walk 1 ls_smtc;
   fun hf ->
-  let rehashed_hf = Form.hash_hform (Atom.hash_hatom ra) rf' hf in
-  find (Form.index rehashed_hf) 
+  let rehashed_hf = Form.hash_hform (Atom.hash_hatom ra') rf' hf in
+  try find (Form.index rehashed_hf) 
+  with Not_found ->
+    let oc = open_out "/tmp/input_not_found.log" in
+    (List.map string_hform ls_smtc) |> List.iter (Printf.fprintf oc "%s\n");
+    Printf.fprintf oc "\n%s\n" (string_hform rehashed_hf);
+    flush oc; close_out oc;
+    failwith "not found: log available"
 
+let ra = Atom.create ()
+let rf = Form.create ()
+let ra' = Atom.create ()
+let rf' = Form.create ()
 
                      
 let hlets : (string, atom_form_lit) Hashtbl.t = Hashtbl.create 17

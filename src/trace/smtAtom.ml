@@ -364,7 +364,9 @@ module Atom =
       let j = if i < 0 then -i else i in
       s1 ^ string_of_int j ^ s2
 
-    let rec to_string h = to_string_atom (atom h)
+    let rec to_string ?pi:(pi=false) h =
+      (if pi then string_of_int (index h) ^":" else "")
+      ^ to_string_atom (atom h)
 
     and to_string_atom = function
       | Acop _ as a -> to_string_int (compute_int a)
@@ -470,7 +472,8 @@ module Atom =
       let list = HashAtom.fold accumulate reify.tbl [] in
       let compare ha1 ha2 = compare ha1.index ha2.index in
       let slist = List.sort compare list in
-      let print ha = to_smt fmt ha; Format.fprintf fmt "\n" in
+      let print ha = Format.fprintf fmt "%i: " ha.index;
+                     to_smt fmt ha; Format.fprintf fmt "\n" in
       List.iter print slist;
       Format.fprintf fmt "@.";
       close_out oc
@@ -570,17 +573,7 @@ module Atom =
 
       mk_hatom c
 
-    let rec hash_hatom ra {index = _; hval = a} =
-      let new_a = match a with
-        | Acop cop -> a
-        | Auop (uop, ha) -> Auop (uop, hash_hatom ra ha)
-        | Abop (bop, ha1, ha2) ->
-           let new_ha1 = hash_hatom ra ha1 in
-           let new_ha2 = hash_hatom ra ha2 in
-           Abop (bop, new_ha1, new_ha2) 
-        | Anop _ -> assert false
-        | Aapp (op, arr) -> Aapp (op, Array.map (hash_hatom ra) arr) in
-      get ra new_a
+
 
     let to_coq h = mkInt h.index
 
@@ -698,6 +691,19 @@ module Atom =
     let mk_opp = mk_unop UO_Zopp
     let mk_distinct reify ty = mk_nop (NO_distinct ty) reify
 
+    let rec hash_hatom ra' {index = _; hval = a} =
+      match a with 
+      | Acop cop -> get ra' a
+      | Auop (uop, ha) -> get ra' (Auop (uop, hash_hatom ra' ha))
+      | Abop (bop, ha1, ha2) ->
+         let new_ha1 = hash_hatom ra' ha1 in
+         let new_ha2 = hash_hatom ra' ha2 in
+         begin match bop with
+         | BO_eq ty -> mk_eq ra' true ty new_ha1 new_ha2
+         | _ -> get ra' (Abop (bop, new_ha1, new_ha2)) end
+      | Anop _ -> assert false
+      | Aapp (op, arr) -> get ra' (Aapp (op, Array.map (hash_hatom ra') arr))
+                                      
   end
 
 

@@ -153,7 +153,7 @@ let order_roots init_index first ls_smtc =
   while isRoot !r.kind do
     begin match !r.value with
     | Some [f] -> let n = next !r in
-                  clear_links !r;                   
+                  clear_links !r; 
                   acc := (init_index f, !r) :: !acc;
                   r := n
     | _ -> failwith "root value has unexpected form" end

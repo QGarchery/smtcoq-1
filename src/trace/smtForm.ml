@@ -68,7 +68,7 @@ module type FORM =
     val is_pos : t -> bool
     val is_neg : t -> bool
 
-    val to_string : (hatom -> string) -> t -> string                         
+    val to_string : ?pi:bool -> (hatom -> string) -> t -> string
     val to_smt : (hatom -> string) -> Format.formatter ->
                  t -> unit
 
@@ -152,11 +152,11 @@ module Make (Atom:ATOM) =
       | Pos hp -> hp.hval
       | Neg hp -> hp.hval
 
-    let rec to_string atom_to_string = function
-      | Pos hp -> to_string_pform atom_to_string hp.hval
-      | Neg hp -> "(not " ^
-                  to_string_pform atom_to_string hp.hval^ 
-                  ")"
+    let rec to_string ?pi:(pi=false) atom_to_string = function
+      | Pos hp -> (if pi then string_of_int hp.index ^ ":" else "")
+                  ^ to_string_pform atom_to_string hp.hval
+      | Neg hp -> (if pi then string_of_int hp.index ^ ":" else "") ^ "(not "
+                  ^ to_string_pform atom_to_string hp.hval ^ ")"
 
     and to_string_pform atom_to_string = function
       | Fatom a -> atom_to_string a
@@ -395,16 +395,15 @@ module Make (Atom:ATOM) =
 
       mk_hform c
 
-    let hash_hform hash_hatom rf hf =
+    let hash_hform hash_hatom rf' hf =
       let rec mk_hform = function
-        | Pos hp -> mk_hpform hp
-        | Neg hp -> mk_hpform hp
+        | Pos hp -> Pos (mk_hpform hp)
+        | Neg hp -> Neg (mk_hpform hp)
       and mk_hpform {index = _; hval = hv} =
-        let new_hv =  match hv with
+        let new_hv = match hv with
           | Fatom a -> Fatom (hash_hatom a)
-          | Fapp (fop, arr) -> let new_arr = Array.map mk_hform arr in
-                               Fapp (fop, new_arr) in
-        get rf new_hv in
+          | Fapp (fop, arr) -> Fapp (fop, Array.map mk_hform arr) in
+        match get rf' new_hv with Pos x | Neg x -> x in
       mk_hform hf
 
 

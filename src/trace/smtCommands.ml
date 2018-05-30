@@ -405,24 +405,25 @@ let of_coq_lemma rt ro ra' rf' env sigma clemma =
   | _ -> Form.get rf' (Fapp (Fforall forall_args, [|core_smt|]))
 
 
-let core_tactic call_solver rt ro ra rf ra' rf' (lcplemma : Term.constr list)  env sigma concl =
+let core_tactic call_solver rt ro ra rf ra' rf' lcplemma env sigma concl =
   let a, b = get_arguments concl in
   let lclemma = List.map (Retyping.get_type_of env sigma) lcplemma in
   let l_pl = List.combine lclemma lcplemma in
   let ls_smtc = List.map (of_coq_lemma rt ro ra' rf' env sigma) lclemma in
 
   let (body_cast, body_nocast, cuts) =
-    if ((Term.eq_constr b (Lazy.force ctrue)) || (Term.eq_constr b (Lazy.force cfalse)))
+    if ((Term.eq_constr b (Lazy.force ctrue))
+        || (Term.eq_constr b (Lazy.force cfalse)))
     then
-      let l = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf a in
+      let l = Form.of_coq (Atom.of_coq rt ro ra' env sigma) rf' a in
       let l' = if (Term.eq_constr b (Lazy.force ctrue))
                then Form.neg l else l in
       let max_id_confl = make_proof call_solver rt ro rf ra' rf' l' ls_smtc in
       build_body rt ro ra rf (Form.to_coq l) b max_id_confl l_pl
     else
-      let l1 = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf a in
-      let l2 = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf b in
-      let l = Form.neg (Form.get rf (Fapp(Fiff,[|l1;l2|]))) in
+      let l1 = Form.of_coq (Atom.of_coq rt ro ra' env sigma) rf' a in
+      let l2 = Form.of_coq (Atom.of_coq rt ro ra' env sigma) rf' b in
+      let l = Form.neg (Form.get rf' (Fapp(Fiff,[|l1;l2|]))) in
       let max_id_confl = make_proof call_solver rt ro rf ra' rf' l ls_smtc in
       build_body_eq rt ro ra rf (Form.to_coq l1) (Form.to_coq l2) (Form.to_coq l) max_id_confl l_pl in
 

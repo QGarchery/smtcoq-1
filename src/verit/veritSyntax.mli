@@ -50,12 +50,15 @@ val find_opt_qvar : string -> SmtBtype.btype option
 val add_qvar : string -> SmtBtype.btype -> unit
 val clear_qvar : unit -> unit
 
+val string_hform : SmtAtom.Form.t -> string
+
+val init_index : SmtAtom.Form.t list -> SmtAtom.Atom.reify_tbl ->
+                 SmtAtom.Form.reify -> SmtAtom.Form.t -> int
+
 val ra : SmtAtom.Atom.reify_tbl
 val rf : SmtAtom.Form.reify
 val ra' : SmtAtom.Atom.reify_tbl
 val rf' : SmtAtom.Form.reify
-val init_index : SmtAtom.Form.t list -> SmtAtom.Atom.reify_tbl ->
-                 SmtAtom.Form.reify -> SmtAtom.Form.t -> int
            
 val hlets : (string, atom_form_lit) Hashtbl.t
 

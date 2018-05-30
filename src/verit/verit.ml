@@ -97,12 +97,18 @@ let import_trace ra' rf' filename first ls_smtc =
              | _ -> to_add := (Other (Qf_lemma (r.id, l)), r.value, r)::!to_add)
          | _ -> failwith "value of lemma has unexpected form" in
        List.iter add_qf_lemma (List.tl lr);
+       let re_hash hf = Form.hash_hform (Atom.hash_hatom ra') rf' hf in
        let to_add = begin match first, cfirst.value with
-         | Some (root, l), Some [fl] when not (Form.equal l fl) ->
-            let cfirst_value = cfirst.value in
-            cfirst.value <- root.value;
-            [Other (ImmFlatten (root, fl)), cfirst_value, cfirst]
-         | _, _ -> [] end @ !to_add in
+                    | Some (root, l), Some [fl] when not (Form.equal l (re_hash fl)) ->
+                       Atom.print_atoms ra' "/tmp/ra'.log";
+
+                       failwith (VeritSyntax.string_hform l ^ " \n"
+                                 ^ VeritSyntax.string_hform (re_hash fl));
+                                                                
+                       let cfirst_value = cfirst.value in
+                       cfirst.value <- root.value;
+                       [Other (ImmFlatten (root, fl)), cfirst_value, cfirst]
+                    | _, _ -> [] end @ !to_add in
        let confl = match to_add with
          | [] -> VeritSyntax.get_clause !confl_num
          | _  -> add_scertifs to_add cfirst in
@@ -201,7 +207,8 @@ let call_verit rt ro ra' rf' fl (root, l) ls_smtc =
         Structures.error "veriT returns 'unknown'"
     with End_of_file ->
           try
-            let res = import_trace ra' rf' logfilename (Some (root, l)) (l::ls_smtc) in
+            let res = import_trace ra' rf' logfilename (Some (root, l))
+                        (l::ls_smtc) in
             close_in win; Sys.remove wname; res
           with
           | VeritSyntax.Sat -> Structures.error "veriT found a counter-example"
