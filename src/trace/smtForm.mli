@@ -74,6 +74,8 @@ module type FORM =
       (** Given a coq term, build the corresponding formula *)  
       val of_coq : ?declare:bool -> (Term.constr -> hatom) ->
                    reify -> Term.constr -> t
+
+      val hash_hform : (hatom -> hatom) -> reify -> t -> t
                                              
       (** Flattening of [Fand] and [For], removing of [Fnot2]  *)
       val flatten : reify -> t -> t

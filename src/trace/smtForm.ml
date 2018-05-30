@@ -83,7 +83,7 @@ module type FORM =
     val of_coq : ?declare:bool -> (Term.constr -> hatom) ->
                  reify -> Term.constr -> t
 
-
+    val hash_hform : (hatom -> hatom) -> reify -> t -> t
     (** Flattening of [Fand] and [For], removing of [Fnot2]  *)
     val flatten : reify -> t -> t
 
@@ -395,7 +395,17 @@ module Make (Atom:ATOM) =
 
       mk_hform c
 
-
+    let hash_hform hash_hatom rf hf =
+      let rec mk_hform = function
+        | Pos hp -> mk_hpform hp
+        | Neg hp -> mk_hpform hp
+      and mk_hpform {index = _; hval = hv} =
+        let new_hv =  match hv with
+          | Fatom a -> Fatom (hash_hatom a)
+          | Fapp (fop, arr) -> let new_arr = Array.map mk_hform arr in
+                               Fapp (fop, new_arr) in
+        get rf new_hv in
+      mk_hform hf
 
 
     (** Flattening of Fand and For, removing of Fnot2 *)

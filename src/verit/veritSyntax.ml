@@ -424,7 +424,7 @@ let rf = Form.create ()
 let ra' = Atom.create ()
 let rf' = Form.create ()
 
-let hashed_form ra' rf' f = f 
+let hashed_form ra' rf' f = f
                       
 let init_index ls_smtc ra' rf'=
   let form_index_init_index : (int, int) Hashtbl.t = Hashtbl.create 20 in
@@ -435,9 +435,9 @@ let init_index ls_smtc ra' rf'=
     | h::t -> add (Form.index h) curr_index;
               walk (curr_index+1) t in
   walk 1 ls_smtc;
-  fun form ->
-  let hf = hashed_form ra' rf' form in
-  find (Form.index hf) 
+  fun hf ->
+  let rehashed_hf = Form.hash_hform (Atom.hash_hatom ra) rf' hf in
+  find (Form.index rehashed_hf) 
 
 
                      

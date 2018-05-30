@@ -570,7 +570,17 @@ module Atom =
 
       mk_hatom c
 
-
+    let rec hash_hatom ra {index = _; hval = a} =
+      let new_a = match a with
+        | Acop cop -> a
+        | Auop (uop, ha) -> Auop (uop, hash_hatom ra ha)
+        | Abop (bop, ha1, ha2) ->
+           let new_ha1 = hash_hatom ra ha1 in
+           let new_ha2 = hash_hatom ra ha2 in
+           Abop (bop, new_ha1, new_ha2) 
+        | Anop _ -> assert false
+        | Aapp (op, arr) -> Aapp (op, Array.map (hash_hatom ra) arr) in
+      get ra new_a
 
     let to_coq h = mkInt h.index
 
