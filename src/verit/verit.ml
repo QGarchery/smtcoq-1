@@ -101,9 +101,6 @@ let import_trace ra' rf' filename first ls_smtc =
        let to_add = begin match first, cfirst.value with
                     | Some (root, l), Some [fl] when not (Form.equal l (re_hash fl)) ->
                        Atom.print_atoms ra' "/tmp/ra'.log";
-
-                       failwith (VeritSyntax.string_hform l ^ " \n"
-                                 ^ VeritSyntax.string_hform (re_hash fl));
                                                                 
                        let cfirst_value = cfirst.value in
                        cfirst.value <- root.value;
@@ -208,7 +205,7 @@ let call_verit rt ro ra' rf' fl (root, l) ls_smtc =
     with End_of_file ->
           try
             let res = import_trace ra' rf' logfilename (Some (root, l))
-                        (l::ls_smtc) in
+                        (fl::ls_smtc) in
             close_in win; Sys.remove wname; res
           with
           | VeritSyntax.Sat -> Structures.error "veriT found a counter-example"

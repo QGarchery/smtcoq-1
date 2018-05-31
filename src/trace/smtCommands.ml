@@ -369,7 +369,7 @@ let get_arguments concl =
 
 
 let make_proof call_solver rt ro rf ra' rf' l ls_smtc=
-  let fl = Form.flatten rf l in
+  let fl = Form.flatten rf' l in
   let root = SmtTrace.mkRootV [l] in
   call_solver rt ro ra' rf' fl (root,l) ls_smtc
 
