@@ -33,8 +33,8 @@ Qed.
 
 (* Verit_Checker "sat6.smt2" "sat6.vtlog". *)
 
-(* Parameter h : Z -> Z. *)
-(* Axiom h1h2 : andb (Zeq_bool (h 1) 3) (Zeq_bool (h 2) 4). *)
+Parameter h : Z -> Z.
+Axiom h1h2 : andb (Zeq_bool (h 1) 3) (Zeq_bool (h 2) 4).
 
 Lemma h1 :
   Zeq_bool (h 1) 3.
@@ -49,81 +49,60 @@ Qed.
    Form.check_form t_form && Atom.check_atom t_atom && 
    Atom.wt t_i t_func t_atom && 
    euf_checker (* t_atom t_form *) C.is_false (add_roots (S.make nclauses) d used_roots) t confl *)
-Close Scope Z_scope.
+(* Close Scope Z_scope. *)
 
-Definition t_i := [! | unit_typ_eqb !] : array typ_eqb.
-Definition t_func := [!Tval t_i (Typ.TZ :: nil, Typ.TZ) h | Tval t_i (nil, Typ.Tbool) true !]
-: array (tval t_i).
-Definition t_atom :=
-[!Acop CO_xH;Auop UO_Zpos 0;Aapp 0 (1 :: nil);Auop UO_xI 0;
-Auop UO_Zpos 3;Abop (BO_eq Typ.TZ) 2 4;Auop UO_xO 0;
-Auop UO_Zpos 6;Aapp 0 (7 :: nil);Auop UO_xO 6;Auop UO_Zpos 9;
-Abop (BO_eq Typ.TZ) 8 10 | Acop CO_xH !] : array atom.
-Definition t_form := [!Ftrue;Ffalse;Fatom 5;Fatom 11;Fand [!4;6 | 0 !] | Ftrue !] :
-array form.
-Definition t := [![!ForallInst (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 2
-        h1h2 (concl:=8 :: nil) (fun H : Zeq_bool (h 1) 3 && Zeq_bool (h 2) 4 => H);
-    ImmBuildProj (t_i:=t_i) t_func t_atom t_form 2 2 0;
-    Res (t_i:=t_i) t_func t_atom t_form 1 [!2;1 | 0 !] |
-    Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !] !] |
-  [! | Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !] !] !].
-Definition c :=
-Certif (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 3 t 1 :
-certif (t_i:=t_i) t_func t_atom t_form.
+(* Definition l := 6. *)
+(* Definition nclauses := 3. *)
+(* Definition confl := 1. *)
+
+(* Definition nl := Lit.neg l. *)
+(* Definition d := (PArray.make nclauses nl). *)
+(* Definition s := (add_roots (S.make nclauses) d None). *)
 
 
-Definition l := 6.
-Definition nclauses := 3.
-Definition confl := 1.
+(* Compute (checker_b l true c). *)
+(* Compute (checker (PArray.make nclauses nl) None c). *)
 
-Definition nl := Lit.neg l.
-Definition d := (PArray.make nclauses nl).
-Definition s := (add_roots (S.make nclauses) d None).
+(* Compute (Form.check_form t_form). *)
+(* Compute (Atom.check_atom t_atom). *)
+(* Compute (Atom.wt t_i t_func t_atom). *)
+(* Compute (euf_checker (* t_atom t_form *) C.is_false s t confl). *)
 
+(* Definition flatten {A : Type} (trace : array (array A)) := *)
+(* PArray.fold_left (fun l_step arr_step => l_step ++ PArray.to_list arr_step) *)
+(*                  nil trace. *)
 
-Compute (checker_b l true c).
-Compute (checker (PArray.make nclauses nl) None c).
+(* Import ListNotations. *)
+(* Fixpoint firsts {A : Type} n (l : list A) := *)
+(*   match n with *)
+(*   | 0 => [] *)
+(*   | S n => match l with *)
+(*            | [] => [] *)
+(*            | he :: ta => he :: firsts n ta end end. *)
 
-Compute (Form.check_form t_form).
-Compute (Atom.check_atom t_atom).
-Compute (Atom.wt t_i t_func t_atom).
-Compute (euf_checker (* t_atom t_form *) C.is_false s t confl).
-
-Definition flatten {A : Type} (trace : array (array A)) :=
-PArray.fold_left (fun l_step arr_step => l_step ++ PArray.to_list arr_step)
-                 nil trace.
-
-Import ListNotations.
-Fixpoint firsts {A : Type} n (l : list A) :=
-  match n with
-  | 0 => []
-  | S n => match l with
-           | [] => []
-           | he :: ta => he :: firsts n ta end end.
-
-Definition step_euf := @step_checker t_i t_func t_atom t_form.
-Definition l_t := flatten t.
+(* Definition step_euf := @step_checker t_i t_func t_atom t_form. *)
+(* Definition l_t := flatten t. *)
 
 
-Definition up_to n := List.fold_left step_euf (firsts n l_t) s.
-Definition nth n := List.nth (n-1) l_t (Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !]).
+(* Definition up_to n := List.fold_left step_euf (firsts n l_t) s. *)
+(* Definition nth n := List.nth (n-1) l_t (Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !]). *)
 
-Compute (List.length l_t).
+(* Compute (List.length l_t). *)
 
-Compute (up_to 0).
-Compute (up_to 1).
-Compute (nth 1).
-Compute (up_to 2).
-Compute (nth 2).
+(* Compute (up_to 0). *)
+(* Compute (up_to 1). *)
+(* Compute (nth 1). *)
+(* Compute (up_to 2). *)
+(* Compute (nth 2). *)
 
-Compute (up_to 3).
-Compute (up_to 4).
-Compute (up_to 5).
-Compute (up_to 6).
-Compute (up_to 7).
-Compute (up_to 8).
-Compute (up_to 9).
-Compute (up_to 10).
+(* Compute (up_to 3). *)
+(* Compute (up_to 4). *)
+(* Compute (up_to 5). *)
+(* Compute (up_to 6). *)
+(* Compute (up_to 7). *)
+(* Compute (up_to 8). *)
+(* Compute (up_to 9). *)
+(* Compute (up_to 10). *)
 
 
 
