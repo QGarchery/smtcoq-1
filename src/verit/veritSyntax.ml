@@ -439,6 +439,7 @@ let init_index ls_smtc ra' rf' =
     (List.map string_hform ls_smtc) |> List.iter (Printf.fprintf oc "%s\n");
     Printf.fprintf oc "\n%s\n" (string_hform rehashed_hf);
     flush oc; close_out oc;
+    Atom.print_atoms ra' "/tmp/ra'.log";
     failwith "not found: log available"
 
 let ra = Atom.create ()

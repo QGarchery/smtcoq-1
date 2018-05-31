@@ -227,7 +227,7 @@ module Op =
       match op1,op2 with
       | NO_distinct t1, NO_distinct t2 -> SmtBtype.equal t1 t2
 
-    let i_equal (i1, _) (i2, _) = i1 == i2
+    let i_equal (i1, _) (i2, _) = i1 = i2
 
   end
 
@@ -280,7 +280,7 @@ module HashedAtom =
       | Acop opa, Acop opb -> Op.c_equal opa opb
       | Auop(opa,ha), Auop(opb,hb) -> Op.u_equal opa opb && ha.index == hb.index
       | Abop(opa,ha1,ha2), Abop(opb,hb1,hb2) ->
-	 Op.b_equal opa opb && ha1.index == hb1.index && ha2.index == hb2.index
+	 Op.b_equal opa opb && ha1.index == hb1.index && ha2.index == hb2.index 
       | Anop (opa,ha), Anop (opb,hb) ->
          let na = Array.length ha in
          let nb = Array.length hb in
@@ -308,7 +308,7 @@ module HashedAtom =
            | _ -> args.(2).index lsl 4 + args.(1).index lsl 2 + args.(0).index in
          (hash_args lsl 5 + (Hashtbl.hash op) lsl 3) lxor 4
       | Aapp (op, args) ->
-         let op_index, _ = destruct "destruct on a Rel: called by hash" op in
+         let op_index = try fst (destruct "destruct on a Rel: called by hash" op) with _ -> 0 in
          let hash_args =
            match Array.length args with
            | 0 -> 0
@@ -364,54 +364,60 @@ module Atom =
       let j = if i < 0 then -i else i in
       s1 ^ string_of_int j ^ s2
 
-    let rec to_string ?pi:(pi=false) h =
-      (if pi then string_of_int (index h) ^":" else "")
-      ^ to_string_atom (atom h)
+    let to_string ?pi:(pi=false) h =
+      let rec to_string h = 
+        (if pi then string_of_int (index h) ^":" else "")
+        ^ to_string_atom (atom h)
 
-    and to_string_atom = function
-      | Acop _ as a -> to_string_int (compute_int a)
-      | Auop (UO_Zopp,h) ->
-         "(- " ^
-         to_string h ^
-         ")"
-      | Auop _ as a -> to_string_int (compute_int a)
-      | Abop (op,h1,h2) -> to_string_bop op h1 h2
-      | Anop (op,a) -> to_string_nop op a
-      | Aapp ((i, _), a) ->
-         let op_string = match i with
-             Index index -> "op_" ^ string_of_int index
-           | Rel_name name -> name in
-         if Array.length a = 0 then (
-           op_string
-         ) else (
-           "(" ^ op_string ^
-           Array.fold_left (fun acc h -> acc ^ " " ^ to_string h) "" a ^
-           ")"
-         )
+      and to_string_atom = function
+        | Acop _ as a -> to_string_int (compute_int a)
+        | Auop (UO_Zopp,h) ->
+           "(- " ^
+             to_string h ^
+               ")"
+        | Auop _ as a -> to_string_int (compute_int a)
+        | Abop (op,h1,h2) -> to_string_bop op h1 h2
+        | Anop (op,a) -> to_string_nop op a
+        | Aapp ((i, op), a) ->
+           let op_string = begin match i with
+                           | Index index -> "op_" ^ string_of_int index
+                           | Rel_name name -> name end
+                           ^ if pi then to_string_op op else "" in
+           if Array.length a = 0 then (
+             op_string
+           ) else (
+             "(" ^ op_string ^
+               Array.fold_left (fun acc h -> acc ^ " " ^ to_string h) "" a ^
+                 ")"
+           )
+      and to_string_op {tparams=bta; tres=bt; op_val=t} =
+        "[(" ^ Array.fold_left (fun acc bt -> acc ^ SmtBtype.to_string bt ^ " ")
+                 " " bta ^ ") ( " ^ SmtBtype.to_string bt ^ " ) ( " ^
+          Pp.string_of_ppcmds (Printer.pr_constr t) ^ " )]"
 
+      and to_string_bop op h1 h2 =
+        let s = match op with
+          | BO_Zplus -> "+"
+          | BO_Zminus -> "-"
+          | BO_Zmult -> "*"
+          | BO_Zlt -> "<"
+          | BO_Zle -> "<="
+          | BO_Zge -> ">="
+          | BO_Zgt -> ">"
+          | BO_eq _ -> "=" in
+        "(" ^ s ^ " " ^
+          to_string h1 ^
+            " " ^
+              to_string h2 ^
+                ")"
 
-    and to_string_bop op h1 h2 =
-      let s = match op with
-        | BO_Zplus -> "+"
-        | BO_Zminus -> "-"
-        | BO_Zmult -> "*"
-        | BO_Zlt -> "<"
-        | BO_Zle -> "<="
-        | BO_Zge -> ">="
-        | BO_Zgt -> ">"
-        | BO_eq _ -> "=" in
-      "(" ^ s ^ " " ^
-      to_string h1 ^
-      " " ^
-      to_string h2 ^
-      ")"
-
-    and to_string_nop op a =
-      let s = match op with
-        | NO_distinct _ -> "distinct" in
-      "(" ^ s ^
-      Array.fold_left (fun acc h -> acc ^ " " ^ to_string h) "" a ^
-        ")"
+      and to_string_nop op a =
+        let s = match op with
+          | NO_distinct _ -> "distinct" in
+        "(" ^ s ^
+          Array.fold_left (fun acc h -> acc ^ " " ^ to_string h) "" a ^
+            ")" in
+      to_string h
 
     let to_smt fmt t = Format.fprintf fmt "%s@." (to_string t)
 

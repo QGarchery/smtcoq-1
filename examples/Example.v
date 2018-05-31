@@ -136,16 +136,16 @@ Proof.
   rewrite H in H1. discriminate H1.
 Qed.
 
-Parameter f : Z -> Z.
-Axiom f_is_constant : forall x, Zeq_bool (f x) (f 2%Z).
+Parameter u : Z -> Z.
+Axiom u_is_constant : forall x, Zeq_bool (u x) (u 2%Z).
 
 
 Lemma apply_lemma :
   forall y,
-  Zeq_bool (f y) (f 2%Z).
+  Zeq_bool (u y) (u 2%Z).
 
 Proof.
-  verit f_is_constant. auto.
+  verit u_is_constant. auto.
 Qed.
 
 (* Parameter mult4 : Z -> Z. *)
@@ -244,10 +244,10 @@ Qed.
 (*   verit H. *)
 
 Lemma find_inst : 
-  implb (Zeq_bool (f 2) 5) (Zeq_bool (f 3) 5).
+  implb (Zeq_bool (u 2) 5) (Zeq_bool (u 3) 5).
 
 Proof.
-  verit f_is_constant.
+  verit u_is_constant.
   rewrite sym_zeq_bool. auto.
 Qed.  
 
@@ -305,9 +305,9 @@ Zchaff_Checker "hole4.cnf" "hole4.log".
 
 (* Example that checks a VeriT certificate, for logic QF_UF *)
 
-Section Verit.
-  Verit_Checker "euf.smt2" "euf.log".
-End Verit.
+(* Section Verit. *)
+(*   Verit_Checker "euf.smt2" "euf.log". *)
+(* End Verit. *)
 
 (* Examples of the zchaff tactic (requires zchaff in your PATH
    environment variable):
