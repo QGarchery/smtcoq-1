@@ -18,6 +18,14 @@ Proof.
   verit f0.
 Qed.
 
+Parameter p : Z -> Z.
+Axiom p0 : Zeq_bool (p 0) 0.
+
+Lemma justp0 :
+  Zeq_bool (p 0) 0.
+Proof.
+  verit p0.
+Qed.
 
 
 Parameter a b c d : bool.
@@ -156,7 +164,6 @@ Qed.
 
 (* Proof. *)
 (*   verit mult4_0 mult4_Sn. exact (fun f => f _). *)
-  
 (* Qed. *)
 
 (* c = Certif nclauses t confl 
@@ -232,17 +239,15 @@ Qed.
 (* Compute (up_to 19). *)
 
 
-
-
-
-
-(* Lemma f_const_is_eq_val_0 : *)
-(*   forall x, (forall f : Z -> Z, forall a b, Zeq_bool (f a) (f b)) -> *)
-(*             Zeq_bool (f x) (f 0). *)
-(* Proof. *)
-(*   intros x H. *)
-(*   verit H. *)
-
+Lemma const_fun_is_eq_val_0 :
+  forall f : Z -> Z,
+    (forall a b, Zeq_bool (f a) (f b)) ->
+    forall x, Zeq_bool (f x) (f 0).
+Proof.
+  intros f Hf.
+  verit Hf; auto.
+Qed.
+  
 Lemma find_inst : 
   implb (Zeq_bool (u 2) 5) (Zeq_bool (u 3) 5).
 
