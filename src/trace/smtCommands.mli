@@ -53,7 +53,7 @@ val build_body :
   Term.constr ->
   Term.constr ->
   int * SmtAtom.Form.t SmtCertif.clause ->
-  (Term.constr * Term.constr) list ->
+  (SmtAtom.Form.t SmtCertif.clause  -> Term.constr * Term.constr) option ->
   Term.constr * Term.constr * (Names.identifier * Term.types) list
 val build_body_eq :
   SmtBtype.reify_tbl ->
@@ -64,14 +64,13 @@ val build_body_eq :
   Term.constr ->
   Term.constr ->
   int * SmtAtom.Form.t SmtCertif.clause ->
-  (Term.constr * Term.constr) list ->
+  (SmtAtom.Form.t SmtCertif.clause  -> Term.constr * Term.constr) option ->
   Term.constr * Term.constr * (Names.identifier * Term.types) list
 val get_arguments : Term.constr -> Term.constr * Term.constr
 val make_proof :
   (SmtBtype.reify_tbl -> SmtAtom.Op.reify_tbl ->
    SmtAtom.Atom.reify_tbl -> SmtAtom.Form.reify ->
-   SmtAtom.Form.t ->
-   SmtAtom.Form.t SmtCertif.clause * SmtAtom.Form.t ->
+   (SmtAtom.Form.t SmtCertif.clause * SmtAtom.Form.t) option ->
    SmtAtom.Form.t list -> int * SmtAtom.Form.t SmtCertif.clause) ->
   SmtBtype.reify_tbl -> SmtAtom.Op.reify_tbl ->
   SmtAtom.Form.reify ->
@@ -80,8 +79,7 @@ val make_proof :
 val core_tactic :
   (SmtBtype.reify_tbl -> SmtAtom.Op.reify_tbl ->
    SmtAtom.Atom.reify_tbl -> SmtAtom.Form.reify ->
-   SmtAtom.Form.t ->
-   SmtAtom.Form.t SmtCertif.clause * SmtAtom.Form.t ->
+   (SmtAtom.Form.t SmtCertif.clause * SmtAtom.Form.t) option ->
    SmtAtom.Form.t list -> int * SmtAtom.Form.t SmtCertif.clause) ->
   SmtBtype.reify_tbl -> SmtAtom.Op.reify_tbl ->
   SmtAtom.Atom.reify_tbl -> SmtAtom.Form.reify ->
@@ -91,8 +89,7 @@ val core_tactic :
 val tactic :
   (SmtBtype.reify_tbl -> SmtAtom.Op.reify_tbl ->
    SmtAtom.Atom.reify_tbl -> SmtAtom.Form.reify ->
-   SmtAtom.Form.t ->
-   SmtAtom.Form.t SmtCertif.clause * SmtAtom.Form.t ->
+   (SmtAtom.Form.t SmtCertif.clause * SmtAtom.Form.t) option ->
    SmtAtom.Form.t list -> int * SmtAtom.Form.t SmtCertif.clause) ->
   SmtBtype.reify_tbl ->
   SmtAtom.Op.reify_tbl ->

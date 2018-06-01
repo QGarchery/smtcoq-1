@@ -116,14 +116,14 @@ Qed.
 (* Compute (up_to 10). *)
 
 
-(* Parameter p : Z -> Z. *)
-(* Axiom p0 : Zeq_bool (p 0) 0. *)
+Parameter p : Z -> Z.
+Axiom p0 : Zeq_bool (p 0) 0.
 
-(* Lemma justp0 : *)
-(*   Zeq_bool (p 0) 0. *)
-(* Proof. *)
-(*   verit f0 p0. auto. *)
-(* Qed. *)
+Lemma justp0 :
+  Zeq_bool (p 0) 0.
+Proof.
+  verit f0 p0. auto.
+Qed.
 
 
 Parameter a b c d : bool.

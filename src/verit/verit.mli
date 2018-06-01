@@ -28,8 +28,7 @@ val call_verit :
   SmtAtom.Op.reify_tbl ->
   SmtAtom.Atom.reify_tbl ->
   SmtAtom.Form.reify ->
-  SmtAtom.Form.t ->
-  SmtAtom.Form.t SmtCertif.clause * SmtAtom.Form.t ->
+  (SmtAtom.Form.t SmtCertif.clause * SmtAtom.Form.t) option ->
   SmtAtom.Form.t list ->
   int * SmtAtom.Form.t SmtCertif.clause
 val tactic : Term.constr list -> Proof_type.tactic
