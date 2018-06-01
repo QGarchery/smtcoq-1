@@ -20,8 +20,8 @@ type 'hform rule =
       Structures.Micromega_plugin_Certificate.Mc.zArithProof list
   | SplDistinctElim of 'hform clause * 'hform
   | Hole of 'hform clause list * 'hform list
-  | Forall_inst of 'hform clause * int * 'hform
-  | Qf_lemma of int * 'hform
+  | Forall_inst of 'hform clause * 'hform
+  | Qf_lemma of 'hform clause * 'hform
                                      
 and 'hform clause = {
     mutable id    : clause_id;

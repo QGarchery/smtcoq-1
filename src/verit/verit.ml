@@ -94,7 +94,7 @@ let import_trace ra' rf' filename first ls_smtc =
          | Some [l] ->
             (match Form.pform l with
              | Fapp (Fforall _, _) -> ()
-             | _ -> to_add := (Other (Qf_lemma (r.id, l)), r.value, r)::!to_add)
+             | _ -> to_add := (Other (Qf_lemma (r, l)), r.value, r)::!to_add)
          | _ -> failwith "value of lemma has unexpected form" in
        List.iter add_qf_lemma (List.tl lr);
        let re_hash hf = Form.hash_hform (Atom.hash_hatom ra') rf' hf in

@@ -15,51 +15,40 @@ Axiom f0 : Zeq_bool 0 (f 0).
 Lemma justf0 :
   Zeq_bool 0 (f 0).
 Proof.
-  verit f0.
-Qed.
-
-Parameter p : Z -> Z.
-Axiom p0 : Zeq_bool (p 0) 0.
-
-Lemma justp0 :
-  Zeq_bool (p 0) 0.
-Proof.
-  verit p0.
+  verit f0; auto.
 Qed.
 
 
-Parameter a b c d : bool.
-Axiom andab : andb a b.
-Axiom orcd  : orb c d.
 
-Lemma sat6 :
-  orb c (andb a (andb b d)).
-Proof.
-  verit andab orcd.
-Qed.
-
-
-(* Verit_Checker "sat6.smt2" "sat6.vtlog". *)
-
-Parameter h : Z -> Z.
-Axiom h1h2 : andb (Zeq_bool (h 1) 3) (Zeq_bool (h 2) 4).
-
-Lemma h1 :
-  Zeq_bool (h 1) 3.
-
-Proof.
-  verit h1h2.
-Qed.
-
-(* c = Certif nclauses t confl 
-   checker_b l true c = checker (PArray.make nclauses nl) None c
-   checker d used_roots c=  
-   Form.check_form t_form && Atom.check_atom t_atom && 
-   Atom.wt t_i t_func t_atom && 
-   euf_checker (* t_atom t_form *) C.is_false (add_roots (S.make nclauses) d used_roots) t confl *)
+(* c = Certif nclauses t confl  *)
+(*    checker_b l true c = checker (PArray.make nclauses nl) None c *)
+(*    checker d used_roots c=   *)
+(*    Form.check_form t_form && Atom.check_atom t_atom &&  *)
+(*    Atom.wt t_i t_func t_atom &&  *)
+(*    euf_checker (* t_atom t_form *) C.is_false (add_roots (S.make nclauses) d used_roots) t confl *)
 (* Close Scope Z_scope. *)
 
-(* Definition l := 6. *)
+
+(* Parameter ass347262118 : Zeq_bool 0 (f 0) -> Zeq_bool 0 (f 0). *)
+(* Definition t_i := [! | unit_typ_eqb !] : array typ_eqb. *)
+(* Definition t_func := [!Tval t_i (Typ.TZ :: nil, Typ.TZ) f | Tval t_i (nil, Typ.Tbool) true !] *)
+(* : array (tval t_i). *)
+(* Definition t_atom := [!Acop CO_Z0;Aapp 0 (0 :: nil);Abop (BO_eq Typ.TZ) 0 1 | Acop CO_xH !] : *)
+(* array atom. *)
+(* Definition t_form := [!Ftrue;Ffalse;Fatom 2 | Ftrue !] : array form. *)
+(* Definition t := [![!Hole (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 2 *)
+(*         (2 :: nil) (prem:=(4 :: nil) :: nil) (concl:= *)
+(*         4 :: nil) ass347262118;Res (t_i:=t_i) t_func t_atom t_form 1 [!2;1 | 0 !] | *)
+(*     Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !] !] | *)
+(*   [! | Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !] !] !]. *)
+
+(* Definition c := *)
+(* Certif (t_i:=t_i) (t_func:=t_func) (t_atom:=t_atom) (t_form:=t_form) 3 t *)
+(*    1 : *)
+(* certif (t_i:=t_i) t_func t_atom t_form. *)
+
+
+(* Definition l := 4. *)
 (* Definition nclauses := 3. *)
 (* Definition confl := 1. *)
 
@@ -101,7 +90,6 @@ Qed.
 (* Compute (up_to 1). *)
 (* Compute (nth 1). *)
 (* Compute (up_to 2). *)
-(* Compute (nth 2). *)
 
 (* Compute (up_to 3). *)
 (* Compute (up_to 4). *)
@@ -111,6 +99,41 @@ Qed.
 (* Compute (up_to 8). *)
 (* Compute (up_to 9). *)
 (* Compute (up_to 10). *)
+
+
+Parameter p : Z -> Z.
+Axiom p0 : Zeq_bool (p 0) 0.
+
+Lemma justp0 :
+  Zeq_bool (p 0) 0.
+Proof.
+  verit p0. auto.
+Qed.
+
+
+Parameter a b c d : bool.
+Axiom andab : andb a b.
+Axiom orcd  : orb c d.
+
+Lemma sat6 :
+  orb c (andb a (andb b d)).
+Proof.
+  verit andab orcd; auto.
+Qed.
+
+
+(* Verit_Checker "sat6.smt2" "sat6.vtlog". *)
+
+Parameter h : Z -> Z.
+Axiom h1h2 : andb (Zeq_bool (h 1) 3) (Zeq_bool (h 2) 4).
+
+Lemma h1 :
+  Zeq_bool (h 1) 3.
+
+Proof.
+  verit h1h2. auto.
+Qed.
+
 
 
 
@@ -156,15 +179,16 @@ Proof.
   verit u_is_constant. auto.
 Qed.
 
-(* Parameter mult4 : Z -> Z. *)
-(* Axiom mult4_0 : Zeq_bool (mult4 0) 0. *)
-(* Axiom mult4_Sn : forall n, Zeq_bool (mult4 (n+1)) (mult4 n + 4). *)
+Parameter mult4 : Z -> Z.
+Axiom mult4_0 : Zeq_bool (mult4 0) 0.
+Axiom mult4_Sn : forall n, Zeq_bool (mult4 (n+1)) (mult4 n + 4).
 
-(* Lemma mult4_1 : Zeq_bool (mult4 1) 4. *)
+Lemma mult4_1 : Zeq_bool (mult4 1) 4.
 
-(* Proof. *)
-(*   verit mult4_0 mult4_Sn. exact (fun f => f _). *)
-(* Qed. *)
+Proof.
+  verit mult4_0 mult4_Sn. exact (fun f => f _).
+  rewrite sym_zeq_bool. auto.
+Qed.
 
 (* c = Certif nclauses t confl 
    checker_b l true c = checker (PArray.make nclauses nl) None c

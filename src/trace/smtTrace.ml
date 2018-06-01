@@ -203,7 +203,7 @@ let add_scertifs to_add c =
          | ImmBuildProj (c, x) -> ImmBuildProj (uc c, x)
          | ImmBuildDef c -> ImmBuildDef (uc c)
          | ImmBuildDef2 c -> ImmBuildDef2 (uc c)
-         | Forall_inst (c, x, y) -> Forall_inst (uc c, x, y) 
+         | Forall_inst (c, x) -> Forall_inst (uc c, x) 
          | ImmFlatten (c, x) -> ImmFlatten (uc c, x) 
          | SplArith (c, x, y) -> SplArith (uc c, x, y) 
          | SplDistinctElim (c, x) -> SplDistinctElim (uc c, x) 
@@ -414,8 +414,9 @@ let to_coq to_lit interp (cstep,
            let concl' = out_cl concl in
            mklApp cHole [|out_c c; prem_id'; prem'; concl'; ass_var|]
 
-        | Forall_inst (_, id, concl) ->
-           let clemma, cplemma = List.nth l_pl (id-2) in
+        | Forall_inst (cl, concl) | Qf_lemma (cl, concl) ->
+           let id = cl.id - 2 in
+           let clemma, cplemma = List.nth l_pl id in
            let concl' = out_cl [concl] in
            let app_name = Names.id_of_string ("app" ^ (string_of_int (Hashtbl.hash concl))) in
            let app_var = Term.mkVar app_name in
@@ -423,12 +424,13 @@ let to_coq to_lit interp (cstep,
            cuts := (app_name, app_ty)::!cuts;
            mklApp cForallInst [|out_c c; clemma; cplemma; concl'; app_var|]
 
-        | Qf_lemma (id, concl) ->
-           let clemma, cplemma = try List.nth l_pl (id-2)
-                                 with _ -> failwith ("list of length " ^ string_of_int (List.length l_pl) ^ ", trying to get element " ^ string_of_int (id-2)) in
-           let concl' = out_cl [concl] in
-           let app = Term.mkLambda (Names.Anonymous, clemma, Term.mkRel 1) in
-           mklApp cForallInst [|out_c c; clemma; cplemma; concl'; app|]
+
+           (* let id = cl.id - 2 in
+            * let clemma, cplemma = try List.nth l_pl id
+            *                       with _ -> failwith ("list of length " ^ string_of_int (List.length l_pl) ^ ", trying to get element " ^ string_of_int id) in
+            * let concl' = out_cl [concl] in
+            * let app = Term.mkLambda (Names.Anonymous, clemma, Term.mkRel 1) in
+            * mklApp cForallInst [|out_c c; clemma; cplemma; concl'; app|] *)
                   
 	end
     | _ -> assert false in
