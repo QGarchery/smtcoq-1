@@ -74,6 +74,10 @@ Section Checker_Sat13.
   Verit_Checker "sat13.smt2" "sat13.vtlog".
 End Checker_Sat13.
 
+Section Checker_Sat14.
+  Verit_Checker "sat14.smt2" "sat14.vtlog".
+End Checker_Sat14.
+
 Section Checker_Hole4.
   Verit_Checker "hole4.smt2" "hole4.vtlog".
 End Checker_Hole4.

@@ -423,8 +423,7 @@ let to_coq to_lit interp (cstep,
            let app_ty = Term.mkArrow clemma (interp ([], [concl])) in
            cuts := (app_name, app_ty)::!cuts;
            mklApp cForallInst [|out_c c; clemma; cplemma; concl'; app_var|]
-
-
+        
            (* let id = cl.id - 2 in
             * let clemma, cplemma = try List.nth l_pl id
             *                       with _ -> failwith ("list of length " ^ string_of_int (List.length l_pl) ^ ", trying to get element " ^ string_of_int id) in

@@ -368,10 +368,10 @@ let get_arguments concl =
   | _ -> failwith ("Verit.tactic: can only deal with equality over bool")
 
 
-let make_proof call_solver rt ro rf ra' rf' l ls_smtc=
-  let fl = Form.flatten rf' l in
-  let root = SmtTrace.mkRootV [l] in
-  call_solver rt ro ra' rf' fl (root,l) ls_smtc
+let make_proof call_solver rt ro rf ra' rf' l' ls_smtc=
+  let fl = Form.flatten rf' l' in
+  let root = SmtTrace.mkRootV [l'] in
+  call_solver rt ro ra' rf' fl (root, l') ls_smtc
 
 (* <of_coq_lemma> reifies the coq lemma given, we can then easily print it in a
  .smt2 file. We need the reify tables to correctly recognize unbound variables

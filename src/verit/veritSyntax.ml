@@ -421,26 +421,36 @@ let clear_qvar () = Hashtbl.clear qvar_tbl
 
 let string_hform = Form.to_string ~pi:true (Atom.to_string ~pi:true)
                       
-let init_index ls_smtc ra' rf' =
-  let form_index_init_index : (int, int) Hashtbl.t = Hashtbl.create 20 in
-  let add = Hashtbl.add form_index_init_index in
-  let find = Hashtbl.find form_index_init_index in
-  let rec walk curr_index = function
+let init_index ls_smtc re_hash =
+  let form_index_init_rank : (int, int) Hashtbl.t = Hashtbl.create 20 in
+  let add = Hashtbl.add form_index_init_rank in
+  let find = Hashtbl.find form_index_init_rank in
+  let rec walk rank = function
     | [] -> ()
-    | h::t -> add (Form.index h) curr_index;
-              walk (curr_index+1) t in
+    | h::t -> add (Form.index h) rank;
+              walk (rank+1) t in
   walk 1 ls_smtc;
-  fun hf ->
-  let rehashed_hf = Form.hash_hform (Atom.hash_hatom ra') rf' hf in
-  try find (Form.index rehashed_hf) 
-  with Not_found ->
-    let oc = open_out "/tmp/input_not_found.log" in
-    (List.map string_hform ls_smtc) |> List.iter (Printf.fprintf oc "%s\n");
-    Printf.fprintf oc "\n%s\n" (string_hform rehashed_hf);
-    flush oc; close_out oc;
-    Atom.print_atoms ra' "/tmp/ra'.log";
-    failwith "not found: log available"
+  fun hf -> let re_hf = re_hash hf in
+            try find (Form.index re_hf)
+            with Not_found ->
+              let oc = open_out "/tmp/input_not_found.log" in
+              (List.map string_hform ls_smtc)
+              |> List.iter (Printf.fprintf oc "%s\n");
+              Printf.fprintf oc "\n%s\n" (string_hform re_hf);
+              flush oc; close_out oc;
+              failwith "not found: log available"
 
+let qf_to_add lr =
+  let is_forall l = match Form.pform l with
+    | Fapp (Fforall _, _) -> true
+    | _ -> false in
+  let rec qf_lemmas = function
+    | [] -> []
+    | ({value = Some [l]} as r)::t when not (is_forall l) ->
+       (Other (Qf_lemma (r, l)), r.value, r) :: qf_lemmas t
+    | _::t -> qf_lemmas t in
+  qf_lemmas lr
+                       
 let ra = Atom.create ()
 let rf = Form.create ()
 let ra' = Atom.create ()

@@ -9,14 +9,29 @@ Local Open Scope int63_scope.
 
 Open Scope Z_scope.
 
+Lemma sym_zeq_bool x y :
+  Zeq_bool x y = Zeq_bool y x.
+
+Proof.
+  case_eq (Zeq_bool x y).
+  rewrite <- Zeq_is_eq_bool. intro H. symmetry. now rewrite <- Zeq_is_eq_bool.
+  symmetry. apply not_true_is_false.
+  intro H1. rewrite <- Zeq_is_eq_bool in H1.
+  symmetry in H1. rewrite Zeq_is_eq_bool in H1.
+  rewrite H in H1. discriminate H1.
+Qed.
+
+
 Parameter f : Z -> Z.
 Axiom f0 : Zeq_bool 0 (f 0).
 
 Lemma justf0 :
   Zeq_bool 0 (f 0).
 Proof.
-  verit f0; auto.
+  verit f0. auto. 
 Qed.
+
+
 
 
 
@@ -101,14 +116,14 @@ Qed.
 (* Compute (up_to 10). *)
 
 
-Parameter p : Z -> Z.
-Axiom p0 : Zeq_bool (p 0) 0.
+(* Parameter p : Z -> Z. *)
+(* Axiom p0 : Zeq_bool (p 0) 0. *)
 
-Lemma justp0 :
-  Zeq_bool (p 0) 0.
-Proof.
-  verit p0. auto.
-Qed.
+(* Lemma justp0 : *)
+(*   Zeq_bool (p 0) 0. *)
+(* Proof. *)
+(*   verit f0 p0. auto. *)
+(* Qed. *)
 
 
 Parameter a b c d : bool.
@@ -155,17 +170,6 @@ Qed.
 
 
 
-Lemma sym_zeq_bool x y :
-  Zeq_bool x y = Zeq_bool y x.
-
-Proof.
-  case_eq (Zeq_bool x y).
-  rewrite <- Zeq_is_eq_bool. intro H. symmetry. now rewrite <- Zeq_is_eq_bool.
-  symmetry. apply not_true_is_false.
-  intro H1. rewrite <- Zeq_is_eq_bool in H1.
-  symmetry in H1. rewrite Zeq_is_eq_bool in H1.
-  rewrite H in H1. discriminate H1.
-Qed.
 
 Parameter u : Z -> Z.
 Axiom u_is_constant : forall x, Zeq_bool (u x) (u 2%Z).
@@ -472,5 +476,4 @@ Proof.
   now rewrite <- H1.
 Qed.
 
-Check checker_b_correct.
 

@@ -84,39 +84,30 @@ let import_trace ra' rf' filename first ls_smtc =
   with
     | VeritLexer.Eof ->
        close_in chan;
-       let cfirst = (VeritSyntax.get_clause !first_num) in
-       print_certif cfirst "/tmp/parsing.log";
-       let cfirst, lr = order_roots (VeritSyntax.init_index ls_smtc ra' rf')
-                          cfirst ls_smtc in
-       print_certif cfirst "/tmp/order.log";
-       let to_add = ref [] in
-       let add_qf_lemma r = match r.value with
-         | Some [l] ->
-            (match Form.pform l with
-             | Fapp (Fforall _, _) -> ()
-             | _ -> to_add := (Other (Qf_lemma (r, l)), r.value, r)::!to_add)
-         | _ -> failwith "value of lemma has unexpected form" in
-       List.iter add_qf_lemma (List.tl lr);
+       let cfirst = ref (VeritSyntax.get_clause !first_num) in
+       let confl = ref (VeritSyntax.get_clause !confl_num) in
        let re_hash hf = Form.hash_hform (Atom.hash_hatom ra') rf' hf in
-       let to_add = begin match first, cfirst.value with
-                    | Some (root, l), Some [fl] when not (Form.equal l (re_hash fl)) ->
-                       Atom.print_atoms ra' "/tmp/ra'.log";
-                                                                
-                       let cfirst_value = cfirst.value in
-                       cfirst.value <- root.value;
-                       [Other (ImmFlatten (root, fl)), cfirst_value, cfirst]
-                    | _, _ -> [] end @ !to_add in
-       let confl = match to_add with
-         | [] -> VeritSyntax.get_clause !confl_num
-         | _  -> add_scertifs to_add cfirst in
-       print_certif cfirst "/tmp/add_scertif.log";
-       select confl;
-       print_certif cfirst "/tmp/select.log";
-       occur confl;
-       print_certif cfirst "/tmp/occur.log";
-       let u = (alloc cfirst, confl) in
-       print_certif cfirst "/tmp/alloc.log";
-       u
+       begin match first with
+       | None -> ()
+       | Some _ ->
+          let cf, lr = order_roots (VeritSyntax.init_index ls_smtc re_hash)
+                         !cfirst ls_smtc in
+          cfirst := cf; 
+          let to_add = VeritSyntax.qf_to_add (List.tl lr) in
+          let to_add =
+            (match first, !cfirst.value with
+             | Some (root, l), Some [fl] when not (Form.equal l (re_hash fl)) ->
+                let cfirst_value = !cfirst.value in
+                !cfirst.value <- root.value;
+                [Other (ImmFlatten (root, fl)), cfirst_value, !cfirst]
+             | _ -> []) @ to_add in
+       match to_add with
+       | [] -> ()
+       | _  -> confl := add_scertifs to_add !cfirst end;
+       select !confl;
+       occur !confl;
+       (alloc !cfirst, !confl)
+
     | Parsing.Parse_error -> failwith ("Verit.import_trace: parsing error line "
                                        ^ (string_of_int !line))
 
@@ -135,7 +126,7 @@ let import_all fsmt fproof =
   let ra' = VeritSyntax.ra' in
   let rf' = VeritSyntax.rf' in
   let roots = Smtlib2_genConstr.import_smtlib2 rt ro ra rf fsmt in
-  let (max_id, confl) = import_trace ra' rf'  fproof None [] in
+  let (max_id, confl) = import_trace ra' rf' fproof None [] in
   (rt, ro, ra, rf, roots, max_id, confl)
 
 

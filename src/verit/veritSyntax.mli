@@ -52,9 +52,11 @@ val clear_qvar : unit -> unit
 
 val string_hform : SmtAtom.Form.t -> string
 
-val init_index : SmtAtom.Form.t list -> SmtAtom.Atom.reify_tbl ->
-                 SmtAtom.Form.reify -> SmtAtom.Form.t -> int
+val init_index : SmtAtom.Form.t list -> (SmtAtom.Form.t -> SmtAtom.Form.t) ->
+                 SmtAtom.Form.t -> int
 
+val qf_to_add : SmtAtom.Form.t SmtCertif.clause list -> (SmtAtom.Form.t SmtCertif.clause_kind * SmtAtom.Form.t list option * SmtAtom.Form.t SmtCertif.clause) list
+                                     
 val ra : SmtAtom.Atom.reify_tbl
 val rf : SmtAtom.Form.reify
 val ra' : SmtAtom.Atom.reify_tbl
