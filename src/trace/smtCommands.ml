@@ -405,11 +405,11 @@ let of_coq_lemma rt ro ra' rf' env sigma clemma =
   | _ -> Form.get rf' (Fapp (Fforall forall_args, [|core_smt|]))
 
 
-let core_tactic call_solver rt ro ra rf ra' rf' lcplemma env sigma concl =
+let core_tactic call_solver rt ro ra rf ra' rf' lcpl env sigma concl =
   let a, b = get_arguments concl in
-  let lclemma = List.map (Retyping.get_type_of env sigma) lcplemma in
-  let ls_smtc = List.map (of_coq_lemma rt ro ra' rf' env sigma) lclemma in
-  let l_pl_ls = List.combine (List.combine lclemma lcplemma) ls_smtc in
+  let lcl = List.map (Retyping.get_type_of env sigma) lcpl in
+  let lsmt = List.map (of_coq_lemma rt ro ra' rf' env sigma) lcl in
+  let l_pl_ls = List.combine (List.combine lcl lcpl) lsmt in
 
   let lem_tbl : (int, Term.constr * Term.constr) Hashtbl.t =
     Hashtbl.create 100 in
@@ -442,7 +442,7 @@ let core_tactic call_solver rt ro ra rf ra' rf' lcplemma env sigma concl =
       let l' = Form.of_coq (Atom.of_coq rt ro ra' env sigma) rf' a in
       let l' = if (Term.eq_constr b (Lazy.force ctrue))
                then Form.neg l' else l' in
-      let max_id_confl = make_proof call_solver rt ro rf ra' rf' l' ls_smtc in
+      let max_id_confl = make_proof call_solver rt ro rf ra' rf' l' lsmt in
       build_body rt ro ra rf (Form.to_coq l) b max_id_confl (Some find_lemma)
     else
       let l1 = Form.of_coq (Atom.of_coq rt ro ra env sigma) rf a in
@@ -451,7 +451,7 @@ let core_tactic call_solver rt ro ra rf ra' rf' lcplemma env sigma concl =
       let l1' = Form.of_coq (Atom.of_coq rt ro ra' env sigma) rf' a in
       let l2' = Form.of_coq (Atom.of_coq rt ro ra' env sigma) rf' b in
       let l' = Form.neg (Form.get rf' (Fapp(Fiff,[|l1';l2'|]))) in
-      let max_id_confl = make_proof call_solver rt ro rf ra' rf' l' ls_smtc in
+      let max_id_confl = make_proof call_solver rt ro rf ra' rf' l' lsmt in
       build_body_eq rt ro ra rf (Form.to_coq l1) (Form.to_coq l2) (Form.to_coq l) max_id_confl (Some find_lemma) in
 
   let cuts = SmtBtype.get_cuts rt @ cuts in
@@ -464,7 +464,7 @@ let core_tactic call_solver rt ro ra rf ra' rf' lcplemma env sigma concl =
          (Structures.vm_cast_no_check body_cast))
 
 
-let tactic call_solver rt ro ra rf ra' rf' lpl =
+let tactic call_solver rt ro ra rf ra' rf' lcpl =
   Structures.tclTHEN
     Tactics.intros
-    (Structures.mk_tactic (core_tactic call_solver rt ro ra rf ra' rf' lpl))
+    (Structures.mk_tactic (core_tactic call_solver rt ro ra rf ra' rf' lcpl))

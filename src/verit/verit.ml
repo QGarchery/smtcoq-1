@@ -63,7 +63,7 @@ let print_certif c where=
   done;
   Format.fprintf fmt "@."; close_out out_channel
                             
-let import_trace ra' rf' filename first ls_smtc =
+let import_trace ra' rf' filename first lsmt =
   let chan = open_in filename in
   let lexbuf = Lexing.from_channel chan in
   let confl_num = ref (-1) in
@@ -87,11 +87,10 @@ let import_trace ra' rf' filename first ls_smtc =
        let cfirst = ref (VeritSyntax.get_clause !first_num) in
        let confl = ref (VeritSyntax.get_clause !confl_num) in
        let re_hash hf = Form.hash_hform (Atom.hash_hatom ra') rf' hf in
-       print_certif !cfirst "/tmp/parsing.log";
        begin match first with
        | None -> ()
        | Some _ ->
-          let cf, lr = order_roots (VeritSyntax.init_index ls_smtc re_hash)
+          let cf, lr = order_roots (VeritSyntax.init_index lsmt re_hash)
                          !cfirst in
           cfirst := cf; 
           let to_add = VeritSyntax.qf_to_add (List.tl lr) in
@@ -105,13 +104,9 @@ let import_trace ra' rf' filename first ls_smtc =
        match to_add with
        | [] -> ()
        | _  -> confl := add_scertifs to_add !cfirst end;
-       print_certif !cfirst "/tmp/add_scertif.log";
        select !confl;
-       print_certif !cfirst "/tmp/select.log";
        occur !confl;
-       let u =  (alloc !cfirst, !confl) in
-       print_certif !cfirst "/tmp/alloc.log";
-       u
+       (alloc !cfirst, !confl)
 
     | Parsing.Parse_error -> failwith ("Verit.import_trace: parsing error line "
                                        ^ (string_of_int !line))
@@ -147,7 +142,7 @@ let checker fsmt fproof = SmtCommands.checker (import_all fsmt fproof)
 (** Given a Coq formula build the proof                                       *)
 (******************************************************************************)
 
-let export out_channel rt ro ls_smtc =
+let export out_channel rt ro lsmt =
   let fmt = Format.formatter_of_out_channel out_channel in
   Format.fprintf fmt "(set-logic UFLIA)@.";
 
@@ -171,15 +166,15 @@ let export out_channel rt ro ls_smtc =
 
   List.iter (fun u -> Format.fprintf fmt "(assert ";
                       Form.to_smt Atom.to_string fmt u;
-                      Format.fprintf fmt ")\n") ls_smtc;
+                      Format.fprintf fmt ")\n") lsmt;
 
   Format.fprintf fmt "(check-sat)\n";
   Format.fprintf fmt "(exit)@."
 
 (* val call_verit : Btype.reify_tbl -> Op.reify_tbl -> Form.t -> (Form.t clause * Form.t) -> (int * Form.t clause) *)
-let call_verit rt ro ra' rf' first ls_smtc =
+let call_verit rt ro ra' rf' first lsmt =
   let filename, outchan = Filename.open_temp_file "verit_coq" ".smt2" in
-  export outchan rt ro ls_smtc;
+  export outchan rt ro lsmt;
   close_out outchan;
   let logfilename = Filename.chop_extension filename ^ ".vtlog" in
   let wname, woc = Filename.open_temp_file "warnings_verit" ".log" in
@@ -200,14 +195,14 @@ let call_verit rt ro ra' rf' first ls_smtc =
         Structures.error "veriT returns 'unknown'"
     with End_of_file ->
           try
-            let res = import_trace ra' rf' logfilename first ls_smtc in
+            let res = import_trace ra' rf' logfilename first lsmt in
             close_in win; Sys.remove wname; res
           with
           | VeritSyntax.Sat -> Structures.error "veriT found a counter-example"
   with x -> close_in win; Sys.remove wname; raise x
 
 
-let tactic lpl =
+let tactic lcpl =
   clear_all ();
   let rt = SmtBtype.create () in
   let ro = Op.create () in
@@ -215,4 +210,4 @@ let tactic lpl =
   let rf = VeritSyntax.rf in
   let ra' = VeritSyntax.ra' in
   let rf' = VeritSyntax.rf' in
-  SmtCommands.tactic call_verit rt ro ra rf ra' rf' lpl
+  SmtCommands.tactic call_verit rt ro ra rf ra' rf' lcpl

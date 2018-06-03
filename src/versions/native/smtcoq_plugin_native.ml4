@@ -59,5 +59,5 @@ TACTIC EXTEND Tactic_zchaff
 END
 
 TACTIC EXTEND Tactic_verit
-| [ "verit" ident_list(lpl) ] -> [ Verit.tactic lpl ]
+| [ "verit" constr_list(lcpl) ] -> [ Verit.tactic lcpl ]
 END
