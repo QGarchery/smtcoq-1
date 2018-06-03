@@ -92,9 +92,8 @@ let import_trace ra' rf' filename first ls_smtc =
        | None -> ()
        | Some _ ->
           let cf, lr = order_roots (VeritSyntax.init_index ls_smtc re_hash)
-                         !cfirst ls_smtc in
-          cfirst := cf;
-          print_certif !cfirst "/tmp/order.log";
+                         !cfirst in
+          cfirst := cf; 
           let to_add = VeritSyntax.qf_to_add (List.tl lr) in
           let to_add =
             (match first, !cfirst.value with
@@ -178,9 +177,9 @@ let export out_channel rt ro ls_smtc =
   Format.fprintf fmt "(exit)@."
 
 (* val call_verit : Btype.reify_tbl -> Op.reify_tbl -> Form.t -> (Form.t clause * Form.t) -> (int * Form.t clause) *)
-let call_verit rt ro ra' rf' fl (root, l) ls_smtc =
+let call_verit rt ro ra' rf' first ls_smtc =
   let filename, outchan = Filename.open_temp_file "verit_coq" ".smt2" in
-  export outchan rt ro (fl::ls_smtc);
+  export outchan rt ro ls_smtc;
   close_out outchan;
   let logfilename = Filename.chop_extension filename ^ ".vtlog" in
   let wname, woc = Filename.open_temp_file "warnings_verit" ".log" in
@@ -201,8 +200,7 @@ let call_verit rt ro ra' rf' fl (root, l) ls_smtc =
         Structures.error "veriT returns 'unknown'"
     with End_of_file ->
           try
-            let res = import_trace ra' rf' logfilename (Some (root, l))
-                        (fl::ls_smtc) in
+            let res = import_trace ra' rf' logfilename first ls_smtc in
             close_in win; Sys.remove wname; res
           with
           | VeritSyntax.Sat -> Structures.error "veriT found a counter-example"

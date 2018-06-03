@@ -26,7 +26,7 @@ val set_same : 'a SmtCertif.clause -> 'a SmtCertif.clause -> unit
 val get_pos : 'a SmtCertif.clause -> int
 val eq_clause : 'a SmtCertif.clause -> 'b SmtCertif.clause -> bool
 val order_roots : ('a -> int) -> 'a SmtCertif.clause ->
-                  'a list -> 'a SmtCertif.clause * 'a SmtCertif.clause list
+                  'a SmtCertif.clause * 'a SmtCertif.clause list
 val add_scertifs : ('a SmtCertif.clause_kind * 'a list option * 'a SmtCertif.clause) list -> 
                    'a SmtCertif.clause -> 'a SmtCertif.clause
 val select : 'a SmtCertif.clause -> unit
@@ -43,8 +43,8 @@ val to_coq :
   Term.constr Lazy.t * Term.constr Lazy.t * Term.constr Lazy.t *
   Term.constr Lazy.t * Term.constr Lazy.t * Term.constr Lazy.t *
   Term.constr Lazy.t * Term.constr Lazy.t * Term.constr Lazy.t *
-  Term.constr Lazy.t * Term.constr Lazy.t ->
-  'a SmtCertif.clause -> (Term.constr * Term.constr) list ->
+    Term.constr Lazy.t * Term.constr Lazy.t -> 'a SmtCertif.clause ->
+  ('a SmtCertif.clause -> Term.constr * Term.constr) option ->
   Term.constr * 'a SmtCertif.clause *
     (Names.identifier * Term.types) list
 module MakeOpt :

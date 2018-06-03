@@ -147,7 +147,7 @@ let rec get_pos c =
 
 let eq_clause c1 c2 = (repr c1).id = (repr c2).id
   
-let order_roots init_index first ls_smtc =
+let order_roots init_index first =
   let r = ref first in
   let acc = ref [] in
   while isRoot !r.kind do
@@ -350,7 +350,7 @@ let to_coq to_lit interp (cstep,
     cImmBuildProj,cImmBuildDef,cImmBuildDef2,
     cEqTr, cEqCgr, cEqCgrP,
     cLiaMicromega, cLiaDiseq, cSplArith, cSplDistinctElim,
-    cHole, cForallInst) confl l_pl =
+    cHole, cForallInst) confl sf =
 
   let cuts = ref [] in
 
@@ -415,8 +415,9 @@ let to_coq to_lit interp (cstep,
            mklApp cHole [|out_c c; prem_id'; prem'; concl'; ass_var|]
 
         | Forall_inst (cl, concl) | Qf_lemma (cl, concl) ->
-           let id = cl.id - 2 in
-           let clemma, cplemma = List.nth l_pl id in
+           let clemma, cplemma = match sf with
+             | Some find -> find cl
+             | None -> assert false in
            let concl' = out_cl [concl] in
            let app_name = Names.id_of_string ("app" ^ (string_of_int (Hashtbl.hash concl))) in
            let app_var = Term.mkVar app_name in
