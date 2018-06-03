@@ -87,12 +87,14 @@ let import_trace ra' rf' filename first ls_smtc =
        let cfirst = ref (VeritSyntax.get_clause !first_num) in
        let confl = ref (VeritSyntax.get_clause !confl_num) in
        let re_hash hf = Form.hash_hform (Atom.hash_hatom ra') rf' hf in
+       print_certif !cfirst "/tmp/parsing.log";
        begin match first with
        | None -> ()
        | Some _ ->
           let cf, lr = order_roots (VeritSyntax.init_index ls_smtc re_hash)
                          !cfirst ls_smtc in
-          cfirst := cf; 
+          cfirst := cf;
+          print_certif !cfirst "/tmp/order.log";
           let to_add = VeritSyntax.qf_to_add (List.tl lr) in
           let to_add =
             (match first, !cfirst.value with
@@ -104,9 +106,13 @@ let import_trace ra' rf' filename first ls_smtc =
        match to_add with
        | [] -> ()
        | _  -> confl := add_scertifs to_add !cfirst end;
+       print_certif !cfirst "/tmp/add_scertif.log";
        select !confl;
+       print_certif !cfirst "/tmp/select.log";
        occur !confl;
-       (alloc !cfirst, !confl)
+       let u =  (alloc !cfirst, !confl) in
+       print_certif !cfirst "/tmp/alloc.log";
+       u
 
     | Parsing.Parse_error -> failwith ("Verit.import_trace: parsing error line "
                                        ^ (string_of_int !line))

@@ -464,7 +464,8 @@ let to_coq to_lit interp (cstep,
   (*   trace.(q) <- Structures.mkArray (step, traceq) *)
   (* end; *)
   (* (Structures.mkArray (mklApp carray [|step|], trace), last_root, !cuts) *)
-  (Structures.mkTrace step_to_coq next carray clist cnil ccons cpair !nc step def_step r, last_root, !cuts)
+  let tres = Structures.mkTrace step_to_coq next carray clist cnil ccons cpair !nc step def_step r in
+  (tres, last_root, !cuts)
 
 
 

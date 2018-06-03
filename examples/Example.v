@@ -28,7 +28,7 @@ Axiom f0 : Zeq_bool 0 (f 0).
 Lemma justf0 :
   Zeq_bool 0 (f 0).
 Proof.
-  verit f0. auto. 
+  verit f0. auto.
 Qed.
 
 
