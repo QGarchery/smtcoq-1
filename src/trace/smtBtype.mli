@@ -3,6 +3,7 @@ val dummy_indexed_type : int -> indexed_type
 val indexed_type_index : indexed_type -> int
 val indexed_type_hval : indexed_type -> Term.constr
 type btype = TZ | Tbool | Tpositive | Tindex of indexed_type
+val indexed_type_of_int : int -> indexed_type
 val equal : btype -> btype -> bool
 val to_coq : btype -> Term.constr
 val to_string : btype -> string

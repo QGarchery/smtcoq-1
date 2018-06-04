@@ -86,7 +86,7 @@ let import_trace ra' rf' filename first lsmt =
        close_in chan;
        let cfirst = ref (VeritSyntax.get_clause !first_num) in
        let confl = ref (VeritSyntax.get_clause !confl_num) in
-       let re_hash hf = Form.hash_hform (Atom.hash_hatom ra') rf' hf in
+       let re_hash = Form.hash_hform (Atom.hash_hatom ra') rf' in
        begin match first with
        | None -> ()
        | Some _ ->

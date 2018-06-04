@@ -151,7 +151,7 @@ Qed.
 
  Definition add_roots s (d:dimacs) :=
    PArray.foldi_right (fun i c s => S.set_clause s i (PArray.to_list c)) d s.
-
+ 
  Definition checker (d:dimacs) (c:certif) :=
    let (nclauses, t, confl_id) := c in
    resolution_checker C.is_false (add_roots (S.make nclauses) d) t confl_id.

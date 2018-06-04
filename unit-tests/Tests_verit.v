@@ -15,6 +15,17 @@ Proof.
   verit.
 Qed.
 
+Lemma fun_const :
+  forall f, (forall x,  Zeq_bool (f x) 2) ->
+            Zeq_bool (f 3) 2.
+
+Proof.
+  intros f Hf.
+  verit Hf.
+
+
+
+
 
 (* veriT vernacular commands *)
 
@@ -935,3 +946,5 @@ Qed.
    coq-load-path: ((rec "../src" "SMTCoq"))
    End: 
 *)
+
+      

@@ -21,18 +21,37 @@ Proof.
   rewrite H in H1. discriminate H1.
 Qed.
 
+Hint Rewrite sym_zeq_bool: sym.
+
+Lemma sat2_gen a1 a2 a3:
+  forall v : int -> bool,
+    (v a1 || v a2 || v a3) &&
+    (negb (v a1) || negb (v a2) || negb (v a3)) &&
+    (negb (v a1) || v a2) &&
+    (negb (v a2) || v a3) &&
+    (negb (v a3) || v a1)  = false.
+
+Zchaff_Theorem sat "sat.cnf" "sat.log".
+About sat.
+
+Proof.
+  verit; autorewrite with sym.
+  exists Int63Native.eqb.
+  apply Int63Properties.reflect_eqb.
+Defined.
+
+
+
 
 Parameter f : Z -> Z.
 Axiom f0 : Zeq_bool 0 (f 0).
 
+
 Lemma justf0 :
   Zeq_bool 0 (f 0).
 Proof.
-  verit f0. auto.
+  verit f0;   autorewrite with sym.
 Qed.
-
-
-
 
 
 (* c = Certif nclauses t confl  *)
@@ -122,7 +141,7 @@ Axiom p0 : Zeq_bool (p 0) 0.
 Lemma justp0 :
   Zeq_bool (p 0) 0.
 Proof.
-  verit f0 p0. auto.
+  verit f0 p0; autorewrite with sym.
 Qed.
 
 
@@ -133,7 +152,7 @@ Axiom orcd  : orb c d.
 Lemma sat6 :
   orb c (andb a (andb b d)).
 Proof.
-  verit andab orcd; auto.
+  verit andab orcd; autorewrite with sym.
 Qed.
 
 
@@ -143,10 +162,10 @@ Parameter h : Z -> Z.
 Axiom h1h2 : andb (Zeq_bool (h 1) 3) (Zeq_bool (h 2) 4).
 
 Lemma h1 :
-  Zeq_bool (h 1) 3.
+  Zeq_bool (h 1) 3.  
 
 Proof.
-  verit h1h2. auto.
+  verit h1h2; autorewrite with sym.
 Qed.
 
 
@@ -164,8 +183,7 @@ Lemma apply_lemma_multiple :
   forall x y, Zeq_bool (g (x + 1)) (g x + f' y).
 
 Proof.
-  verit g_k_linear f'_equal_k. auto.
-  auto.
+  verit g_k_linear f'_equal_k; autorewrite with sym.
 Qed.
 
 
@@ -180,7 +198,9 @@ Lemma apply_lemma :
   Zeq_bool (u y) (u 2%Z).
 
 Proof.
-  verit u_is_constant. auto.
+  verit u_is_constant; autorewrite with sym.
+
+  (* ; try (intro H; try (rewrite sym_zeq_bool; apply H); apply H). *)
 Qed.
 
 Parameter mult4 : Z -> Z.
@@ -190,8 +210,8 @@ Axiom mult4_Sn : forall n, Zeq_bool (mult4 (n+1)) (mult4 n + 4).
 Lemma mult4_1 : Zeq_bool (mult4 1) 4.
 
 Proof.
-  verit mult4_0 mult4_Sn. exact (fun f => f _).
-  rewrite sym_zeq_bool. auto.
+  verit mult4_0 mult4_Sn.
+  now rewrite sym_zeq_bool.
 Qed.
 
 (* c = Certif nclauses t confl 
@@ -273,34 +293,17 @@ Lemma const_fun_is_eq_val_0 :
     forall x, Zeq_bool (f x) (f 0).
 Proof.
   intros f Hf.
-  verit Hf; auto.
+  verit Hf; try (intro H; try (rewrite sym_zeq_bool; apply H); apply H).
 Qed.
   
 Lemma find_inst : 
   implb (Zeq_bool (u 2) 5) (Zeq_bool (u 3) 5).
 
 Proof.
-  verit u_is_constant.
-  rewrite sym_zeq_bool. auto.
+  verit u_is_constant; try (intro H; try (rewrite sym_zeq_bool; apply H); apply H).
 Qed.  
 
 
-Lemma sat2_gen a1 a2 a3:
-  forall v : int -> bool,
-    (v a1 || v a2 || v a3) &&
-    (negb (v a1) || negb (v a2) || negb (v a3)) &&
-    (negb (v a1) || v a2) &&
-    (negb (v a2) || v a3) &&
-    (negb (v a3) || v a1)  = false.
-
-Zchaff_Theorem sat "sat.cnf" "sat.log".
-About sat.
-
-Proof.
-  verit.
-  exists Int63Native.eqb.
-  apply Int63Properties.reflect_eqb.
-Defined.
 
 Lemma irrelf_ltb :
   forall a b c,
@@ -309,7 +312,7 @@ Lemma irrelf_ltb :
   (Z.ltb c a) = false.
 
 Proof.
-  verit.
+  verit; try (intro H; try (rewrite sym_zeq_bool; apply H); apply H).
 Qed.
 
 Lemma sat2:
@@ -320,7 +323,7 @@ Lemma sat2:
     (negb (a2) || a3) &&
     (negb (a3) || a1)  = false.
 Proof.
-  verit.
+  verit; try (intro H; try (rewrite sym_zeq_bool; apply H); apply H).
 Qed.
 Print sat2.  
 
@@ -369,7 +372,7 @@ Qed.
 
 Goal forall a b c, ((a || b || c) && ((negb a) || (negb b) || (negb c)) && ((negb a) || b) && ((negb b) || c) && ((negb c) || a)) = false.
 Proof.
-  verit.
+  verit; try (intro H; try (rewrite sym_zeq_bool; apply H); apply H).
 Qed.
 
 (* About positive. *)
@@ -419,7 +422,7 @@ Goal forall b1 b2 x1 x2,
   ((implb b1 b2) && (implb b2 b1) && (Zeq_bool x1 x2)).
 
 Proof.
-  verit.
+  verit; try (intro H; try (rewrite sym_zeq_bool; apply H); apply H).
 Qed.
 
 (* Parameter toto : Z -> Z. *)
@@ -443,7 +446,7 @@ Lemma comp f g (x1 x2 x3 : Z) :
            true)
       true.
 Proof.
-  verit.
+  verit; try (intro H; try (rewrite sym_zeq_bool; apply H); apply H).
 Qed.
 
 
@@ -457,7 +460,7 @@ Lemma un_menteur (a b c d : Z) dit:
         (Zeq_bool a d))))).
 
 Proof.
-  verit.
+  verit; try (intro H; try (rewrite sym_zeq_bool; apply H); apply H).
 Qed.
 
 Lemma un_menteur_prop (a b c d : Z) dit:
