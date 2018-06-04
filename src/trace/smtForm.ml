@@ -261,13 +261,13 @@ module Make (Atom:ATOM) =
 
     let declare reify pf =
       check pf;
-      if reify.count = 5 then
-        match pf with
-        | Fapp (Fforall [x, Tindex it], args) ->
-           let c = indexed_type_hval it in
-           Printer.pr_constr c |> Pp.string_of_ppcmds
-           |> failwith
-        | _ -> failwith "its an atom" else
+      (* if reify.count = 5 then
+       *   match pf with
+       *   | Fapp (Fforall [x, Tindex it], args) ->
+       *      let c = indexed_type_hval it in
+       *      Printer.pr_constr c |> Pp.string_of_ppcmds
+       *      |> failwith
+       *   | _ -> failwith "its an atom" else *)
       let res = Pos {index = reify.count; hval = pf} in
       HashForm.add reify.tbl pf res;
       reify.count <- reify.count + 1;

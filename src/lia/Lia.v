@@ -25,6 +25,7 @@ Require Import Psatz.
 
 Require Import Misc State.
 Require Import SMT_terms.
+Print Typ.i_eqb.
 Require Import SMTCoq.euf.Euf.
 
 Local Open Scope array_scope.

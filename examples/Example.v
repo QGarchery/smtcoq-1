@@ -175,15 +175,15 @@ Qed.
 Parameter f' : Z -> Z.
 Parameter g : Z -> Z.
 Parameter k : Z.
-Axiom g_k_linear : forall x, Zeq_bool (g (x + 1)) ((g x) + k).
-Axiom f'_equal_k : forall x, Zeq_bool (f' x) k.
+Axiom g_k_linear : forall x, Z.eqb (g (x + 1)) ((g x) + k).
+Axiom f'_equal_k : forall x, Z.eqb (f' x) k.
 
 
 Lemma apply_lemma_multiple :
-  forall x y, Zeq_bool (g (x + 1)) (g x + f' y).
+  forall x y, Z.eqb (g (x + 1)) (g x + f' y).
 
 Proof.
-  verit g_k_linear f'_equal_k; autorewrite with sym.
+  verit g_k_linear f'_equal_k.
 Qed.
 
 

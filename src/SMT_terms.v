@@ -302,7 +302,7 @@ Module Typ.
       Definition i_eqb (t:type) : interp t -> interp t -> bool :=
         match t with
         | Tindex i => (t_i.[i]).(te_eqb)
-        | TZ => Zeq_bool
+        | TZ => Z.eqb
         | Tbool => Bool.eqb
         | Tpositive => Peqb
         end.
