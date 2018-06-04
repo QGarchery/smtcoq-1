@@ -9,12 +9,6 @@ Local Open Scope int63_scope.
 (* First a tactic, to test the universe computation in an empty
    environment. *)
 
-Lemma check_univ (x1: bool):
-  (x1 && (negb x1)) = false.
-Proof.
-  verit.
-Qed.
-
 Lemma fun_const :
   forall f, (forall x,  Zeq_bool (f x) 2) ->
             Zeq_bool (f 3) 2.
@@ -22,6 +16,13 @@ Lemma fun_const :
 Proof.
   intros f Hf.
   verit Hf.
+
+Lemma check_univ (x1: bool):
+  (x1 && (negb x1)) = false.
+Proof.
+  verit.
+Qed.
+
 
 
 

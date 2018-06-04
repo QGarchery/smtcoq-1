@@ -186,6 +186,13 @@ module Make (Atom:ATOM) =
       | (s, t)::rest -> " (" ^ s ^ " " ^ SmtBtype.to_string t ^ ")"
                         ^ to_string_args rest
 
+    let dumbed_down op =
+      let dumbed_down_bt = function
+        | Tindex it -> Tindex (dummy_indexed_type (indexed_type_index it))
+        | x -> x in
+      match op with
+      | Fforall l -> Fforall (List.map (fun (x, bt) -> x, dumbed_down_bt bt) l)
+      | x -> x
 
     let to_smt atom_to_string fmt f =
       Format.fprintf fmt "%s" (to_string atom_to_string f)
@@ -199,7 +206,7 @@ module Make (Atom:ATOM) =
 	  match pf1, pf2 with
 	  | Fatom ha1, Fatom ha2 -> Atom.equal ha1 ha2
 	  | Fapp(op1,args1), Fapp(op2,args2) -> 
-	     op1 = op2 &&
+	     dumbed_down op1 = dumbed_down op2 && 
 	       Array.length args1 == Array.length args2 &&
 	         (try
 		    for i = 0 to Array.length args1 - 1 do
@@ -221,7 +228,7 @@ module Make (Atom:ATOM) =
 	       | _ ->
 		  (to_lit args.(2)) lsl 4 + (to_lit args.(1)) lsl 2 +
 		    to_lit args.(0) in
-	     (hash_args * 10 + Hashtbl.hash op) * 2 + 1
+	     (hash_args * 10 + Hashtbl.hash (dumbed_down op)) * 2 + 1
 
       end
 
@@ -254,6 +261,13 @@ module Make (Atom:ATOM) =
 
     let declare reify pf =
       check pf;
+      if reify.count = 5 then
+        match pf with
+        | Fapp (Fforall [x, Tindex it], args) ->
+           let c = indexed_type_hval it in
+           Printer.pr_constr c |> Pp.string_of_ppcmds
+           |> failwith
+        | _ -> failwith "its an atom" else
       let res = Pos {index = reify.count; hval = pf} in
       HashForm.add reify.tbl pf res;
       reify.count <- reify.count + 1;
