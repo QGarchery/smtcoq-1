@@ -1035,3 +1035,65 @@ Proof.
   verit eqxy pzx.
   now rewrite Z.eqb_sym.
 Qed.
+
+Parameter a b c d : bool.
+Axiom andab : andb a b.
+Axiom orcd  : orb c d.
+
+Lemma sat6 :
+  orb c (andb a (andb b d)).
+Proof.
+  verit andab orcd.
+Qed.
+
+Parameter f' : Z -> Z.
+Parameter g : Z -> Z.
+Parameter k : Z.
+Axiom g_k_linear : forall x, g (x + 1) =? (g x) + k.
+Axiom f'_equal_k : forall x, f' x =? k.
+
+Lemma apply_lemma_multiple :
+    forall x y, g (x + 1) =? g x + f' y.
+
+Proof.
+  verit g_k_linear f'_equal_k.
+Qed.
+
+Parameter u : Z -> Z.
+Axiom u_is_constant : forall x y, u x =? u y.
+
+
+Lemma apply_lemma :
+  forall x, u x =? u 2.
+Proof.
+  verit u_is_constant.
+Qed.
+
+Lemma find_inst :
+  implb (u 2 =? 5) (u 3 =? 5).
+Proof.
+  verit u_is_constant.
+Qed.
+
+
+
+Parameter mult3 : Z -> Z.
+Axiom mult3_0 : mult3 0 =? 0.
+Axiom mult3_Sn : forall n, mult3 (n+1) =? mult3 n + 3.
+
+Lemma mult3_21 : mult3 14 =? 42.
+Proof.
+  verit mult3_0 mult3_Sn.
+  now rewrite Z.eqb_sym.
+Qed.
+
+(* Doesnt return in less than 10 seconds *)
+(* Parameter mult : Z -> Z -> Z. *)
+(* Axiom mult_0 : forall x, mult 0 x =? 0. *)
+(* Axiom mult_Sx : forall x y, mult (x+1) y =? mult x y + y. *)
+
+(* Lemma mult_3_21 : mult 1 2 =? 2. *)
+(* Proof. *)
+(*   verit mult_0 mult_Sx. *)
+
+
