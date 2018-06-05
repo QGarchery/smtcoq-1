@@ -7,6 +7,16 @@ Local Open Scope int63_scope.
 
 
 
+Lemma fun_const :
+  forall f (g : int -> int -> bool) , (forall x, g (f x) 2) ->
+            g (f 3) 2.
+
+Proof.
+  intros f g Hf.
+  verit Hf.
+  exists Int63Native.eqb.
+  apply Int63Properties.reflect_eqb.
+Qed.
 
 (* First a tactic, to test the universe computation in an empty
    environment. *)
@@ -18,17 +28,6 @@ Proof.
 Qed.
 
 
-
-Lemma fun_const :
-  forall f, (forall x,  Zeq_bool (f x) 2) ->
-            Zeq_bool (f 3) 2.
-
-Proof.
-  intros f Hf.
-  verit Hf.
-  exists Int63Native.eqb.
-  apply Int63Properties.reflect_eqb.
-Qed.
 
 Open Scope Z_scope.
 
@@ -953,4 +952,86 @@ Qed.
    End: 
 *)
 
-      
+(* Verit with lemmas *)
+
+
+Lemma fun_const_Z :
+  forall f , (forall x, f x =? 2) ->
+            f 3 =? 2.
+Proof.
+  intros f Hf.
+  verit Hf.
+Qed.
+
+Lemma lid (A : bool) :  A -> A.
+  intro a.
+  verit a.
+Qed.
+
+Lemma lpartial_id A :
+  (xorb A A) -> (xorb A A).
+Proof.
+  intro xa.
+  verit xa.
+Qed.
+
+Lemma llia1 X Y Z:
+  (X <=? 3) && ((Y <=? 7) || (Z <=? 9)) -> 
+  (X + Y <=? 10) || (X + Z <=? 12).
+Proof.
+  intro p.
+  verit p.
+Qed.
+
+Lemma llia2 X:
+  X - 3 =? 7 -> X >=? 10.
+Proof.
+  intro p.
+  verit p.
+Qed.
+
+Lemma llia3 X Y:
+  X >? Y -> Y + 1 <=? X.
+Proof.
+  intro p.
+  verit p.
+Qed.
+
+Lemma llia6 X:
+  andb ((X - 3) <=? 7) (7 <=? (X - 3)) -> X >=? 10.
+Proof.
+  intro p.
+  verit p.
+Qed.
+
+Lemma even_odd b1 b2 x1 x2:
+  (ifb b1
+    (ifb b2 (2*x1+1 =? 2*x2+1) (2*x1+1 =? 2*x2))
+    (ifb b2 (2*x1 =? 2*x2+1) (2*x1 =? 2*x2))) ->
+  ((implb b1 b2) && (implb b2 b1) && (x1 =? x2)).
+Proof.
+  intro p.
+  verit p.
+Qed.
+
+Lemma lcongr1 (a b : Z) (P : Z -> bool) f:
+  (f a =? b) -> (P (f a)) -> P b.
+Proof.
+  intros eqfab pfa.
+  verit eqfab pfa. now rewrite Z.eqb_sym.
+Qed.
+
+Lemma lcongr2 (f:Z -> Z -> Z) x y z: 
+  x =? y -> f z x =? f z y.
+Proof.
+  intro p.
+  verit p.
+Qed.
+
+Lemma lcongr3 (P:Z -> Z -> bool) x y z:
+  x =? y -> P z x -> P z y.
+Proof.
+  intros eqxy pzx.
+  verit eqxy pzx.
+  now rewrite Z.eqb_sym.
+Qed.
