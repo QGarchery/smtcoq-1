@@ -9,20 +9,6 @@ Local Open Scope int63_scope.
 
 Open Scope Z_scope.
 
-Lemma sym_zeq_bool x y :
-  Zeq_bool x y = Zeq_bool y x.
-
-Proof.
-  case_eq (Zeq_bool x y).
-  rewrite <- Zeq_is_eq_bool. intro H. symmetry. now rewrite <- Zeq_is_eq_bool.
-  symmetry. apply not_true_is_false.
-  intro H1. rewrite <- Zeq_is_eq_bool in H1.
-  symmetry in H1. rewrite Zeq_is_eq_bool in H1.
-  rewrite H in H1. discriminate H1.
-Qed.
-
-Hint Rewrite sym_zeq_bool: sym.
-
 Lemma sat2_gen a1 a2 a3:
   forall v : int -> bool,
     (v a1 || v a2 || v a3) &&
@@ -35,24 +21,19 @@ Zchaff_Theorem sat "sat.cnf" "sat.log".
 About sat.
 
 Proof.
-  verit; autorewrite with sym.
+  verit. 
   exists Int63Native.eqb.
   apply Int63Properties.reflect_eqb.
 Defined.
 
-
-
-
 Parameter f : Z -> Z.
-Axiom f0 : Zeq_bool 0 (f 0).
-
+Axiom f0 : 0 =? f 0.
 
 Lemma justf0 :
-  Zeq_bool 0 (f 0).
+  0 =? f 0.
 Proof.
-  verit f0;   autorewrite with sym.
+  verit f0.
 Qed.
-
 
 (* c = Certif nclauses t confl  *)
 (*    checker_b l true c = checker (PArray.make nclauses nl) None c *)
@@ -63,7 +44,7 @@ Qed.
 (* Close Scope Z_scope. *)
 
 
-(* Parameter ass347262118 : Zeq_bool 0 (f 0) -> Zeq_bool 0 (f 0). *)
+(* Parameter ass347262118 : Z.eqb 0 (f 0) -> Z.eqb 0 (f 0). *)
 (* Definition t_i := [! | unit_typ_eqb !] : array typ_eqb. *)
 (* Definition t_func := [!Tval t_i (Typ.TZ :: nil, Typ.TZ) f | Tval t_i (nil, Typ.Tbool) true !] *)
 (* : array (tval t_i). *)
@@ -136,12 +117,12 @@ Qed.
 
 
 Parameter p : Z -> Z.
-Axiom p0 : Zeq_bool (p 0) 0.
+Axiom p0 : p 0 =? 0.
 
 Lemma justp0 :
-  Zeq_bool (p 0) 0.
+  p 0 =? 0.
 Proof.
-  verit f0 p0; autorewrite with sym.
+  verit f0 p0.
 Qed.
 
 
@@ -152,157 +133,73 @@ Axiom orcd  : orb c d.
 Lemma sat6 :
   orb c (andb a (andb b d)).
 Proof.
-  verit andab orcd; autorewrite with sym.
+  verit andab orcd.
 Qed.
-
 
 (* Verit_Checker "sat6.smt2" "sat6.vtlog". *)
 
 Parameter h : Z -> Z.
-Axiom h1h2 : andb (Zeq_bool (h 1) 3) (Zeq_bool (h 2) 4).
+Axiom h1h2 : andb (h 1 =? 3) (h 2 =? 4).
 
 Lemma h1 :
-  Zeq_bool (h 1) 3.  
+  h 1 =? 3.
 
 Proof.
-  verit h1h2; autorewrite with sym.
+  verit h1h2.
 Qed.
-
-
-
-
 
 Parameter f' : Z -> Z.
 Parameter g : Z -> Z.
 Parameter k : Z.
-Axiom g_k_linear : forall x, Z.eqb (g (x + 1)) ((g x) + k).
-Axiom f'_equal_k : forall x, Z.eqb (f' x) k.
+Axiom g_k_linear : forall x, g (x + 1) =? (g x) + k.
+Axiom f'_equal_k : forall x, f' x =? k.
 
 
 Lemma apply_lemma_multiple :
-  forall x y, Z.eqb (g (x + 1)) (g x + f' y).
+  forall x y, g (x + 1) =? g x + f' y.
 
 Proof.
   verit g_k_linear f'_equal_k.
 Qed.
 
 
-
-
 Parameter u : Z -> Z.
-Axiom u_is_constant : forall x, Zeq_bool (u x) (u 2%Z).
+Axiom u_is_constant : forall x y, u x =? u y.
 
 
 Lemma apply_lemma :
-  forall y,
-  Zeq_bool (u y) (u 2%Z).
+  forall x, u x =? u 2.
 
 Proof.
-  verit u_is_constant; autorewrite with sym.
-
+  verit u_is_constant.
   (* ; try (intro H; try (rewrite sym_zeq_bool; apply H); apply H). *)
 Qed.
 
 Parameter mult4 : Z -> Z.
-Axiom mult4_0 : Zeq_bool (mult4 0) 0.
-Axiom mult4_Sn : forall n, Zeq_bool (mult4 (n+1)) (mult4 n + 4).
+Axiom mult4_0 : mult4 0 =? 0.
+Axiom mult4_Sn : forall n, mult4 (n+1) =? mult4 n + 4.
 
-Lemma mult4_1 : Zeq_bool (mult4 1) 4.
+Lemma mult4_1 : mult4 1 =? 4.
 
 Proof.
-  verit mult4_0 mult4_Sn.
-  now rewrite sym_zeq_bool.
+  verit mult4_0 mult4_Sn; try (intro H; rewrite Z.eqb_sym; apply H).
 Qed.
-
-(* c = Certif nclauses t confl 
-   checker_b l true c = checker (PArray.make nclauses nl) None c
-   checker d used_roots c=  
-   Form.check_form t_form && Atom.check_atom t_atom && 
-   Atom.wt t_i t_func t_atom && 
-   euf_checker (* t_atom t_form *) C.is_false (add_roots (S.make nclauses) d used_roots) t confl *)
-
-
-(* Definition l := 4. *)
-(* Definition nclauses := 8. *)
-(* Definition confl := 4. *)
-
-(* Definition nl := Lit.neg l. *)
-(* Definition d := (PArray.make nclauses nl). *)
-(* Definition s := (add_roots (S.make nclauses) d None). *)
-
-
-(* Compute (checker_b 4 true c). *)
-(* Compute (checker (PArray.make nclauses nl) None c). *)
-
-(* Compute (Form.check_form t_form). *)
-(* Compute (Atom.check_atom t_atom). *)
-(* Compute (Atom.wt t_i t_func t_atom). *)
-(* Compute (euf_checker (* t_atom t_form *) C.is_false s t confl). *)
-
-(* Definition flatten {A : Type} (trace : array (array A)) := *)
-(* PArray.fold_left (fun l_step arr_step => l_step ++ PArray.to_list arr_step) *)
-(*                  nil trace. *)
-
-(* Import ListNotations. *)
-(* Fixpoint firsts {A : Type} n (l : list A) := *)
-(*   match n with *)
-(*   | 0 => [] *)
-(*   | S n => match l with *)
-(*            | [] => [] *)
-(*            | he :: ta => he :: firsts n ta end end. *)
-
-(* Definition step_euf := @step_checker t_i t_func t_atom t_form. *)
-(* Definition l_t := flatten t. *)
-
-
-(* Definition up_to n := List.fold_left step_euf (firsts n l_t) s. *)
-(* Definition nth n := List.nth (n-1) l_t (Res (t_i:=t_i) t_func t_atom t_form 0 [! | 0 !]). *)
-
-(* Compute (List.length l_t). *)
-
-(* Compute (up_to 0). *)
-(* Compute (up_to 1). *)
-(* Compute (nth 1). *)
-
-(* Compute (up_to 2). *)
-(* Compute (up_to 3). *)
-(* Compute (up_to 4). *)
-(* Compute (up_to 5). *)
-(* Compute (up_to 6). *)
-(* Compute (up_to 7). *)
-(* Compute (up_to 8). *)
-(* Compute (up_to 9). *)
-(* Compute (up_to 10). *)
-
-(* Compute (up_to 11). *)
-(* Compute (nth 11). *)
-
-(* Compute (up_to 12). *)
-(* Compute (up_to 13). *)
-(* Compute (up_to 14). *)
-(* Compute (up_to 15). *)
-(* Compute (up_to 16). *)
-(* Compute (up_to 17). *)
-(* Compute (up_to 18). *)
-(* Compute (up_to 19). *)
-
 
 Lemma const_fun_is_eq_val_0 :
   forall f : Z -> Z,
-    (forall a b, Zeq_bool (f a) (f b)) ->
-    forall x, Zeq_bool (f x) (f 0).
+    (forall a b, f a =? f b) ->
+    forall x, f x =? f 0.
 Proof.
   intros f Hf.
-  verit Hf; try (intro H; try (rewrite sym_zeq_bool; apply H); apply H).
+  verit Hf.
 Qed.
   
 Lemma find_inst : 
-  implb (Zeq_bool (u 2) 5) (Zeq_bool (u 3) 5).
+  implb (u 2 =? 5) (u 3 =? 5).
 
 Proof.
-  verit u_is_constant; try (intro H; try (rewrite sym_zeq_bool; apply H); apply H).
+  verit u_is_constant.
 Qed.  
-
 
 
 Lemma irrelf_ltb :
@@ -312,7 +209,7 @@ Lemma irrelf_ltb :
   (Z.ltb c a) = false.
 
 Proof.
-  verit; try (intro H; try (rewrite sym_zeq_bool; apply H); apply H).
+  verit.
 Qed.
 
 Lemma sat2:
@@ -323,14 +220,14 @@ Lemma sat2:
     (negb (a2) || a3) &&
     (negb (a3) || a1)  = false.
 Proof.
-  verit; try (intro H; try (rewrite sym_zeq_bool; apply H); apply H).
+  verit.
 Qed.
 Print sat2.  
 
 (* Examples that check ZChaff certificates *)
 
-Close Scope Z_scope.
 
+Close Scope Z_scope.
 Zchaff_Checker "sat.cnf" "sat.log".
 Zchaff_Theorem sat3 "sat.cnf" "sat.log".
 Check sat3.
@@ -372,7 +269,7 @@ Qed.
 
 Goal forall a b c, ((a || b || c) && ((negb a) || (negb b) || (negb c)) && ((negb a) || b) && ((negb b) || c) && ((negb c) || a)) = false.
 Proof.
-  verit; try (intro H; try (rewrite sym_zeq_bool; apply H); apply H).
+  verit.
 Qed.
 
 (* About positive. *)
@@ -387,42 +284,42 @@ Qed.
 
 (* Set Printing All. *)
 
-(* Print Zeq_bool. *)
+(* Print Z.eqb. *)
 (* Print Z.compare. *)
 
-(* SearchAbout Zeq_bool. *)
-(* About Zeq_bool. *)
-(* Print Zeq_bool. *)
+(* SearchAbout Z.eqb. *)
+(* About Z.eqb. *)
+(* Print Z.eqb. *)
 
 
 Goal forall (a b : Z) (P : Z -> bool) (f : Z -> Z),
-  (negb (Zeq_bool (f a) b)) || (negb (P (f a))) || (P b).
+    negb (Z.eqb (f a) b) || negb (P (f a)) || P b.
 
 Proof.
   intros a b P f.
   destruct_with_eqn (P (f a)).
-  destruct_with_eqn (Zeq_bool (f a) b).
+  destruct_with_eqn (Z.eqb (f a) b).
   +apply orb_true_iff. right.
-   rewrite <- Zeq_is_eq_bool in Heqb1.
+   rewrite Z.eqb_eq in Heqb1.
    now rewrite Heqb1 in Heqb0.
   +auto.
   +apply orb_true_iff; left; apply orb_true_iff; right; now simpl.
    (* verit. *)
 Qed.
 
-Definition Myeqbool : Z -> Z -> bool := Zeq_bool.
-Print Zeq_bool.
+Definition Myeqbool : Z -> Z -> bool := Z.eqb.
+Print Z.eqb.
 
 
 Goal forall b1 b2 x1 x2,
   implb
   (ifb b1
-    (ifb b2 (Zeq_bool (2*x1+1) (2*x2+1)) (Zeq_bool (2*x1+1) (2*x2)))
-    (ifb b2 (Zeq_bool (2*x1) (2*x2+1)) (Zeq_bool (2*x1) (2*x2))))
-  ((implb b1 b2) && (implb b2 b1) && (Zeq_bool x1 x2)).
+    (ifb b2 (Z.eqb (2*x1+1) (2*x2+1)) (Z.eqb (2*x1+1) (2*x2)))
+    (ifb b2 (Z.eqb (2*x1) (2*x2+1)) (Z.eqb (2*x1) (2*x2))))
+  ((implb b1 b2) && (implb b2 b1) && (Z.eqb x1 x2)).
 
 Proof.
-  verit; try (intro H; try (rewrite sym_zeq_bool; apply H); apply H).
+  verit.
 Qed.
 
 (* Parameter toto : Z -> Z. *)
@@ -430,37 +327,36 @@ Qed.
 
 (* Section S. *)
 (*   Variable f : Z -> Z. *)
-(*   Hypothesis th : forall x, Zeq_bool (f x) 3. *)
+(*   Hypothesis th : forall x, Z.eqb (f x) 3. *)
 (*   Definition g z := f z. *)
 (*   (* Add Theorem th. *) *)
-(*   (* Goal forall x, Zeq_bool ((f x) + 1) 4. *) *)
+(*   (* Goal forall x, Z.eqb ((f x) + 1) 4. *) *)
 (*     (* verit. *) *)
 (* End S. *)
 
 Definition g1 (f : Z -> Z) (x : Z) := f x.
 
 Lemma comp f g (x1 x2 x3 : Z) :
-  ifb (Zeq_bool x1 (f x2))
-      (ifb (Zeq_bool x2 (g x3))
-           (Zeq_bool x1 (f (g x3)))
+  ifb (Z.eqb x1 (f x2))
+      (ifb (Z.eqb x2 (g x3))
+           (Z.eqb x1 (f (g x3)))
            true)
       true.
 Proof.
-  verit; try (intro H; try (rewrite sym_zeq_bool; apply H); apply H).
+  verit.
 Qed.
 
 
-
 Lemma un_menteur (a b c d : Z) dit:
-  implb (Zeq_bool (dit a) c)
- (implb (Zeq_bool (dit b) d)
- (implb (Zeq_bool a d || Zeq_bool b c)
- (implb (Zeq_bool a c || Zeq_bool a d)
- (implb (Zeq_bool b c || Zeq_bool b d)
-        (Zeq_bool a d))))).
+  implb (Z.eqb (dit a) c)
+ (implb (Z.eqb (dit b) d)
+ (implb (Z.eqb a d || Z.eqb b c)
+ (implb (Z.eqb a c || Z.eqb a d)
+ (implb (Z.eqb b c || Z.eqb b d)
+        (Z.eqb a d))))).
 
 Proof.
-  verit; try (intro H; try (rewrite sym_zeq_bool; apply H); apply H).
+  verit.
 Qed.
 
 Lemma un_menteur_prop (a b c d : Z) dit:
