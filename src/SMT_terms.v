@@ -302,7 +302,7 @@ Module Typ.
       Definition i_eqb (t:type) : interp t -> interp t -> bool :=
         match t with
         | Tindex i => (t_i.[i]).(te_eqb)
-        | TZ => Zeq_bool
+        | TZ => Z.eqb
         | Tbool => Bool.eqb
         | Tpositive => Peqb
         end.
@@ -311,7 +311,7 @@ Module Typ.
       Proof.
        destruct t;simpl;intros.
        symmetry;apply reflect_iff;apply te_reflect.
-       symmetry;apply Zeq_is_eq_bool.
+       apply Z.eqb_eq.
        apply Bool.eqb_true_iff.
        apply Peqb_eq.
       Qed.

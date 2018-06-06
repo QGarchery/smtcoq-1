@@ -456,15 +456,20 @@ let core_tactic call_solver rt ro ra rf ra' rf' lcpl env sigma concl =
 
   let cuts = SmtBtype.get_cuts rt @ cuts in
 
-  List.fold_right (fun (eqn, eqt) tac ->
-      Structures.tclTHENLAST (Structures.assert_before (Names.Name eqn) eqt) tac
-    ) cuts
-      (Structures.tclTHEN
-         (Structures.set_evars_tac body_nocast)
-         (Structures.vm_cast_no_check body_cast))
-
+  
+  Tacticals.tclTHENTRY
+    (List.fold_right (fun (eqn, eqt) tac ->
+         Structures.tclTHENLAST (Structures.assert_before (Names.Name eqn) eqt) tac
+       ) cuts
+       (Structures.tclTHEN
+          (Structures.set_evars_tac body_nocast)
+          (Structures.vm_cast_no_check body_cast)))
+    (Tactics.intro_then (fun id ->
+                              (Tactics.apply (Term.mkVar id))))
+                              
 
 let tactic call_solver rt ro ra rf ra' rf' lcpl =
   Structures.tclTHEN
     Tactics.intros
     (Structures.mk_tactic (core_tactic call_solver rt ro ra rf ra' rf' lcpl))
+       

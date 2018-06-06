@@ -42,6 +42,8 @@
 %token COLON SHARP
 %token LPAR RPAR
 %token NOT XOR ITE EQ LT LEQ GT GEQ PLUS MINUS MULT OPP LET DIST
+%token TBOOL TINT
+%token<int> TINDEX
 %token INPU DEEP TRUE FALS ANDP ANDN ORP ORN XORP1 XORP2 XORN1 XORN2 IMPP IMPN1 IMPN2 EQUP1 EQUP2 EQUN1 EQUN2 ITEP1 ITEP2 ITEN1 ITEN2 EQRE EQTR EQCO EQCP DLGE LAGE LATA DLDE LADE FINS EINS SKEA SKAA QNTS QNTM RESO AND NOR OR NAND XOR1 XOR2 NXOR1 NXOR2 IMP NIMP1 NIMP2 EQU1 EQU2 NEQU1 NEQU2 ITE1 ITE2 NITE1 NITE2 TPAL TLAP TPLE TPNE TPDE TPSA TPIE TPMA TPBR TPBE TPSC TPPP TPQT TPQS TPSK SUBP HOLE FORALL
 %token <int> INT
 %token <Big_int.big_int> BIGINT
@@ -182,9 +184,14 @@ name_term:   /* returns a (SmtAtom.Form.pform or SmtAtom.hatom) option */
   | BIGINT                                                 { true, Atom (Atom.hatom_Z_of_bigint ra $1) }
 ;
 
+tvar:
+  | TINT						   { TZ }
+  | TBOOL						   { Tbool }
+  | TINDEX						   { Tindex (indexed_type_of_int $1) }
+
 var_decl_list:
-  | LPAR var_atvar VAR RPAR				   { add_qvar $2 TZ; [$2, TZ] }
-  | LPAR var_atvar VAR RPAR var_decl_list		   { add_qvar $2 TZ; ($2, TZ)::$5 }
+  | LPAR var_atvar tvar RPAR				   { add_qvar $2 $3; [$2, $3] }
+  | LPAR var_atvar tvar RPAR var_decl_list		   { add_qvar $2 $3; ($2, $3)::$5 }
 ;
 
 forall_decl:

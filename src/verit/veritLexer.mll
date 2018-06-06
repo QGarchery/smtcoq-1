@@ -137,15 +137,17 @@ rule token = parse
   | "distinct"                 { DIST }
 
   | "Formula is Satisfiable"   { SAT }
-
+  | "Tindex_" (int as i)       { TINDEX (int_of_string i) }
+  | "Int"     	      	       { TINT }
+  | "Bool"		       { TBOOL }
   | int                        { try INT (int_of_string (Lexing.lexeme lexbuf))
 	                         with _ -> 
                                    BIGINT 
                                      (Big_int.big_int_of_string 
 					(Lexing.lexeme lexbuf)) }
   | var                        { let v = Lexing.lexeme lexbuf in
-                                 try Hashtbl.find typ_table v with
-                                   | Not_found -> VAR v }
+                                 try Hashtbl.find typ_table v 
+				 with Not_found -> VAR v }
   | bindvar                    { BINDVAR (Lexing.lexeme lexbuf) }
 
   | atvar 		       { ATVAR (Lexing.lexeme lexbuf) }

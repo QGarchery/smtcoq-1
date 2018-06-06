@@ -6,6 +6,18 @@ Require Import Bool PArray Int63 List ZArith.
 Local Open Scope int63_scope.
 
 
+
+Lemma fun_const :
+  forall f (g : int -> int -> bool) , (forall x, g (f x) 2) ->
+            g (f 3) 2.
+
+Proof.
+  intros f g Hf.
+  verit Hf.
+  exists Int63Native.eqb.
+  apply Int63Properties.reflect_eqb.
+Qed.
+
 (* First a tactic, to test the universe computation in an empty
    environment. *)
 
@@ -14,6 +26,11 @@ Lemma check_univ (x1: bool):
 Proof.
   verit.
 Qed.
+
+
+
+Open Scope Z_scope.
+
 
 
 (* veriT vernacular commands *)
@@ -746,11 +763,10 @@ Qed.
 
 (* uf1.smt *)
 
-Goal forall a b c f p, ((Zeq_bool a c) && (Zeq_bool b c) && ((negb (Zeq_bool (f a) (f b))) || ((p a) && (negb (p b))))) = false.
+Goal forall a b c f p, ( (a =? c) && (b =? c) && ((negb (f a =?f b)) || ((p a) && (negb (p b))))) = false.
 Proof.
   verit.
 Qed.
-
 
 (* uf2.smt *)
 
@@ -762,7 +778,7 @@ Qed.
 
 (* uf3.smt *)
 
-Goal forall x y z f, ((Zeq_bool x y) && (Zeq_bool y z) && (negb (Zeq_bool (f x) (f z)))) = false.
+Goal forall x y z f, ((x =? y) && (y =? z) && (negb (f x =? f z))) = false.
 Proof.
   verit.
 Qed.
@@ -770,7 +786,7 @@ Qed.
 
 (* uf4.smt *)
 
-Goal forall x y z f, ((negb (Zeq_bool (f x) (f y))) && (Zeq_bool y z) && (Zeq_bool (f x) (f (f z))) && (Zeq_bool x y)) = false.
+Goal forall x y z f, ((negb (f x =? f y)) && (y =? z) && (f x =? f (f z)) && (x =? y)) = false.
 Proof.
   verit.
 Qed.
@@ -778,7 +794,7 @@ Qed.
 
 (* uf5.smt *)
 
-Goal forall a b c d e f, ((Zeq_bool a b) && (Zeq_bool b c) && (Zeq_bool c d) && (Zeq_bool c e) && (Zeq_bool e f) && (negb (Zeq_bool a f))) = false.
+Goal forall a b c d e f, ((a =? b) && (b =? c) && (c =? d) && (c =? e) && (e =? f) && (negb (a =? f))) = false.
 Proof.
   verit.
 Qed.
@@ -794,7 +810,7 @@ Qed.
 
 (* lia2.smt *)
 
-Goal forall x, implb (Zeq_bool (x - 3) 7) (x >=? 10) = true.
+Goal forall x, implb (x - 3 =? 7) (x >=? 10) = true.
 Proof.
   verit.
 Qed.
@@ -830,7 +846,7 @@ Qed.
 
 (* lia7.smt *)
 
-Goal forall x, implb (Zeq_bool (x - 3) 7) (10 <=? x) = true.
+Goal forall x, implb (x - 3 =? 7) (10 <=? x) = true.
 Proof.
   verit.
 Qed.
@@ -844,7 +860,7 @@ Qed.
 
 
 Goal forall (a b : Z) (P : Z -> bool) (f : Z -> Z),
-  (negb (Zeq_bool (f a) b)) || (negb (P (f a))) || (P b).
+  (negb (f a =? b)) || (negb (P (f a))) || (P b).
 Proof.
   verit.
 Qed.
@@ -853,9 +869,9 @@ Qed.
 Goal forall b1 b2 x1 x2,
   implb
   (ifb b1
-    (ifb b2 (Zeq_bool (2*x1+1) (2*x2+1)) (Zeq_bool (2*x1+1) (2*x2)))
-    (ifb b2 (Zeq_bool (2*x1) (2*x2+1)) (Zeq_bool (2*x1) (2*x2))))
-  ((implb b1 b2) && (implb b2 b1) && (Zeq_bool x1 x2)).
+    (ifb b2 (2*x1+1 =? 2*x2+1) (2*x1+1 =? 2*x2))
+    (ifb b2 (2*x1 =? 2*x2+1) (2*x1 =? 2*x2)))
+  ((implb b1 b2) && (implb b2 b1) && (x1 =? x2)).
 Proof.
   verit.
 Qed.
@@ -918,13 +934,13 @@ Qed.
 (* Congruence in which some premises are REFL *)
 
 Goal forall (f:Z -> Z -> Z) x y z,
-  implb (Zeq_bool x y) (Zeq_bool (f z x) (f z y)).
+  implb (x =? y) (f z x =? f z y).
 Proof.
   verit.
 Qed.
 
 Goal forall (P:Z -> Z -> bool) x y z,
-  implb (Zeq_bool x y) (implb (P z x) (P z y)).
+  implb (x =? y) (implb (P z x) (P z y)).
 Proof.
   verit.
 Qed.
@@ -935,3 +951,149 @@ Qed.
    coq-load-path: ((rec "../src" "SMTCoq"))
    End: 
 *)
+
+(* Verit with lemmas *)
+
+
+Lemma fun_const_Z :
+  forall f , (forall x, f x =? 2) ->
+            f 3 =? 2.
+Proof.
+  intros f Hf.
+  verit Hf.
+Qed.
+
+Lemma lid (A : bool) :  A -> A.
+  intro a.
+  verit a.
+Qed.
+
+Lemma lpartial_id A :
+  (xorb A A) -> (xorb A A).
+Proof.
+  intro xa.
+  verit xa.
+Qed.
+
+Lemma llia1 X Y Z:
+  (X <=? 3) && ((Y <=? 7) || (Z <=? 9)) -> 
+  (X + Y <=? 10) || (X + Z <=? 12).
+Proof.
+  intro p.
+  verit p.
+Qed.
+
+Lemma llia2 X:
+  X - 3 =? 7 -> X >=? 10.
+Proof.
+  intro p.
+  verit p.
+Qed.
+
+Lemma llia3 X Y:
+  X >? Y -> Y + 1 <=? X.
+Proof.
+  intro p.
+  verit p.
+Qed.
+
+Lemma llia6 X:
+  andb ((X - 3) <=? 7) (7 <=? (X - 3)) -> X >=? 10.
+Proof.
+  intro p.
+  verit p.
+Qed.
+
+Lemma even_odd b1 b2 x1 x2:
+  (ifb b1
+    (ifb b2 (2*x1+1 =? 2*x2+1) (2*x1+1 =? 2*x2))
+    (ifb b2 (2*x1 =? 2*x2+1) (2*x1 =? 2*x2))) ->
+  ((implb b1 b2) && (implb b2 b1) && (x1 =? x2)).
+Proof.
+  intro p.
+  verit p.
+Qed.
+
+Lemma lcongr1 (a b : Z) (P : Z -> bool) f:
+  (f a =? b) -> (P (f a)) -> P b.
+Proof.
+  intros eqfab pfa.
+  verit eqfab pfa. now rewrite Z.eqb_sym.
+Qed.
+
+Lemma lcongr2 (f:Z -> Z -> Z) x y z: 
+  x =? y -> f z x =? f z y.
+Proof.
+  intro p.
+  verit p.
+Qed.
+
+Lemma lcongr3 (P:Z -> Z -> bool) x y z:
+  x =? y -> P z x -> P z y.
+Proof.
+  intros eqxy pzx.
+  verit eqxy pzx.
+  now rewrite Z.eqb_sym.
+Qed.
+
+Parameter a b c d : bool.
+Axiom andab : andb a b.
+Axiom orcd  : orb c d.
+
+Lemma sat6 :
+  orb c (andb a (andb b d)).
+Proof.
+  verit andab orcd.
+Qed.
+
+Parameter f' : Z -> Z.
+Parameter g : Z -> Z.
+Parameter k : Z.
+Axiom g_k_linear : forall x, g (x + 1) =? (g x) + k.
+Axiom f'_equal_k : forall x, f' x =? k.
+
+Lemma apply_lemma_multiple :
+    forall x y, g (x + 1) =? g x + f' y.
+
+Proof.
+  verit g_k_linear f'_equal_k.
+Qed.
+
+Parameter u : Z -> Z.
+Axiom u_is_constant : forall x y, u x =? u y.
+
+
+Lemma apply_lemma :
+  forall x, u x =? u 2.
+Proof.
+  verit u_is_constant.
+Qed.
+
+Lemma find_inst :
+  implb (u 2 =? 5) (u 3 =? 5).
+Proof.
+  verit u_is_constant.
+Qed.
+
+
+
+Parameter mult3 : Z -> Z.
+Axiom mult3_0 : mult3 0 =? 0.
+Axiom mult3_Sn : forall n, mult3 (n+1) =? mult3 n + 3.
+
+Lemma mult3_21 : mult3 14 =? 42.
+Proof.
+  verit mult3_0 mult3_Sn.
+  now rewrite Z.eqb_sym.
+Qed.
+
+(* Doesnt return in less than 10 seconds *)
+(* Parameter mult : Z -> Z -> Z. *)
+(* Axiom mult_0 : forall x, mult 0 x =? 0. *)
+(* Axiom mult_Sx : forall x y, mult (x+1) y =? mult x y + y. *)
+
+(* Lemma mult_3_21 : mult 1 2 =? 2. *)
+(* Proof. *)
+(*   verit mult_0 mult_Sx. *)
+
+
