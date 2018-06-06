@@ -9,6 +9,22 @@ Local Open Scope int63_scope.
 
 Open Scope Z_scope.
 
+SearchAbout Z.
+Lemma xylt :
+  forall x y : Z,
+    (x <? 7) || (y <? 4) || (x + y >=? 11).
+Proof.
+  verit.
+Qed.  
+
+(* Parameter mult_by_7 : Z -> Z. *)
+(* Axiom m0 : mult_by_7 0 =? 0. *)
+(* Axiom mSn : forall x, mult_by_7 (x+1) =? mult_by_7 x + 7. *)
+(* Lemma m5 : mult_by_7 2 =? 14. *)
+(* Proof. verit m0 mSn. *)
+
+  
+
 Lemma sym_zeq_bool x y :
   Zeq_bool x y = Zeq_bool y x.
 
