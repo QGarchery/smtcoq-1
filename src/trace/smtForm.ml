@@ -80,7 +80,7 @@ module type FORM =
     val get : ?declare:bool -> reify -> pform -> t
 
     (** Give a coq term, build the corresponding formula *)
-    val of_coq : ?declare:bool -> (Term.constr -> hatom) ->
+    val of_coq : (Term.constr -> hatom) ->
                  reify -> Term.constr -> t
 
     val hash_hform : (hatom -> hatom) -> reify -> t -> t
@@ -289,12 +289,11 @@ module Make (Atom:ATOM) =
       ()
 
     let get ?declare:(decl=true) reify pf =
-      if decl
-      then try HashForm.find reify.tbl pf
-           with Not_found -> declare reify pf
+      if decl then 
+        try HashForm.find reify.tbl pf
+        with Not_found -> declare reify pf
       else Pos {index = -1; hval = pf}
-
-
+                                  
     (** Given a coq term, build the corresponding formula *)
     type coq_cst =
       | CCtrue
@@ -329,15 +328,15 @@ module Make (Atom:ATOM) =
 
     let empty_args = [||]
 
-    let of_coq ?declare:(decl=true) atom_of_coq reify c =
+    let of_coq atom_of_coq reify c =
       let op_tbl = Lazy.force op_tbl in
       let get_cst c =
         try ConstrHashtbl.find op_tbl c with Not_found -> CCunknown in
       let rec mk_hform h =
         let c, args = Term.decompose_app h in
         match get_cst c with
-        | CCtrue  -> get ~declare:decl reify (Fapp(Ftrue,empty_args))
-        | CCfalse -> get ~declare:decl reify (Fapp(Ffalse,empty_args))
+        | CCtrue  -> get reify (Fapp(Ftrue,empty_args))
+        | CCfalse -> get reify (Fapp(Ffalse,empty_args))
         | CCnot -> mk_fnot 1 args
         | CCand -> mk_fand [] args
         | CCor  -> mk_for [] args
@@ -348,7 +347,7 @@ module Make (Atom:ATOM) =
             | [b1;b2] ->
                let l1 = mk_hform b1 in
                let l2 = mk_hform b2 in
-               get ~declare:decl reify (Fapp (Fimp, [|l1;l2|]))
+               get reify (Fapp (Fimp, [|l1;l2|]))
             | _ -> Structures.error "SmtForm.Form.of_coq: wrong number of arguments for implb")
         | CCifb ->
            (* We should also be able to reify if then else *)
@@ -357,19 +356,19 @@ module Make (Atom:ATOM) =
               let l1 = mk_hform b1 in
               let l2 = mk_hform b2 in
               let l3 = mk_hform b3 in
-              get ~declare:decl reify (Fapp (Fite, [|l1;l2;l3|]))
+              get reify (Fapp (Fite, [|l1;l2;l3|]))
            | _ -> Structures.error "SmtForm.Form.of_coq: wrong number of arguments for ifb"
            end
         | _ ->
            let a = atom_of_coq h in
-           get ~declare:decl reify (Fatom a)
+           get reify (Fatom a)
 
       and op2 f args =
         match args with
         | [b1;b2] ->
            let l1 = mk_hform b1 in
            let l2 = mk_hform b2 in
-           get ~declare:decl reify (f [|l1; l2|])
+           get reify (f [|l1; l2|])
         | _ ->  Structures.error "SmtForm.Form.of_coq: wrong number of arguments"
 
       and mk_fnot i args =
@@ -383,7 +382,7 @@ module Make (Atom:ATOM) =
              let l = mk_hform t in
              let l = if r = 0 then l else neg l in
              if q = 0 then l
-             else get ~declare:decl reify (Fapp(Fnot2 q, [|l|]))
+             else get reify (Fapp(Fnot2 q, [|l|]))
         | _ -> Structures.error "SmtForm.Form.mk_hform: wrong number of arguments for negb"
 
       and mk_fand acc args =
@@ -395,7 +394,7 @@ module Make (Atom:ATOM) =
              mk_fand (l2::acc) args
            else
              let l1 = mk_hform t1 in
-             get ~declare:decl reify (Fapp(Fand, Array.of_list  (l1::l2::acc)))
+             get reify (Fapp(Fand, Array.of_list  (l1::l2::acc)))
         | _ -> Structures.error "SmtForm.Form.mk_hform: wrong number of arguments for andb"
 
       and mk_for acc args =
@@ -407,7 +406,7 @@ module Make (Atom:ATOM) =
              mk_for (l2::acc) args
            else
              let l1 = mk_hform t1 in
-             get ~declare:decl reify (Fapp(For, Array.of_list (l1::l2::acc)))
+             get reify (Fapp(For, Array.of_list (l1::l2::acc)))
         | _ -> Structures.error "SmtForm.Form.mk_hform: wrong number of arguments for orb" in
 
       mk_hform c

@@ -39,7 +39,7 @@ let cchecker_b = gen_constant euf_checker_modules "checker_b"
 let cchecker_eq_correct =
   gen_constant euf_checker_modules "checker_eq_correct"
 let cchecker_eq = gen_constant euf_checker_modules "checker_eq"
-
+let cZeqbsym = gen_constant z_modules "eqb_sym"
 
 (* Given an SMT-LIB2 file and a certif, build the corresponding objects *)
 
@@ -405,7 +405,7 @@ let of_coq_lemma rt ro ra' rf' env sigma clemma =
   | _ -> Form.get rf' (Fapp (Fforall forall_args, [|core_smt|]))
 
 
-let core_tactic call_solver rt ro ra rf ra' rf' lcpl env sigma concl =
+let core_tactic call_solver rt ro ra rf ra' rf' (lcpl : Term.constr list) env sigma concl =
   let a, b = get_arguments concl in
   let lcl = List.map (Retyping.get_type_of env sigma) lcpl in
   let lsmt = List.map (of_coq_lemma rt ro ra' rf' env sigma) lcl in
@@ -456,16 +456,24 @@ let core_tactic call_solver rt ro ra rf ra' rf' lcpl env sigma concl =
 
   let cuts = SmtBtype.get_cuts rt @ cuts in
 
-  
+  let nobind_rew = let c = Lazy.force cZeqbsym in
+                   c, Glob_term.NoBindings in
+  let lrew = [true, Tacexpr.Precisely 1, nobind_rew] in
+  let where = Tacexpr.({onhyps = None; concl_occs = Glob_term.all_occurrences_expr}) in
+  let atom_rew = Tacexpr.TacRewrite (false, lrew, where, None) in
+  let tactic_expr = Tacexpr.TacAtom (Pp.dummy_loc, atom_rew) in
+  let tacrew = (* Tacinterp.interp tactic_expr in *) Tacticals.tclIDTAC in
+    
   Tacticals.tclTHENTRY
-    (List.fold_right (fun (eqn, eqt) tac ->
-         Structures.tclTHENLAST (Structures.assert_before (Names.Name eqn) eqt) tac
-       ) cuts
+    (List.fold_right
+       (fun (eqn, eqt) tac ->
+         Structures.tclTHENLAST (Structures.assert_before (Names.Name eqn) eqt) tac)
+       cuts
        (Structures.tclTHEN
           (Structures.set_evars_tac body_nocast)
           (Structures.vm_cast_no_check body_cast)))
     (Tactics.intro_then (fun id ->
-                              (Tactics.apply (Term.mkVar id))))
+         Structures.tclTHEN tacrew (Tactics.apply (Term.mkVar id))))
                               
 
 let tactic call_solver rt ro ra rf ra' rf' lcpl =

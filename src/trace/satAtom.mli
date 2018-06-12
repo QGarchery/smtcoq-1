@@ -35,7 +35,7 @@ module Form :
     val create : unit -> reify
     val clear : reify -> unit
     val get : ?declare:bool -> reify -> pform -> t
-    val of_coq : ?declare:bool -> (Term.constr -> hatom) ->
+    val of_coq : (Term.constr -> hatom) ->
                  reify -> Term.constr -> t
     val hash_hform : (hatom -> hatom) -> reify -> t -> t
     val flatten : reify -> t -> t

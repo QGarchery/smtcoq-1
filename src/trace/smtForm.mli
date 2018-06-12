@@ -72,7 +72,7 @@ module type FORM =
       val get : ?declare:bool -> reify -> pform -> t
       
       (** Given a coq term, build the corresponding formula *)  
-      val of_coq : ?declare:bool -> (Term.constr -> hatom) ->
+      val of_coq : (Term.constr -> hatom) ->
                    reify -> Term.constr -> t
 
       val hash_hform : (hatom -> hatom) -> reify -> t -> t
