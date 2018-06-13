@@ -9,7 +9,7 @@ Local Open Scope int63_scope.
 
 Lemma fun_const :
   forall f (g : int -> int -> bool) , (forall x, g (f x) 2) ->
-            g (f 3) 2.
+                                      g (f 3) 2.
 
 Proof.
   intros f g Hf.
@@ -78,7 +78,7 @@ End Checker_Sat9.
 Section Checker_Sat10.
   Verit_Checker "sat10.smt2" "sat10.vtlog".
 End Checker_Sat10.
-*)
+ *)
 Section Checker_Sat11.
   Verit_Checker "sat11.smt2" "sat11.vtlog".
 End Checker_Sat11.
@@ -163,7 +163,7 @@ End Checker_Let1.
 Section Checker_Let2.
   Verit_Checker "let2.smt2" "let2.vtlog".
 End Checker_Let2.
-*)
+ *)
 
 (* Proofs with holes *)
 (*
@@ -174,7 +174,7 @@ End Checker_Sat7_holes.
 Section Checker_Lia5_holes.
   Verit_Checker "lia5.smt2" "lia5-with-holes.vtlog".
 End Checker_Lia5_holes.
-*)
+ *)
 
 
 Section Sat0.
@@ -231,7 +231,7 @@ Section Sat10.
   Parse_certif_verit t_i10 t_func10 t_atom10 t_form10 root10 used_roots10 trace10 "sat10.smt2" "sat10.vtlog".
   Compute @Euf_Checker.checker t_i10 t_func10 t_atom10 t_form10 root10 used_roots10 trace10.
 End Sat10.
-*)
+ *)
 Section Sat11.
   Parse_certif_verit t_i11 t_func11 t_atom11 t_form11 root11 used_roots11 trace11 "sat11.smt2" "sat11.vtlog".
   Compute @Euf_Checker.checker t_i11 t_func11 t_atom11 t_form11 root11 used_roots11 trace11.
@@ -327,7 +327,7 @@ Section Let2.
   Parse_certif_verit t_i_let2 t_func_let2 t_atom_let2 t_form_let2 root_let2 used_roots_let2 trace_let2 "let2.smt2" "let2.vtlog".
   Compute @Euf_Checker.checker t_i_let2 t_func_let2 t_atom_let2 t_form_let2 root_let2 used_roots_let2 trace_let2.
 End Let2.
-*)
+ *)
 
 (* Proofs with holes *)
 (*
@@ -340,7 +340,7 @@ Section Lia5_holes.
   Parse_certif_verit t_i_lia5_holes t_func_lia5_holes t_atom_lia5_holes t_form_lia5_holes root_lia5_holes used_roots_lia5_holes trace_lia5_holes "lia5.smt2" "lia5-with-holes.vtlog".
   Compute @Euf_Checker.checker t_i_lia5_holes t_func_lia5_holes t_atom_lia5_holes t_form_lia5_holes root_lia5_holes used_roots_lia5_holes trace_lia5_holes.
 End Lia5_holes.
-*)
+ *)
 
 
 Section Theorem_Sat0.
@@ -386,7 +386,7 @@ End Theorem_Sat9.
 Section Theorem_Sat10.
   Time Verit_Theorem theorem_sat10 "sat10.smt2" "sat10.vtlog".
 End Theorem_Sat10.
-*)
+ *)
 Section Theorem_Sat11.
   Time Verit_Theorem theorem_sat11 "sat11.smt2" "sat11.vtlog".
 End Theorem_Sat11.
@@ -463,7 +463,7 @@ End Theorem_Let1.
 Section Theorem_Let2.
   Time Verit_Theorem theorem_let2 "let2.smt2" "let2.vtlog".
 End Theorem_Let2.
-*)
+ *)
 
 (* Proofs with holes *)
 (*
@@ -476,7 +476,7 @@ Section Theorem_Lia5_holes.
   Time Verit_Theorem theorem_lia5_holes "lia5.smt2" "lia5-with-holes.vtlog".
 End Theorem_Lia5_holes.
 Check theorem_lia5_holes.
-*)
+ *)
 
 
 (* verit tactic *)
@@ -631,7 +631,7 @@ Qed.
 (* (a ∨ b ∨ c) ∧ (¬a ∨ ¬b ∨ ¬c) ∧ (¬a ∨ b) ∧ (¬b ∨ c) ∧ (¬c ∨ a) = ⊥ *)
 
 Goal forall a b c,
-  (a || b || c) && ((negb a) || (negb b) || (negb c)) && ((negb a) || b) && ((negb b) || c) && ((negb c) || a) = false.
+    (a || b || c) && ((negb a) || (negb b) || (negb c)) && ((negb a) || b) && ((negb b) || c) && ((negb c) || a) = false.
 Proof.
   verit.
 Qed.
@@ -640,10 +640,10 @@ Qed.
 (* The same, but with a, b and c being concrete terms *)
 
 Goal forall i j k,
-  let a := i == j in
-  let b := j == k in
-  let c := k == i in
-  (a || b || c) && ((negb a) || (negb b) || (negb c)) && ((negb a) || b) && ((negb b) || c) && ((negb c) || a) = false.
+    let a := i == j in
+    let b := j == k in
+    let c := k == i in
+    (a || b || c) && ((negb a) || (negb b) || (negb c)) && ((negb a) || b) && ((negb b) || c) && ((negb c) || a) = false.
 Proof.
   verit.
 Qed.
@@ -803,7 +803,7 @@ Qed.
 (* lia1.smt *)
 
 Goal forall x y z, implb ((x <=? 3) && ((y <=? 7) || (z <=? 9)))
-  ((x + y <=? 10) || (x + z <=? 12)) = true.
+                         ((x + y <=? 10) || (x + z <=? 12)) = true.
 Proof.
   verit.
 Qed.
@@ -832,7 +832,7 @@ Qed.
 (* lia5.smt *)
 
 Goal forall x y, ((x + y <=? - (3)) && (y >=? 0)
-        || (x <=? - (3))) && (x >=? 0) = false.
+                  || (x <=? - (3))) && (x >=? 0) = false.
 Proof.
   verit.
 Qed.
@@ -860,18 +860,18 @@ Qed.
 
 
 Goal forall (a b : Z) (P : Z -> bool) (f : Z -> Z),
-  (negb (f a =? b)) || (negb (P (f a))) || (P b).
+    (negb (f a =? b)) || (negb (P (f a))) || (P b).
 Proof.
   verit.
 Qed.
 
 
 Goal forall b1 b2 x1 x2,
-  implb
-  (ifb b1
-    (ifb b2 (2*x1+1 =? 2*x2+1) (2*x1+1 =? 2*x2))
-    (ifb b2 (2*x1 =? 2*x2+1) (2*x1 =? 2*x2)))
-  ((implb b1 b2) && (implb b2 b1) && (x1 =? x2)).
+    implb
+      (ifb b1
+           (ifb b2 (2*x1+1 =? 2*x2+1) (2*x1+1 =? 2*x2))
+           (ifb b2 (2*x1 =? 2*x2+1) (2*x1 =? 2*x2)))
+      ((implb b1 b2) && (implb b2 b1) && (x1 =? x2)).
 Proof.
   verit.
 Qed.
@@ -880,15 +880,15 @@ Qed.
 (* With let ... in ... *)
 
 Goal forall b,
-  let a := b in
-  a && (negb a) = false.
+    let a := b in
+    a && (negb a) = false.
 Proof.
   verit.
 Qed.
 
 Goal forall b,
-  let a := b in
-  a || (negb a) = true.
+    let a := b in
+    a || (negb a) = true.
 Proof.
   verit.
 Qed.
@@ -899,20 +899,20 @@ Goal forall b,
 Proof.
   verit.
 Qed.
-*)
+ *)
 
 (* With concrete terms *)
 
 Goal forall i j,
-  let a := i == j in
-  a && (negb a) = false.
+    let a := i == j in
+    a && (negb a) = false.
 Proof.
   verit.
 Qed.
 
 Goal forall i j,
-  let a := i == j in
-  a || (negb a) = true.
+    let a := i == j in
+    a || (negb a) = true.
 Proof.
   verit.
 Qed.
@@ -934,30 +934,30 @@ Qed.
 (* Congruence in which some premises are REFL *)
 
 Goal forall (f:Z -> Z -> Z) x y z,
-  implb (x =? y) (f z x =? f z y).
+    implb (x =? y) (f z x =? f z y).
 Proof.
   verit.
 Qed.
 
 Goal forall (P:Z -> Z -> bool) x y z,
-  implb (x =? y) (implb (P z x) (P z y)).
+    implb (x =? y) (implb (P z x) (P z y)).
 Proof.
   verit.
 Qed.
 
 
-(* 
+(*
    Local Variables:
    coq-load-path: ((rec "../src" "SMTCoq"))
-   End: 
-*)
+   End:
+ *)
 
 (* Verit with lemmas *)
 
 
 Lemma fun_const_Z :
   forall f , (forall x, f x =? 2) ->
-            f 3 =? 2.
+             f 3 =? 2.
 Proof.
   intros f Hf.
   verit Hf.
@@ -976,7 +976,7 @@ Proof.
 Qed.
 
 Lemma llia1 X Y Z:
-  (X <=? 3) && ((Y <=? 7) || (Z <=? 9)) -> 
+  (X <=? 3) && ((Y <=? 7) || (Z <=? 9)) ->
   (X + Y <=? 10) || (X + Z <=? 12).
 Proof.
   intro p.
@@ -1006,8 +1006,8 @@ Qed.
 
 Lemma even_odd b1 b2 x1 x2:
   (ifb b1
-    (ifb b2 (2*x1+1 =? 2*x2+1) (2*x1+1 =? 2*x2))
-    (ifb b2 (2*x1 =? 2*x2+1) (2*x1 =? 2*x2))) ->
+       (ifb b2 (2*x1+1 =? 2*x2+1) (2*x1+1 =? 2*x2))
+       (ifb b2 (2*x1 =? 2*x2+1) (2*x1 =? 2*x2))) ->
   ((implb b1 b2) && (implb b2 b1) && (x1 =? x2)).
 Proof.
   intro p.
@@ -1021,7 +1021,7 @@ Proof.
   verit eqfab pfa.
 Qed.
 
-Lemma lcongr2 (f:Z -> Z -> Z) x y z: 
+Lemma lcongr2 (f:Z -> Z -> Z) x y z:
   x =? y -> f z x =? f z y.
 Proof.
   intro p.
@@ -1035,63 +1035,84 @@ Proof.
   verit eqxy pzx.
 Qed.
 
-Parameter a b c d : bool.
-Axiom andab : andb a b.
-Axiom orcd  : orb c d.
 
-Lemma sat6 :
-  orb c (andb a (andb b d)).
-Proof.
-  verit andab orcd.
-Qed.
+Section fins_sat6.
 
-Parameter f' : Z -> Z.
-Parameter g : Z -> Z.
-Parameter k : Z.
-Axiom g_k_linear : forall x, g (x + 1) =? (g x) + k.
-Axiom f'_equal_k : forall x, f' x =? k.
+  Parameter a b c d : bool.
+  Axiom andab : andb a b.
+  Axiom orcd  : orb c d.
 
-Lemma apply_lemma_multiple :
-    forall x y, g (x + 1) =? g x + f' y.
+  Lemma sat6 :  orb c (andb a (andb b d)).
+  Proof. verit andab orcd. Qed.
 
-Proof.
-  verit g_k_linear f'_equal_k.
-Qed.
-
-Parameter u : Z -> Z.
-Axiom u_is_constant : forall x y, u x =? u y.
+End fins_sat6.
 
 
-Lemma apply_lemma :
-  forall x, u x =? u 2.
-Proof.
-  verit u_is_constant.
-Qed.
+Section fins_lemma_multiple.
 
-Lemma find_inst :
-  implb (u 2 =? 5) (u 3 =? 5).
-Proof.
-  verit u_is_constant.
-Qed.
+  Parameter f' : Z -> Z.
+  Parameter g : Z -> Z.
+  Parameter k : Z.
+  Axiom g_k_linear : forall x, g (x + 1) =? (g x) + k.
+  Axiom f'_equal_k : forall x, f' x =? k.
+
+  Lemma apply_lemma_multiple : forall x y, g (x + 1) =? g x + f' y.
+  Proof. verit g_k_linear f'_equal_k. Qed.
+
+End fins_lemma_multiple.
 
 
+Section fins_find_apply_lemma.
+  Parameter u : Z -> Z.
+  Axiom u_is_constant : forall x y, u x =? u y.
 
-Parameter mult3 : Z -> Z.
-Axiom mult3_0 : mult3 0 =? 0.
-Axiom mult3_Sn : forall n, mult3 (n+1) =? mult3 n + 3.
+  Lemma apply_lemma : forall x, u x =? u 2.
+  Proof. verit u_is_constant. Qed.
 
-Lemma mult3_21 : mult3 14 =? 42.
-Proof.
-  verit mult3_0 mult3_Sn.
-Qed.
+  Lemma find_inst :
+    implb (u 2 =? 5) (u 3 =? 5).
+  Proof. verit u_is_constant. Qed.
+
+End fins_find_apply_lemma.
+
+
+Section mult3.
+
+  Parameter mult3 : Z -> Z.
+  Axiom mult3_0 : mult3 0 =? 0.
+  Axiom mult3_Sn : forall n, mult3 (n+1) =? mult3 n + 3.
+
+  Lemma mult3_21 : mult3 14 =? 42.
+  Proof. verit mult3_0 mult3_Sn. Qed.
+
+End mult3.
+
 
 (* Doesnt return in less than 10 seconds *)
-(* Parameter mult : Z -> Z -> Z. *)
-(* Axiom mult_0 : forall x, mult 0 x =? 0. *)
-(* Axiom mult_Sx : forall x y, mult (x+1) y =? mult x y + y. *)
+(* Section mult. *)
+(*   Parameter mult : Z -> Z -> Z. *)
+(*   Axiom mult_0 : forall x, mult 0 x =? 0. *)
+(*   Axiom mult_Sx : forall x y, mult (x+1) y =? mult x y + y. *)
 
-(* Lemma mult_3_21 : mult 1 2 =? 2. *)
-(* Proof. *)
-(*   verit mult_0 mult_Sx. *)
+(*   Lemma mult_3_21 : mult 1 2 =? 2. *)
+(*   Proof. verit mult_0 mult_Sx. *)
+
+(* End mult.   *)
 
 
+(* verit transform silently an <implb a b> into a <or (not a) b> when
+ instantiating a quantified theorem with <implb> *)
+Section implicit_transform.
+  Parameter f : Z -> bool.
+  Parameter a1 a2 : Z.
+  Axiom f_const : forall b, implb (f b) (f a2).
+  Axiom f_a1 : f a1.
+
+  Lemma implicit_transform :
+    f a2.
+  Proof.
+    verit f_const f_a1.
+    intro H. assert (G := H a1).
+    destruct (f a1); destruct (f a2); intuition.
+  Qed.
+End implicit_transform.
