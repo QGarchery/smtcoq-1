@@ -26,9 +26,6 @@ Axiom mSn : forall x, mult_by_7 (x+1) =? mult_by_7 x + 7.
 Lemma m5 : mult_by_7 5 =? 35.
 Proof.
   verit m0 mSn.
-  intro H.
-  rewrite Z.eqb_sym.
-  apply H.
 Qed.
   
 
@@ -211,7 +208,7 @@ Axiom mult4_Sn : forall n, mult4 (n+1) =? mult4 n + 4.
 Lemma mult4_1 : mult4 1 =? 4.
 
 Proof.
-  verit mult4_0 mult4_Sn; try (intro H; rewrite Z.eqb_sym; apply H).
+  verit mult4_0 mult4_Sn.
 Qed.
 
 Lemma const_fun_is_eq_val_0 :

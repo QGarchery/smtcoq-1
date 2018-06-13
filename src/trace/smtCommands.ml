@@ -458,15 +458,16 @@ let core_tactic call_solver rt ro ra rf ra' rf' lcpl lcepl env sigma concl =
   let cuts = SmtBtype.get_cuts rt @ cuts in
 
   
-  (* let nobind_rew =
-   *   let c = Lazy.force cZeqbsym in
-   *   c, Glob_term.NoBindings in
-   * let lrew = [true, Tacexpr.Precisely 1, nobind_rew] in
-   * let where = Tacexpr.({onhyps = None; concl_occs = Glob_term.all_occurrences_expr}) in
-   * let atom_rew = Tacexpr.TacRewrite (false, lrew, where, None) in
-   * let tactic_expr = Tacexpr.TacAtom (Pp.dummy_loc, atom_rew) in
-   * let tacrew = Tacinterp.interp tactic_expr in *) 
-  let tacrew = Tacticals.tclIDTAC in(* Equality.rewriteInConcl true (Lazy.force cZeqbsym) in *)
+  let nobind_rew =
+    let c = Lazy.force cZeqbsym in
+    let ce = Constrextern.extern_constr false env c in
+      ce, Glob_term.NoBindings in
+  let lrew = [true, Tacexpr.Precisely 1, nobind_rew] in
+  let where = Tacexpr.({onhyps = Some []; concl_occs = Glob_term.all_occurrences_expr}) in
+  let atom_rew = Tacexpr.TacRewrite (false, lrew, where, None) in
+  let tactic_expr = Tacexpr.TacAtom (Pp.dummy_loc, atom_rew) in
+  let tacrew = Tacinterp.interp tactic_expr in 
+  (* let tacrew = Tacticals.tclIDTAC in(\* Equality.rewriteInConcl true (Lazy.force cZeqbsym) in *\) *)
   (* let tacrew = cl_rewrite_clause (Lazy.force cZeqbsym) true all_occurrences None in *)
   Tacticals.tclTHENTRY
     (List.fold_right
@@ -477,12 +478,9 @@ let core_tactic call_solver rt ro ra rf ra' rf' lcpl lcepl env sigma concl =
           (Structures.set_evars_tac body_nocast)
           (Structures.vm_cast_no_check body_cast)))
     (Tactics.intro_then (fun id ->
-         (Tacticals.tclTHEN tacrew (Tactics.apply (Term.mkVar id)))))
-
-
-         (* Structures.tclTHEN
-          *   (Tacticals.tclTRY (Tacticals.tclTHEN tacrew (Tactics.apply (Term.mkVar id))))
-          *   (Tactics.apply (Term.mkVar id)))) *)
+         Structures.tclTHEN
+           (Tacticals.tclTRY (Tacticals.tclTHEN tacrew (Tactics.apply (Term.mkVar id))))
+           (Tactics.apply (Term.mkVar id))))
 
 let tactic call_solver rt ro ra rf ra' rf' lcpl lcepl =
   Structures.tclTHEN

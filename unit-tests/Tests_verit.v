@@ -1018,7 +1018,7 @@ Lemma lcongr1 (a b : Z) (P : Z -> bool) f:
   (f a =? b) -> (P (f a)) -> P b.
 Proof.
   intros eqfab pfa.
-  verit eqfab pfa. now rewrite Z.eqb_sym.
+  verit eqfab pfa.
 Qed.
 
 Lemma lcongr2 (f:Z -> Z -> Z) x y z: 
@@ -1033,7 +1033,6 @@ Lemma lcongr3 (P:Z -> Z -> bool) x y z:
 Proof.
   intros eqxy pzx.
   verit eqxy pzx.
-  now rewrite Z.eqb_sym.
 Qed.
 
 Parameter a b c d : bool.
@@ -1084,7 +1083,6 @@ Axiom mult3_Sn : forall n, mult3 (n+1) =? mult3 n + 3.
 Lemma mult3_21 : mult3 14 =? 42.
 Proof.
   verit mult3_0 mult3_Sn.
-  now rewrite Z.eqb_sym.
 Qed.
 
 (* Doesnt return in less than 10 seconds *)
