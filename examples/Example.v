@@ -1,7 +1,7 @@
 (* [Require Import SMTCoq.SMTCoq.] loads the SMTCoq library.
    If you are using native-coq instead of Coq 8.6, replace it with:
      Require Import SMTCoq.
-   *)
+*)
 
 Require Import SMTCoq.
 Require Import Bool.
@@ -9,16 +9,34 @@ Local Open Scope int63_scope.
 
 Open Scope Z_scope.
 
+Parameter mult_by_7 : Z -> Z.
+Axiom m0 : mult_by_7 0 =? 0.
+Lemma justm0 : mult_by_7 0 =? 0.
+
+Add_lemma m0.
+(* Clear_lemmas. *)
+Proof.
+  verit.
+Qed.  
+
+Clear_lemmas.
+
+  
+Axiom mSn : forall x, mult_by_7 (x+1) =? mult_by_7 x + 7.
+Lemma m5 : mult_by_7 5 =? 35.
+Proof.
+  verit m0 mSn.
+  intro H.
+  rewrite Z.eqb_sym.
+  apply H.
+Qed.
+  
+
 Lemma xylt :
   forall x y : Z,
     (x <? 7) || (y <? 4) || (x + y >=? 11).
 Proof. verit. Qed.  
 
-Parameter mult_by_7 : Z -> Z.
-Axiom m0 : mult_by_7 0 =? 0.
-Axiom mSn : forall x, mult_by_7 (x+1) =? mult_by_7 x + 7.
-Lemma m5 : mult_by_7 5 =? 35.
-Proof. verit m0 mSn. now rewrite Z.eqb_sym. Qed.
 
 Lemma sat2_gen a1 a2 a3:
   forall v : int -> bool,

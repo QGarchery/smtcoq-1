@@ -201,7 +201,7 @@ let call_verit rt ro ra' rf' first lsmt =
           | VeritSyntax.Sat -> Structures.error "veriT found a counter-example"
   with x -> close_in win; Sys.remove wname; raise x
 
-let tactic lcpl =
+let tactic lcpl lcepl =
   clear_all ();
   let rt = SmtBtype.create () in
   let ro = Op.create () in
@@ -209,4 +209,4 @@ let tactic lcpl =
   let rf = VeritSyntax.rf in
   let ra' = VeritSyntax.ra' in
   let rf' = VeritSyntax.rf' in
-  SmtCommands.tactic call_verit rt ro ra rf ra' rf' lcpl
+  SmtCommands.tactic call_verit rt ro ra rf ra' rf' lcpl lcepl

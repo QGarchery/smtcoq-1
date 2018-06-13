@@ -405,8 +405,9 @@ let of_coq_lemma rt ro ra' rf' env sigma clemma =
   | _ -> Form.get rf' (Fapp (Fforall forall_args, [|core_smt|]))
 
 
-let core_tactic call_solver rt ro ra rf ra' rf' (lcpl : Term.constr list) env sigma concl =
+let core_tactic call_solver rt ro ra rf ra' rf' lcpl lcepl env sigma concl =
   let a, b = get_arguments concl in
+  let lcpl = lcpl @ List.map (Constrintern.interp_constr sigma env) lcepl in
   let lcl = List.map (Retyping.get_type_of env sigma) lcpl in
   let lsmt = List.map (of_coq_lemma rt ro ra' rf' env sigma) lcl in
   let l_pl_ls = List.combine (List.combine lcl lcpl) lsmt in
@@ -456,14 +457,17 @@ let core_tactic call_solver rt ro ra rf ra' rf' (lcpl : Term.constr list) env si
 
   let cuts = SmtBtype.get_cuts rt @ cuts in
 
-  let nobind_rew = let c = Lazy.force cZeqbsym in
-                   c, Glob_term.NoBindings in
-  let lrew = [true, Tacexpr.Precisely 1, nobind_rew] in
-  let where = Tacexpr.({onhyps = None; concl_occs = Glob_term.all_occurrences_expr}) in
-  let atom_rew = Tacexpr.TacRewrite (false, lrew, where, None) in
-  let tactic_expr = Tacexpr.TacAtom (Pp.dummy_loc, atom_rew) in
-  let tacrew = (* Tacinterp.interp tactic_expr in *) Tacticals.tclIDTAC in
-    
+  
+  (* let nobind_rew =
+   *   let c = Lazy.force cZeqbsym in
+   *   c, Glob_term.NoBindings in
+   * let lrew = [true, Tacexpr.Precisely 1, nobind_rew] in
+   * let where = Tacexpr.({onhyps = None; concl_occs = Glob_term.all_occurrences_expr}) in
+   * let atom_rew = Tacexpr.TacRewrite (false, lrew, where, None) in
+   * let tactic_expr = Tacexpr.TacAtom (Pp.dummy_loc, atom_rew) in
+   * let tacrew = Tacinterp.interp tactic_expr in *) 
+  let tacrew = Tacticals.tclIDTAC in(* Equality.rewriteInConcl true (Lazy.force cZeqbsym) in *)
+  (* let tacrew = cl_rewrite_clause (Lazy.force cZeqbsym) true all_occurrences None in *)
   Tacticals.tclTHENTRY
     (List.fold_right
        (fun (eqn, eqt) tac ->
@@ -473,11 +477,14 @@ let core_tactic call_solver rt ro ra rf ra' rf' (lcpl : Term.constr list) env si
           (Structures.set_evars_tac body_nocast)
           (Structures.vm_cast_no_check body_cast)))
     (Tactics.intro_then (fun id ->
-         Structures.tclTHEN tacrew (Tactics.apply (Term.mkVar id))))
-                              
+         (Tacticals.tclTHEN tacrew (Tactics.apply (Term.mkVar id)))))
 
-let tactic call_solver rt ro ra rf ra' rf' lcpl =
+
+         (* Structures.tclTHEN
+          *   (Tacticals.tclTRY (Tacticals.tclTHEN tacrew (Tactics.apply (Term.mkVar id))))
+          *   (Tactics.apply (Term.mkVar id)))) *)
+
+let tactic call_solver rt ro ra rf ra' rf' lcpl lcepl =
   Structures.tclTHEN
     Tactics.intros
-    (Structures.mk_tactic (core_tactic call_solver rt ro ra rf ra' rf' lcpl))
-       
+    (Structures.mk_tactic (core_tactic call_solver rt ro ra rf ra' rf' lcpl lcepl))
