@@ -62,14 +62,6 @@ let dummy_indexed_op i dom codom = i, {tparams = dom; tres = codom; op_val = Ter
 let indexed_op_index i = let index, _ = destruct "destruct on a Rel: called by indexed_op_index" i in
                          index
 
-(* type op =
- *   | Cop of cop
- *   | Uop of uop
- *   | Bop of bop
- *   | Nop of nop
- *   (\* | Iop of indexed_op *\) *)
-
-
 module Op =
   struct
     let c_to_coq = function
@@ -185,7 +177,7 @@ module Op =
       { count = 0;
 	tbl =  Hashtbl.create 17 }
 
-    let declare reify op tparams tres os=
+    let declare reify op tparams tres os =
       assert (not (Hashtbl.mem reify.tbl op));
       let opa = { tparams = tparams; tres = tres; op_val = op} in
       match os with

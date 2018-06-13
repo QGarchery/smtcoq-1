@@ -146,7 +146,9 @@ let rec get_pos c =
   | Same c -> get_pos c
 
 let eq_clause c1 c2 = (repr c1).id = (repr c2).id
-  
+
+
+(* Reorders the roots according to the order they were given in. *)
 let order_roots init_index first =
   let r = ref first in
   let acc = ref [] in
@@ -159,7 +161,7 @@ let order_roots init_index first =
     | _ -> failwith "root value has unexpected form" end
   done;
   let _, lr = List.sort (fun (i1, _) (i2, _) -> Pervasives.compare i1 i2) !acc
-             |> List. split in
+             |> List.split in
   let link_to c1 c2 =
     let curr_id = c2.id -1 in
     c1.id <- curr_id;
@@ -425,13 +427,6 @@ let to_coq to_lit interp (cstep,
            cuts := (app_name, app_ty)::!cuts;
            mklApp cForallInst [|out_c c; clemma; cplemma; concl'; app_var|]
         
-           (* let id = cl.id - 2 in
-            * let clemma, cplemma = try List.nth l_pl id
-            *                       with _ -> failwith ("list of length " ^ string_of_int (List.length l_pl) ^ ", trying to get element " ^ string_of_int id) in
-            * let concl' = out_cl [concl] in
-            * let app = Term.mkLambda (Names.Anonymous, clemma, Term.mkRel 1) in
-            * mklApp cForallInst [|out_c c; clemma; cplemma; concl'; app|] *)
-                  
 	end
     | _ -> assert false in
   let step = Lazy.force cstep in

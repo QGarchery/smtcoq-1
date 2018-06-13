@@ -1,13 +1,13 @@
 #!/bin/sh
 
-./runverit16.sh $1
-./runveritlast.sh $1
+./runverit.sh $1
+./runveritdev.sh $1
 
-vt16log=$(echo $1 | sed "s/.smt2/.vt16log/")
-vtlastlog=$(echo $1 | sed "s/.smt2/.vtlastlog/")
+vtlog=$(echo $1 | sed "s/.smt2/.vtlog/")
+vtdevlog=$(echo $1 | sed "s/.smt2/.vtdevlog/")
 
 echo "======================================================="
 
-diff $vt16log $vtlastlog
+diff $vtlog $vtdevlog
 
 echo "======================================================="

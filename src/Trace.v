@@ -16,7 +16,6 @@
 
 Require Import Bool Int63 PArray.
 Require Structures.
-(* attention *)
 Require Import SMTCoq.Misc SMTCoq.State SMTCoq.SMT_terms Cnf Euf Lia Syntactic Arithmetic Operators SMTCoq.spl.Assumptions.
 
 Local Open Scope array_scope.
@@ -111,9 +110,9 @@ Module Sat_Checker.
      ~S.valid rho s.
 
  Proof.
-   intros rho Hwr;apply _checker__correct.
+   intros rho Hwr; apply _checker__correct.
    intros; apply C.is_false_correct; trivial.
-   intros s Hv (pos, r);apply S.valid_set_resolve; trivial.
+   intros s Hv (pos, r); apply S.valid_set_resolve; trivial.
  Qed.
 
  (** Application to Zchaff *)

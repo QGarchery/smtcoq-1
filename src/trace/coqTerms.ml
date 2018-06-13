@@ -17,8 +17,6 @@ open Coqlib
 
 let gen_constant modules constant = lazy (gen_constant_in_modules "SMT" modules constant)
 
-(* let cforall = *) 
-                                         
 (* Int63 *)
 let cint = Structures.cint
 let ceq63 = gen_constant Structures.int63_modules "eqb"
@@ -53,11 +51,7 @@ let cltb = gen_constant z_modules "ltb"
 let cleb = gen_constant z_modules "leb"
 let cgeb = gen_constant z_modules "geb"
 let cgtb = gen_constant z_modules "gtb"
-(* Je ne comprends pas pourquoi ça fonctionne avec Zeq_bool et pas avec
-   Z.eqb *)
 let ceqbZ = gen_constant z_modules "eqb" 
-(* let ceqbZ = gen_constant [["Coq";"ZArith";"Zbool"]] "Zeq_bool" *)
-
 
                          
 (* Booleans *)

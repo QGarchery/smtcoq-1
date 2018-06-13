@@ -257,17 +257,8 @@ module Make (Atom:ATOM) =
 	    if Array.length args <> 3 then raise (NotWellTyped pf)
          | Fforall l -> ()
 
-            (* failwith ("check on forall: " ^ List.fold_left (fun acc (s, b) -> acc ^ "(" ^ s ^ ", " ^ SmtBtype.to_string b ^ ") ") "" l) *)
-
     let declare reify pf =
       check pf;
-      (* if reify.count = 5 then
-       *   match pf with
-       *   | Fapp (Fforall [x, Tindex it], args) ->
-       *      let c = indexed_type_hval it in
-       *      Printer.pr_constr c |> Pp.string_of_ppcmds
-       *      |> failwith
-       *   | _ -> failwith "its an atom" else *)
       let res = Pos {index = reify.count; hval = pf} in
       HashForm.add reify.tbl pf res;
       reify.count <- reify.count + 1;

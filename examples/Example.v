@@ -298,26 +298,6 @@ Proof.
   verit.
 Qed.
 
-(* About positive. *)
-(* Print N. *)
-
-(* About Z. *)
-(* Print Z. *)
-(* Check (-5)%Z. *)
-(* Check 5%N. *)
-
-(* Print eq. *)
-
-(* Set Printing All. *)
-
-(* Print Z.eqb. *)
-(* Print Z.compare. *)
-
-(* SearchAbout Z.eqb. *)
-(* About Z.eqb. *)
-(* Print Z.eqb. *)
-
-
 Goal forall (a b : Z) (P : Z -> bool) (f : Z -> Z),
     negb (Z.eqb (f a) b) || negb (P (f a)) || P b.
 
@@ -333,10 +313,6 @@ Proof.
    (* verit. *)
 Qed.
 
-Definition Myeqbool : Z -> Z -> bool := Z.eqb.
-Print Z.eqb.
-
-
 Goal forall b1 b2 x1 x2,
   implb
   (ifb b1
@@ -348,17 +324,15 @@ Proof.
   verit.
 Qed.
 
-(* Parameter toto : Z -> Z. *)
-(* Variable toto : Z. *)
-
-(* Section S. *)
-(*   Variable f : Z -> Z. *)
-(*   Hypothesis th : forall x, Z.eqb (f x) 3. *)
-(*   Definition g z := f z. *)
-(*   (* Add Theorem th. *) *)
-(*   (* Goal forall x, Z.eqb ((f x) + 1) 4. *) *)
-(*     (* verit. *) *)
-(* End S. *)
+Section S.
+  Variable f : Z -> Z.
+  Hypothesis th : forall x, Z.eqb (f x) 3.
+  Add_lemma th.
+  Goal forall x, Z.eqb ((f x) + 1) 4.
+    verit.
+  Qed.
+  Clear_lemmas.
+End S.
 
 Definition g1 (f : Z -> Z) (x : Z) := f x.
 

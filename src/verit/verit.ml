@@ -168,8 +168,8 @@ let export out_channel rt ro lsmt =
                       Form.to_smt Atom.to_string fmt u;
                       Format.fprintf fmt ")\n") lsmt;
 
-  Format.fprintf fmt "(check-sat)\n";
-  Format.fprintf fmt "(exit)@."
+  Format.fprintf fmt "(check-sat)\n(exit)@."
+
 
 (* val call_verit : Btype.reify_tbl -> Op.reify_tbl -> Form.t -> (Form.t clause * Form.t) -> (int * Form.t clause) *)
 let call_verit rt ro ra' rf' first lsmt =
