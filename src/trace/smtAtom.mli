@@ -111,6 +111,10 @@ module Atom :
 
       val get : ?declare:bool -> reify_tbl -> atom -> hatom
 
+      (** temporary : only for debugging **)
+
+      val copy : reify_tbl -> reify_tbl
+                                                        
       val print_atoms : reify_tbl -> string -> unit
                                        
       (** Given a coq term, build the corresponding atom *)

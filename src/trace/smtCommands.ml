@@ -409,31 +409,31 @@ let core_tactic call_solver rt ro ra rf ra' rf' lcpl lcepl env sigma concl =
   let a, b = get_arguments concl in
   let lcpl = lcpl @ List.map (Constrintern.interp_constr sigma env) lcepl in
   let lcl = List.map (Retyping.get_type_of env sigma) lcpl in
-  let lsmt = List.map (of_coq_lemma rt ro ra' rf' env sigma) lcl in
+
+  let lsmt  = List.map (of_coq_lemma rt ro ra' rf' env sigma) lcl in
   let l_pl_ls = List.combine (List.combine lcl lcpl) lsmt in
 
   let lem_tbl : (int, Term.constr * Term.constr) Hashtbl.t =
     Hashtbl.create 100 in
   let new_ref ((l, pl), ls) =
     Hashtbl.add lem_tbl (Form.index ls) (l, pl) in
+
   List.iter new_ref l_pl_ls;
-  let re_hash hf = Form.hash_hform (Atom.hash_hatom ra') rf' hf in
-  let find_lemma (cl : SmtAtom.Form.t SmtCertif.clause) =
+  
+  let rca = Atom.copy ra' in 
+  let find_lemma cl =
+    let re_hash hf = Form.hash_hform (Atom.hash_hatom rca) rf' hf in
     match cl.value with
     | Some [l] ->
-       begin try Hashtbl.find lem_tbl (Form.index (re_hash l))
-       with Not_found ->
-             let oc = open_out "/tmp/find_lemma.log" in
-             let print i (t1, t2) =
-               let string_of_coq t =Pp.string_of_ppcmds (Printer.pr_constr t) in
-                let s = string_of_int i ^ " : (" ^ string_of_coq t1 ^ ", "
-                        ^ string_of_coq t2 ^ ")" in
-                Printf.fprintf oc "%s\n" s in
-             Hashtbl.iter print lem_tbl;
-             Printf.fprintf oc "\n%s : %s\n" (string_of_int (Form.index l))
-               (VeritSyntax.string_hform l);
-             flush oc; close_out oc; raise Not_found end
-    | _ -> failwith "unexpected form of root" in
+       let hl = re_hash l in
+       begin try Hashtbl.find lem_tbl (Form.index hl)
+             with Not_found ->
+               let oc = open_out "/tmp/find_lemma.log" in
+               List.iter (fun u -> Printf.fprintf oc "%s\n"
+                                     (VeritSyntax.string_hform u)) lsmt;
+               Printf.fprintf oc "\n%s\n" (VeritSyntax.string_hform hl);
+               flush oc; close_out oc; failwith "find_lemma" end
+      | _ -> failwith "unexpected form of root" in
   
   let (body_cast, body_nocast, cuts) =
     if ((Term.eq_constr b (Lazy.force ctrue))
@@ -467,8 +467,6 @@ let core_tactic call_solver rt ro ra rf ra' rf' lcpl lcepl env sigma concl =
   let atom_rew = Tacexpr.TacRewrite (false, lrew, where, None) in
   let tactic_expr = Tacexpr.TacAtom (Pp.dummy_loc, atom_rew) in
   let tacrew = Tacinterp.interp tactic_expr in 
-  (* let tacrew = Tacticals.tclIDTAC in(\* Equality.rewriteInConcl true (Lazy.force cZeqbsym) in *\) *)
-  (* let tacrew = cl_rewrite_clause (Lazy.force cZeqbsym) true all_occurrences None in *)
   Tacticals.tclTHENTRY
     (List.fold_right
        (fun (eqn, eqt) tac ->

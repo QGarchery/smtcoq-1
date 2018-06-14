@@ -421,20 +421,20 @@ let clear_qvar () = Hashtbl.clear qvar_tbl
 
 let string_hform = Form.to_string ~pi:true (Atom.to_string ~pi:true)
                       
-let init_index ls_smtc re_hash =
+let init_index lsmt re_hash =
   let form_index_init_rank : (int, int) Hashtbl.t = Hashtbl.create 20 in
   let add = Hashtbl.add form_index_init_rank in
   let find = Hashtbl.find form_index_init_rank in
   let rec walk rank = function
     | [] -> ()
-    | h::t -> add (Form.index h) rank;
+    | h::t -> add (Form.to_lit h) rank;
               walk (rank+1) t in
-  walk 1 ls_smtc;
+  walk 1 lsmt;
   fun hf -> let re_hf = re_hash hf in
-            try find (Form.index re_hf)
+            try find (Form.to_lit re_hf)
             with Not_found ->
               let oc = open_out "/tmp/input_not_found.log" in
-              (List.map string_hform ls_smtc)
+              (List.map string_hform lsmt)
               |> List.iter (Printf.fprintf oc "%s\n");
               Printf.fprintf oc "\n%s\n" (string_hform re_hf);
               flush oc; close_out oc;

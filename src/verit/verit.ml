@@ -92,7 +92,7 @@ let import_trace ra' rf' filename first lsmt =
        | Some _ ->
           let cf, lr = order_roots (VeritSyntax.init_index lsmt re_hash)
                          !cfirst in
-          cfirst := cf; 
+          cfirst := cf;
           let to_add = VeritSyntax.qf_to_add (List.tl lr) in
           let to_add =
             (match first, !cfirst.value with

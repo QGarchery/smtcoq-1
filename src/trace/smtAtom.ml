@@ -463,6 +463,8 @@ module Atom =
            with Not_found -> declare reify a
       else {index = -1; hval = a}
 
+    let copy {count=c; tbl=t} = {count = c; tbl = HashAtom.copy t}
+             
     let print_atoms reify where =
       let oc = open_out where in
       let fmt = Format.formatter_of_out_channel oc in

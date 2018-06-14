@@ -6,7 +6,6 @@ Require Import Bool PArray Int63 List ZArith.
 Local Open Scope int63_scope.
 
 
-
 Lemma fun_const :
   forall f (g : int -> int -> bool) , (forall x, g (f x) 2) ->
                                       g (f 3) 2.
@@ -954,7 +953,36 @@ Qed.
 
 (* Verit with lemmas *)
 
+Lemma taut1 :
+  forall f, f 2 =? 0 -> f 2 =? 0.
+Proof.
+  intros f p.
+  verit p.
+Qed.
 
+Lemma taut2 :
+  forall f, 0 =? f 2 -> 0 =?f 2.
+Proof.
+  intros f p.
+  verit p.
+Qed.
+
+Lemma taut3 :
+  forall f, f 2 =? 0 -> f 3 =? 5 -> f 2 =? 0.
+Proof.
+  intros f p1 p2.
+  verit p1.
+Qed.
+
+Lemma taut4 :
+  forall f, f 3 =? 5 -> f 2 =? 0 -> f 2 =? 0.
+Proof.
+  intros f p1 p2.
+  verit p2.
+Qed.
+
+
+  
 Lemma fun_const_Z :
   forall f , (forall x, f x =? 2) ->
              f 3 =? 2.
@@ -1038,9 +1066,9 @@ Qed.
 
 Section fins_sat6.
 
-  Parameter a b c d : bool.
-  Axiom andab : andb a b.
-  Axiom orcd  : orb c d.
+  Variables a b c d : bool.
+  Hypothesis andab : andb a b.
+  Hypothesis orcd  : orb c d.
 
   Lemma sat6 :  orb c (andb a (andb b d)).
   Proof. verit andab orcd. Qed.
@@ -1050,11 +1078,11 @@ End fins_sat6.
 
 Section fins_lemma_multiple.
 
-  Parameter f' : Z -> Z.
-  Parameter g : Z -> Z.
-  Parameter k : Z.
-  Axiom g_k_linear : forall x, g (x + 1) =? (g x) + k.
-  Axiom f'_equal_k : forall x, f' x =? k.
+  Variable f' : Z -> Z.
+  Variable g : Z -> Z.
+  Variable k : Z.
+  Hypothesis g_k_linear : forall x, g (x + 1) =? (g x) + k.
+  Hypothesis f'_equal_k : forall x, f' x =? k.
 
   Lemma apply_lemma_multiple : forall x y, g (x + 1) =? g x + f' y.
   Proof. verit g_k_linear f'_equal_k. Qed.
@@ -1063,8 +1091,8 @@ End fins_lemma_multiple.
 
 
 Section fins_find_apply_lemma.
-  Parameter u : Z -> Z.
-  Axiom u_is_constant : forall x y, u x =? u y.
+  Variable u : Z -> Z.
+  Hypothesis u_is_constant : forall x y, u x =? u y.
 
   Lemma apply_lemma : forall x, u x =? u 2.
   Proof. verit u_is_constant. Qed.
@@ -1078,9 +1106,9 @@ End fins_find_apply_lemma.
 
 Section mult3.
 
-  Parameter mult3 : Z -> Z.
-  Axiom mult3_0 : mult3 0 =? 0.
-  Axiom mult3_Sn : forall n, mult3 (n+1) =? mult3 n + 3.
+  Variable mult3 : Z -> Z.
+  Hypothesis mult3_0 : mult3 0 =? 0.
+  Hypothesis mult3_Sn : forall n, mult3 (n+1) =? mult3 n + 3.
 
   Lemma mult3_21 : mult3 14 =? 42.
   Proof. verit mult3_0 mult3_Sn. Qed.
@@ -1090,23 +1118,24 @@ End mult3.
 
 (* Doesnt return in less than 10 seconds *)
 (* Section mult. *)
-(*   Parameter mult : Z -> Z -> Z. *)
-(*   Axiom mult_0 : forall x, mult 0 x =? 0. *)
-(*   Axiom mult_Sx : forall x y, mult (x+1) y =? mult x y + y. *)
+(*   Variable mult : Z -> Z -> Z. *)
+(*   Hypothesis mult_0 : forall x, mult 0 x =? 0. *)
+(*   Hypothesis decomp : forall x, x =? (x - 1) + 1. *)
+(*   Hypothesis mult_Sx : forall x y, mult (x+1) y =? mult x y + y. *)
 
-(*   Lemma mult_3_21 : mult 1 2 =? 2. *)
+(*   Lemma mult_3_21 : forall x, mult 1 x =? x. *)
 (*   Proof. verit mult_0 mult_Sx. *)
-
-(* End mult.   *)
+(*   Qed. *)
+(* End mult. *)
 
 
 (* verit transform silently an <implb a b> into a <or (not a) b> when
  instantiating a quantified theorem with <implb> *)
 Section implicit_transform.
-  Parameter f : Z -> bool.
-  Parameter a1 a2 : Z.
-  Axiom f_const : forall b, implb (f b) (f a2).
-  Axiom f_a1 : f a1.
+  Variable f : Z -> bool.
+  Variable a1 a2 : Z.
+  Hypothesis f_const : forall b, implb (f b) (f a2).
+  Hypothesis f_a1 : f a1.
 
   Lemma implicit_transform :
     f a2.
@@ -1116,3 +1145,14 @@ Section implicit_transform.
     destruct (f a1); destruct (f a2); intuition.
   Qed.
 End implicit_transform.
+
+
+
+
+
+(* Lemma taut5 : *)
+(*   forall f, 0 =? f 2 -> f 2 =? 0. *)
+(* Proof. *)
+(*   intros f p. *)
+(*   verit p. *)
+(* Qed. *)
