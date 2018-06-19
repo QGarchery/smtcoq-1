@@ -221,7 +221,7 @@ term:   /* returns a (SmtAtom.Form.pform or SmtAtom.hatom) option */
   | PLUS name_term name_term                               { apply_bdec_atom (Atom.mk_plus ra) $2 $3 }
   | MULT name_term name_term                               { apply_bdec_atom (Atom.mk_mult ra) $2 $3 }
   | MINUS name_term name_term                              { apply_bdec_atom (Atom.mk_minus ra) $2 $3}
-  | MINUS name_term                                        { apply_dec_atom (fun d a -> Atom.mk_opp ra ~declare:d a) $2 }
+  | MINUS name_term                                        { apply_dec_atom (fun d a -> Atom.mk_neg ra a) $2 }
   | OPP name_term                                          { apply_dec_atom (fun d a -> Atom.mk_opp ra ~declare:d a) $2 }
   | DIST args                                              { let da, la = list_dec $2 in
     	 						     let a = Array.of_list la in

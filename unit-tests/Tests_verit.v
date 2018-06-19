@@ -1126,7 +1126,6 @@ End mult3.
 (* Section mult. *)
 (*   Variable mult : Z -> Z -> Z. *)
 (*   Hypothesis mult_0 : forall x, mult 0 x =? 0. *)
-(*   Hypothesis decomp : forall x, x =? (x - 1) + 1. *)
 (*   Hypothesis mult_Sx : forall x y, mult (x+1) y =? mult x y + y. *)
 
 (*   Lemma mult_3_21 : forall x, mult 1 x =? x. *)
@@ -1151,6 +1150,58 @@ Section implicit_transform.
     destruct (f a1); destruct (f a2); intuition.
   Qed.
 End implicit_transform.
+
+
+Section list.
+  Variable Zlist : Type.
+  Hypothesis dec_Zlist :
+    {eq : Zlist -> Zlist -> bool & forall x y : Zlist, reflect (x = y) (eq x y)}.
+  Variable nil : Zlist.
+  Variable cons : Z -> Zlist -> Zlist.
+  Variable inlist : Z -> Zlist -> bool.
+
+  Hypothesis in_same : forall a l, inlist a (cons a l).
+  Hypothesis in_next : forall a b l, implb (inlist a l) (inlist a (cons b l)).
+
+  
+  Add_lemma in_same in_next.
+  
+  Lemma in_1 :
+    inlist 1 (cons 1 (cons 2 nil)).
+  Proof.
+    verit. apply dec_Zlist.
+  Qed.
+
+  Lemma in_2 :
+    inlist 1 (cons 2 (cons 1 (cons 6 nil))).
+  Proof.
+    verit. apply dec_Zlist.
+  Qed.
+
+  Lemma in_3 : 
+    inlist 1 (cons 5 (cons 1 (cons (0-1) nil))).
+  Proof.
+    verit. apply dec_Zlist.
+  Qed.
+  Lemma in_4 :
+    inlist 1 (cons (- (1)) (cons 1 nil)).
+           
+  Proof.
+    verit. apply dec_Zlist.
+  Qed.
+
+  Lemma in_5 :
+    inlist 1 (cons (- 1) (cons 1 nil)).
+           
+  Proof.
+    verit. apply dec_Zlist.
+  Qed.
+
+  Variable app : Zlist -> Zlist -> Zlist.
+  
+
+  
+End list.
 
 
 

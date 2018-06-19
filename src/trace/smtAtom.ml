@@ -363,7 +363,7 @@ module Atom =
 
       and to_string_atom = function
         | Acop _ as a -> to_string_int (compute_int a)
-        | Auop (UO_Zopp,h) ->
+        | Auop (UO_Zopp,h) -> 
            "(- " ^
              to_string h ^
                ")"
@@ -472,6 +472,15 @@ module Atom =
           HashAtom.find reify.tbl (Abop (op, h2, h1))
         with Not_found ->
           get ~declare:decl reify (Abop (op, h1, h2))
+
+    let mk_neg reify ({index = i; hval = a} as ha) =
+      try HashAtom.find reify.tbl (Auop (UO_Zopp, ha))
+      with Not_found -> 
+        let na = match a with
+          | Auop (UO_Zpos, x) -> Auop (UO_Zneg, x)
+          | Auop (UO_Zneg, x) -> Auop (UO_Zpos, x)
+          | _ -> failwith "opp not on Z" in
+        get reify na
 
     let rec hash_hatom ra' {index = _; hval = a} =
       match a with 
@@ -702,6 +711,7 @@ module Atom =
         else
           mk_unop UO_Zneg reify (hatom_pos_of_bigint reify (Big_int.minus_big_int i))
 
+    let mk_unop op reify ?declare:(decl=true) h = get ~declare:decl reify (Auop (op, h))
 
     let mk_lt = mk_binop BO_Zlt
     let mk_le = mk_binop BO_Zle
@@ -710,7 +720,8 @@ module Atom =
     let mk_plus = mk_binop BO_Zplus
     let mk_minus = mk_binop BO_Zminus
     let mk_mult = mk_binop BO_Zmult
-    let mk_opp = mk_unop UO_Zopp
+    let mk_opp = mk_unop UO_Zopp 
+        
     let mk_distinct reify ty = mk_nop (NO_distinct ty) reify
 
                                       

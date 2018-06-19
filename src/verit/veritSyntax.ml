@@ -419,7 +419,7 @@ let find_opt_qvar s = try Some (Hashtbl.find qvar_tbl s)
 let add_qvar s bt = Hashtbl.add qvar_tbl s bt
 let clear_qvar () = Hashtbl.clear qvar_tbl
 
-let string_hform = Form.to_string ~pi:true (Atom.to_string ~pi:true)
+let string_hform = Form.to_string ~pi:true (Atom.to_string ~pi:true )
                       
 let init_index lsmt re_hash =
   let form_index_init_rank : (int, int) Hashtbl.t = Hashtbl.create 20 in

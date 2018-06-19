@@ -420,9 +420,8 @@ let core_tactic call_solver rt ro ra rf ra' rf' lcpl lcepl env sigma concl =
 
   List.iter new_ref l_pl_ls;
   
-  let rca = Atom.copy ra' in 
   let find_lemma cl =
-    let re_hash hf = Form.hash_hform (Atom.hash_hatom rca) rf' hf in
+    let re_hash hf = Form.hash_hform (Atom.hash_hatom ra') rf' hf in
     match cl.value with
     | Some [l] ->
        let hl = re_hash l in

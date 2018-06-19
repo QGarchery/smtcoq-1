@@ -112,6 +112,8 @@ module Atom :
       val get : ?declare:bool -> reify_tbl -> atom -> hatom
 
       val mk_eq : reify_tbl -> bool -> btype -> hatom -> hatom -> hatom
+
+      val mk_neg : reify_tbl -> hatom -> hatom
                                                                     
       val hash_hatom : reify_tbl -> hatom -> hatom
 
