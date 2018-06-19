@@ -463,6 +463,29 @@ module Atom =
            with Not_found -> declare reify a
       else {index = -1; hval = a}
 
+    let mk_eq reify decl ty h1 h2 =
+      let op = BO_eq ty in
+      try
+        HashAtom.find reify.tbl (Abop (op, h1, h2))
+      with Not_found ->
+        try
+          HashAtom.find reify.tbl (Abop (op, h2, h1))
+        with Not_found ->
+          get ~declare:decl reify (Abop (op, h1, h2))
+
+    let rec hash_hatom ra' {index = _; hval = a} =
+      match a with 
+      | Acop cop -> get ra' a
+      | Auop (uop, ha) -> get ra' (Auop (uop, hash_hatom ra' ha))
+      | Abop (bop, ha1, ha2) ->
+         let new_ha1 = hash_hatom ra' ha1 in
+         let new_ha2 = hash_hatom ra' ha2 in
+         begin match bop with
+         | BO_eq ty -> mk_eq ra' true ty new_ha1 new_ha2
+         | _ -> get ra' (Abop (bop, new_ha1, new_ha2)) end
+      | Anop _ -> assert false
+      | Aapp (op, arr) -> get ra' (Aapp (op, Array.map (hash_hatom ra') arr))
+              
     let copy {count=c; tbl=t} = {count = c; tbl = HashAtom.copy t}
              
     let print_atoms reify where =
@@ -514,7 +537,7 @@ module Atom =
 
     let op_tbl = lazy (op_tbl ())
 
-    let of_coq ?declare:(decl=true) rt ro reify env sigma c =
+    let of_coq ?hash:(h=false) rt ro reify env sigma c =
       let op_tbl = Lazy.force op_tbl in
       let get_cst c =
 	try Hashtbl.find op_tbl c with Not_found -> CCunknown in
@@ -535,26 +558,34 @@ module Atom =
         | CCZle -> mk_bop BO_Zle args
         | CCZge -> mk_bop BO_Zge args
         | CCZgt -> mk_bop BO_Zgt args
-        | CCeqb -> mk_bop (BO_eq Tbool) args
-        | CCeqbP -> mk_bop (BO_eq Tpositive) args
-        | CCeqbZ -> mk_bop (BO_eq TZ) args
+        | CCeqb -> mk_teq Tbool args
+        | CCeqbP -> mk_teq Tpositive args
+        | CCeqbZ -> mk_teq TZ args
 	| CCunknown -> let ty = try Retyping.get_type_of env sigma h
                                 with Not_found -> Printer.pr_constr_env env h
                                                   |> Pp.string_of_ppcmds
                                                   |> failwith in
                        mk_unknown c args ty
 
-      and mk_cop op = get ~declare:decl reify (Acop op)
+      and mk_cop op = get reify (Acop op)
 
       and mk_uop op = function
-        | [a] -> let h = mk_hatom a in get ~declare:decl reify (Auop (op,h))
+        | [a] -> let h = mk_hatom a in get reify (Auop (op,h))
         | _ -> failwith "unexpected number of arguments for mk_uop"
+
+      and mk_teq ty args = 
+        if h then match args with    
+        | [a1; a2] -> let h1 = mk_hatom a1 in
+                      let h2 = mk_hatom a2 in
+                      mk_eq reify true ty h1 h2
+        | _ -> failwith "unexpected number of arguments for mk_teq"
+        else mk_bop (BO_eq ty) args
 
       and mk_bop op = function
         | [a1;a2] ->
            let h1 = mk_hatom a1 in
            let h2 = mk_hatom a2 in
-           get ~declare:decl reify (Abop (op,h1,h2))
+           get reify (Abop (op,h1,h2))
         | _ -> failwith "unexpected number of arguments for mk_bop"
 
       and mk_unknown c args ty =
@@ -569,7 +600,7 @@ module Atom =
                                  Some (string_of_name n)
                             else None in
                    Op.declare ro c targs tres os in
-        get ~declare:decl reify (Aapp (op,hargs)) in
+        get reify (Aapp (op,hargs)) in
 
       mk_hatom c
 
@@ -671,15 +702,6 @@ module Atom =
         else
           mk_unop UO_Zneg reify (hatom_pos_of_bigint reify (Big_int.minus_big_int i))
 
-    let mk_eq reify decl ty h1 h2 =
-      let op = BO_eq ty in
-      try
-        HashAtom.find reify.tbl (Abop (op, h1, h2))
-      with Not_found ->
-        try
-          HashAtom.find reify.tbl (Abop (op, h2, h1))
-        with Not_found ->
-          get ~declare:decl reify (Abop (op, h1, h2))
 
     let mk_lt = mk_binop BO_Zlt
     let mk_le = mk_binop BO_Zle
@@ -691,18 +713,6 @@ module Atom =
     let mk_opp = mk_unop UO_Zopp
     let mk_distinct reify ty = mk_nop (NO_distinct ty) reify
 
-    let rec hash_hatom ra' {index = _; hval = a} =
-      match a with 
-      | Acop cop -> get ra' a
-      | Auop (uop, ha) -> get ra' (Auop (uop, hash_hatom ra' ha))
-      | Abop (bop, ha1, ha2) ->
-         let new_ha1 = hash_hatom ra' ha1 in
-         let new_ha2 = hash_hatom ra' ha2 in
-         begin match bop with
-         | BO_eq ty -> mk_eq ra' true ty new_ha1 new_ha2
-         | _ -> get ra' (Abop (bop, new_ha1, new_ha2)) end
-      | Anop _ -> assert false
-      | Aapp (op, arr) -> get ra' (Aapp (op, Array.map (hash_hatom ra') arr))
                                       
   end
 

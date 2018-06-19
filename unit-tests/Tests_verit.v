@@ -981,6 +981,12 @@ Proof.
   verit p2.
 Qed.
 
+Lemma taut5 :
+  forall f, 0 =? f 2 -> f 2 =? 0.
+Proof.
+  intros f p.
+  verit p.
+Qed.
 
   
 Lemma fun_const_Z :
@@ -1150,9 +1156,3 @@ End implicit_transform.
 
 
 
-(* Lemma taut5 : *)
-(*   forall f, 0 =? f 2 -> f 2 =? 0. *)
-(* Proof. *)
-(*   intros f p. *)
-(*   verit p. *)
-(* Qed. *)

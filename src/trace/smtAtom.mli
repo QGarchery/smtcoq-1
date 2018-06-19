@@ -111,7 +111,11 @@ module Atom :
 
       val get : ?declare:bool -> reify_tbl -> atom -> hatom
 
-      (** temporary : only for debugging **)
+      val mk_eq : reify_tbl -> bool -> btype -> hatom -> hatom -> hatom
+                                                                    
+      val hash_hatom : reify_tbl -> hatom -> hatom
+
+      (** for debugging purposes **)
 
       val copy : reify_tbl -> reify_tbl
                                                         
@@ -119,12 +123,9 @@ module Atom :
                                        
       (** Given a coq term, build the corresponding atom *)
       val of_coq :
-        ?declare:bool -> SmtBtype.reify_tbl -> Op.reify_tbl ->
+        ?hash:bool -> SmtBtype.reify_tbl -> Op.reify_tbl ->
         reify_tbl -> Environ.env -> Evd.evar_map -> Term.constr -> t
 
-
-      val hash_hatom : reify_tbl -> hatom -> hatom
-                                               
       val to_coq : hatom -> Term.constr
 
       val to_array : reify_tbl -> 'a -> (atom -> 'a) -> 'a array
@@ -137,7 +138,7 @@ module Atom :
       (* Generation of atoms *)
       val hatom_Z_of_int : reify_tbl -> int -> hatom
       val hatom_Z_of_bigint : reify_tbl -> Big_int.big_int -> hatom
-      val mk_eq : reify_tbl -> bool -> btype -> hatom -> hatom -> hatom
+
       val mk_lt : reify_tbl -> bool -> hatom -> hatom -> hatom
       val mk_le : reify_tbl -> bool -> hatom -> hatom -> hatom
       val mk_gt : reify_tbl -> bool -> hatom -> hatom -> hatom
@@ -148,6 +149,8 @@ module Atom :
       val mk_opp : reify_tbl -> ?declare:bool -> hatom -> hatom
       val mk_distinct : reify_tbl -> btype -> ?declare:bool -> hatom array -> hatom
 
+      
+                                                                                
     end
 
 
