@@ -19,7 +19,7 @@ Section RunningExample1.
   Proof.
     verit.
   Qed.
-  Print fSS.
+
 End RunningExample1.
 
 Section RunningExample2.
@@ -33,6 +33,7 @@ Section RunningExample2.
   Proof.
     verit f_k_linear.
   Qed.
+
 End RunningExample2.
 
 
@@ -301,9 +302,9 @@ Zchaff_Checker "hole4.cnf" "hole4.log".
 
 (* Example that checks a VeriT certificate, for logic QF_UF *)
 
-(* Section Verit. *)
-(*   Verit_Checker "euf.smt2" "euf.log". *)
-(* End Verit. *)
+Section Verit.
+  Verit_Checker "euf.smt2" "euf.log".
+End Verit.
 
 (* Examples of the zchaff tactic (requires zchaff in your PATH
    environment variable):

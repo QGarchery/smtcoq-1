@@ -8,7 +8,6 @@ Local Open Scope int63_scope.
 Lemma fun_const :
   forall f (g : int -> int -> bool) , (forall x, g (f x) 2) ->
                                       g (f 3) 2.
-
 Proof.
   intros f g Hf.
   verit Hf.
@@ -25,11 +24,7 @@ Proof.
   verit.
 Qed.
 
-
-
 Open Scope Z_scope.
-
-
 
 (* veriT vernacular commands *)
 
@@ -480,6 +475,8 @@ Check theorem_lia5_holes.
 (* verit tactic *)
 
 (* Simple connectives *)
+
+
 
 Goal forall (a:bool), a || negb a.
   verit.
@@ -1132,9 +1129,6 @@ End mult3.
 (*   Qed. *)
 (* End mult. *)
 
-  Axiom toto : forall a b, (implb a b) = true -> (orb (negb a) b) = true.
-  Hint Rewrite toto.
-  
 (* verit transform silently an <implb a b> into a <or (not a) b> when
  instantiating a quantified theorem with <implb> *)
 Section implicit_transform.
@@ -1143,15 +1137,13 @@ Section implicit_transform.
   Hypothesis f_const : forall b, implb (f b) (f a2).
   Hypothesis f_a1 : f a1.
 
-
-  Clear_lemmas.
   Lemma implicit_transform :
     f a2.
   Proof.
     verit f_const f_a1.
   Qed.
+  (* Print Assumptions implicit_transform. *)
 End implicit_transform.
-
 
 Section list.
   Variable Zlist : Type.
@@ -1161,53 +1153,116 @@ Section list.
   Variable cons : Z -> Zlist -> Zlist.
   Variable inlist : Z -> Zlist -> bool.
 
-  Hypothesis in_same : forall a l, inlist a (cons a l).
-  Hypothesis in_next : forall a b l, implb (inlist a l) (inlist a (cons b l)).
-
+  Infix "::" := cons.
   
-  Add_lemma in_same in_next.
+  Hypothesis in_eq : forall a l, inlist a (a :: l).
+  Hypothesis in_cons : forall a b l, implb (inlist a l) (inlist a (b::l)).
+
+  Add_lemma in_eq in_cons.
   
   Lemma in_cons1 :
-    inlist 1 (cons 1 (cons 2 nil)).
+    inlist 1 (1::2::nil).
   Proof.
     verit. 
   Qed.
 
   Lemma in_cons2 :
-    inlist 1 (cons 2 (cons 4 (cons 1 nil))).
+    inlist 12 (2::4::12::nil).
   Proof.
     verit. 
   Qed.
 
   Lemma in_cons3 : 
-    inlist 1 (cons 5 (cons 1 (cons (0-1) nil))).
+    inlist 1 (5::1::(0-1)::nil).
   Proof.
     verit. 
   Qed.
+
   Lemma in_cons4 :
-    inlist 1 (cons (- (1)) (cons 1 nil)).
-           
+    inlist 22 ((- (1))::22::nil).
   Proof.
     verit. 
   Qed.
 
   Lemma in_cons5 :
-    inlist 1 (cons (- 1) (cons 1 nil)).
-           
+    inlist 1 ((- 1)::1::nil).
   Proof.
     verit. 
   Qed.
 
-  (* Variable append : Zlist -> Zlist -> Zlist. *)
-  (* Hypothesis in_app : forall a l1 l2, *)
-  (*     Bool.eqb (inlist a (append l1 l2)) (orb (inlist a l1) (inlist a l2)). *)
-  (* Add_lemma in_app.  *)
+  (* Lemma in_cons_false1 : *)
+  (*   inlist 1 (2::3::nil). *)
+  (* verit. (*returns unknown*) *)
   
-  (* Lemma in_app1 : *)
-  (*   inlist 1 (append nil (cons 2 (cons 1 nil))). *)
-  (* Proof. *)
-  (*   verit. *)
+  (* Lemma in_cons_false2 : *)
+  (*   inlist 1 ((-1)::3::nil). *)
+  (* verit. (*returns unknown*) *)
+
+  (* Lemma in_cons_false3 : *)
+  (*   inlist 12 (11::13::(-12)::1::nil). *)
+  (*   verit. (*returns unknown*) *)
+
+  Variable append : Zlist -> Zlist -> Zlist.
+  Infix "++" := append.
+
+  Hypothesis in_or_app : forall a l1 l2,
+      implb (orb (inlist a l1) (inlist a l2))
+            (inlist a (l1 ++ l2)).
+  Add_lemma in_or_app.
   
+
+  Lemma in_app1 :
+    inlist 1 (1::2::nil ++ nil).
+  Proof.
+    verit.
+  Qed.
+
+  Lemma in_app2 :
+    inlist 1 (nil ++ 2::1::nil).
+  Proof.
+    verit.
+  Qed.
+
+  Lemma in_app3 :
+    inlist 1 (1::3::nil ++ 2::1::nil).
+  Proof.
+    verit.
+  Qed.
+
+  (* Lemma in_app_false1 : *)
+  (*   inlist 1 (nil ++ 2::3::nil). *)
+  (*   verit. (* returns unknown *) *)
+  
+  (* Lemma in_app_false2 : *)
+  (*   inlist 1 (2::3::nil ++ nil). *)
+  (*   verit. (* returns unknown *) *)
+
+
+  (* Lemma in_app_false3 : *)
+  (*   inlist 1 (2::3::nil ++ 5::6::nil). *)
+  (*   verit. (* returns unknown*) *)
+  
+  Hypothesis in_nil :
+    forall a, negb (inlist a nil).
+  Hypothesis in_inv :
+    forall a b l,
+      implb (inlist b (a::l))
+            (orb (a =? b) (inlist b l)).
+  Hypothesis inlist_app_comm_cons:
+    forall l1 l2 a b,
+      Bool.eqb (inlist b (a :: (l1 ++ l2)))
+               (inlist b ((a :: l1) ++ l2)).
+  Add_lemma in_nil in_inv inlist_app_comm_cons.
+  
+  Lemma coqhammer_example l1 l2 x y1 y2 y3:
+    implb (orb (inlist x l1) (orb (inlist x l2) (orb (x =? y1) (inlist x (y2 ::y3::nil)))))
+          (inlist x (y1::(l1 ++ (y2 :: (l2 ++ (y3 :: nil)))))).
+  Proof.
+    verit.
+  Abort.
+    
+
+  Clear_lemmas.
 End list.
 
 

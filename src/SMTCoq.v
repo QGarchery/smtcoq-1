@@ -24,7 +24,7 @@ Lemma impl_split a b:
   implb a b = true -> orb (negb a) b = true.
 Proof.
   destruct a; destruct b; intuition.
-Qed.  
+Qed.
 
 Hint Resolve impl_split.
 
