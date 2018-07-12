@@ -5,7 +5,6 @@ Require Import Bool PArray Int63 List ZArith.
 
 Local Open Scope int63_scope.
 
-
 Lemma fun_const :
   forall f (g : int -> int -> bool) , (forall x, g (f x) 2) ->
                                       g (f 3) 2.
@@ -1133,7 +1132,9 @@ End mult3.
 (*   Qed. *)
 (* End mult. *)
 
-
+  Axiom toto : forall a b, (implb a b) = true -> (orb (negb a) b) = true.
+  Hint Rewrite toto.
+  
 (* verit transform silently an <implb a b> into a <or (not a) b> when
  instantiating a quantified theorem with <implb> *)
 Section implicit_transform.
@@ -1142,12 +1143,12 @@ Section implicit_transform.
   Hypothesis f_const : forall b, implb (f b) (f a2).
   Hypothesis f_a1 : f a1.
 
+
+  Clear_lemmas.
   Lemma implicit_transform :
     f a2.
   Proof.
     verit f_const f_a1.
-    intro H. assert (G := H a1).
-    destruct (f a1); destruct (f a2); intuition.
   Qed.
 End implicit_transform.
 
@@ -1166,42 +1167,51 @@ Section list.
   
   Add_lemma in_same in_next.
   
-  Lemma in_1 :
+  Lemma in_cons1 :
     inlist 1 (cons 1 (cons 2 nil)).
   Proof.
-    verit. apply dec_Zlist.
+    verit. 
   Qed.
 
-  Lemma in_2 :
-    inlist 1 (cons 2 (cons 1 (cons 6 nil))).
+  Lemma in_cons2 :
+    inlist 1 (cons 2 (cons 4 (cons 1 nil))).
   Proof.
-    verit. apply dec_Zlist.
+    verit. 
   Qed.
 
-  Lemma in_3 : 
+  Lemma in_cons3 : 
     inlist 1 (cons 5 (cons 1 (cons (0-1) nil))).
   Proof.
-    verit. apply dec_Zlist.
+    verit. 
   Qed.
-  Lemma in_4 :
+  Lemma in_cons4 :
     inlist 1 (cons (- (1)) (cons 1 nil)).
            
   Proof.
-    verit. apply dec_Zlist.
+    verit. 
   Qed.
 
-  Lemma in_5 :
+  Lemma in_cons5 :
     inlist 1 (cons (- 1) (cons 1 nil)).
            
   Proof.
-    verit. apply dec_Zlist.
+    verit. 
   Qed.
 
-  Variable app : Zlist -> Zlist -> Zlist.
+  (* Variable append : Zlist -> Zlist -> Zlist. *)
+  (* Hypothesis in_app : forall a l1 l2, *)
+  (*     Bool.eqb (inlist a (append l1 l2)) (orb (inlist a l1) (inlist a l2)). *)
+  (* Add_lemma in_app.  *)
   
-
+  (* Lemma in_app1 : *)
+  (*   inlist 1 (append nil (cons 2 (cons 1 nil))). *)
+  (* Proof. *)
+  (*   verit. *)
   
 End list.
+
+
+
 
 
 

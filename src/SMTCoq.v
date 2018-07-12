@@ -20,5 +20,11 @@ Export Atom Form Sat_Checker Cnf_Checker Euf_Checker.
 
 Declare ML Module "smtcoq_plugin".
 
-Parameter h : Z -> Z.
-Axiom h1h2 : andb (Zeq_bool (h 1) 3) (Zeq_bool (h 2) 4).
+Lemma impl_split a b:
+  implb a b = true -> orb (negb a) b = true.
+Proof.
+  destruct a; destruct b; intuition.
+Qed.  
+
+Hint Resolve impl_split.
+

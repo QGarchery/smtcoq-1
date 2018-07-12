@@ -9,6 +9,34 @@ Local Open Scope int63_scope.
 
 Open Scope Z_scope.
 
+
+Section RunningExample1.
+  Lemma fSS:
+    forall (f : Z -> Z) (k : Z) (x : Z),
+      implb (f (x+1) =? f x + k)
+     (implb (f (x+2) =? f (x+1) + k)
+            (f (x+2) =? f x + 2 * k)).
+  Proof.
+    verit.
+  Qed.
+  Print fSS.
+End RunningExample1.
+
+Section RunningExample2.
+  Variable f : Z -> Z.
+  Variable k : Z.
+  Hypothesis f_k_linear : forall x, f (x + 1) =? f x + k.
+
+  Lemma fSS2:
+    forall x, f (x + 2) =? f x + 2 * k.
+
+  Proof.
+    verit f_k_linear.
+  Qed.
+End RunningExample2.
+
+
+
 Parameter mult_by_7 : Z -> Z.
 Axiom m0 : mult_by_7 0 =? 0.
 Lemma justm0 : mult_by_7 0 =? 0.
@@ -18,6 +46,12 @@ Add_lemma m0.
 Proof.
   verit.
 Qed.  
+
+
+Require Import Psatz.
+Goal forall (x:Z), x = x.
+  intros; lia.
+Qed.
 
 Clear_lemmas.
 
@@ -44,6 +78,8 @@ Lemma sat2_gen a1 a2 a3:
     (negb (v a3) || v a1)  = false.
 
 Zchaff_Theorem sat "sat.cnf" "sat.log".
+
+
 About sat.
 
 Proof.
@@ -255,6 +291,7 @@ Print sat2.
 
 Close Scope Z_scope.
 Zchaff_Checker "sat.cnf" "sat.log".
+
 Zchaff_Theorem sat3 "sat.cnf" "sat.log".
 Check sat3.
 
