@@ -457,36 +457,51 @@ let core_tactic call_solver rt ro ra rf ra' rf' lcpl lcepl env sigma concl =
   let cuts = SmtBtype.get_cuts rt @ cuts in
 
   
-  let nobind_rew =
-    let c = Lazy.force cZeqbsym in
-    let ce = Constrextern.extern_constr false env c in
-    ce, Glob_term.NoBindings in
-  let lrew = [true, Tacexpr.Precisely 1, nobind_rew] in
-  let where = Tacexpr.({onhyps = Some []; concl_occs = Glob_term.all_occurrences_expr}) in
-  let atom_rew = Tacexpr.TacRewrite (false, lrew, where, None) in
-  let rew_expr = Tacexpr.TacAtom (Pp.dummy_loc, atom_rew) in
-  let tacrew = Tacinterp.interp rew_expr in 
+  (* let nobind_rew =
+   *   let c = Lazy.force cZeqbsym in
+   *   let ce = Constrextern.extern_constr false env c in
+   *   ce, Glob_term.NoBindings in
+   * let lrew = [true, Tacexpr.Precisely 1, nobind_rew] in
+   * let where = Tacexpr.({onhyps = Some []; concl_occs = Glob_term.all_occurrences_expr}) in
+   * let atom_rew = Tacexpr.TacRewrite (false, lrew, where, None) in
+   * let rew_expr = Tacexpr.TacAtom (Pp.dummy_loc, atom_rew) in
+   * let tacrew = Tacinterp.interp rew_expr in 
+   * 
+   * let atom_auto = Tacexpr.TacAuto (Tacexpr.Off, None, [], Some []) in
+   * let auto_expr = Tacexpr.TacAtom (Pp.dummy_loc, atom_auto) in
+   * let tacauto = Tacinterp.interp auto_expr in *)
 
-  let atom_auto = Tacexpr.TacAuto (Tacexpr.Off, None, [], Some []) in
-  let auto_expr = Tacexpr.TacAtom (Pp.dummy_loc, atom_auto) in
-  let tacauto = Tacinterp.interp auto_expr in
+  (* Tacticals.tclTHEN
+   *   begin Tacticals.tclTHENTRY *)
 
-  Tacticals.tclTHEN
-    begin Tacticals.tclTHENTRY
-            (List.fold_right
-               (fun (eqn, eqt) tac ->
-                 Structures.tclTHENLAST (Structures.assert_before (Names.Name eqn) eqt) tac)
-               cuts
-               (Structures.tclTHEN
-                  (Structures.set_evars_tac body_nocast)
-                  (Structures.vm_cast_no_check body_cast)))
-            (Tactics.intro_then (fun id ->
-                 Structures.tclTHEN
-                   (Tacticals.tclTRY (Tacticals.tclTHEN tacrew (Tactics.apply (Term.mkVar id))))
-                   (Tactics.apply (Term.mkVar id))))
-    end
-    tacauto
 
+  List.fold_right
+    (fun (eqn, eqt) tac ->
+       Structures.tclTHENLAST (Structures.assert_before (Names.Name eqn) eqt) tac)
+    cuts
+    (Structures.tclTHEN
+       (Structures.set_evars_tac body_nocast)
+       (Structures.vm_cast_no_check body_cast))
+    (* (Tactics.intro_then (fun id ->
+     *              Structures.tclTHEN
+     *                (Tacticals.tclTRY (Tacticals.tclTHEN tacrew (Tactics.apply (Term.mkVar id))))
+     *                (Tactics.apply (Term.mkVar id))))
+     * end
+     * tacauto *)
+
+(* let rew_tac =
+ *   Structures.mk_tactic (fun env sigma t ->
+ *   let nobind_rew =
+ *     let c = Lazy.force cZeqbsym in
+ *     let ce = Constrextern.extern_constr false env c in
+ *     ce, Glob_term.NoBindings in
+ *   let lrew = [(true, Tacexpr.Precisely 1, nobind_rew); (true, Tacexpr.Precisely 1, nobind_rew)] in
+ *   let where = Tacexpr.({onhyps = Some []; concl_occs = Glob_term.all_occurrences_expr}) in
+ *   let atom_rew = Tacexpr.TacRewrite (false, lrew, where, None) in
+ *   let rew_expr = Tacexpr.TacAtom (Pp.dummy_loc, atom_rew) in
+ *   let tacrew = Tacinterp.interp rew_expr in tacrew) *)
+
+    
 let tactic call_solver rt ro ra rf ra' rf' lcpl lcepl =
   Structures.tclTHEN
     Tactics.intros

@@ -20,6 +20,9 @@ Export Atom Form Sat_Checker Cnf_Checker Euf_Checker.
 
 Declare ML Module "smtcoq_plugin".
 
+Require Import Bool.
+Open Scope Z_scope.
+
 Lemma impl_split a b:
   implb a b = true -> orb (negb a) b = true.
 Proof.
@@ -28,3 +31,30 @@ Qed.
 
 Hint Resolve impl_split.
 
+
+Lemma impl_or_split_right :
+  forall A B C,
+  implb (A || B) C -> negb B || C.
+Proof.
+Admitted.
+
+Lemma impl_or_split_left :
+  forall A B C,
+  implb (A || B) C -> negb A || C.
+Proof.
+Admitted.
+
+
+Ltac vauto :=
+  try (let H := fresh "H" in
+       intro H; try (rewrite Z.eqb_sym; apply H);
+       match goal with
+       | [ |- is_true (negb ?A || ?B) ] => try (eapply impl_or_split_right; apply H);
+                                           eapply impl_or_split_left; apply H
+       end;
+       apply H);
+  auto.
+
+Ltac verit :=
+  verit_base; vauto.
+    

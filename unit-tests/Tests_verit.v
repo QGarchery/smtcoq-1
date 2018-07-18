@@ -5,12 +5,13 @@ Require Import Bool PArray Int63 List ZArith.
 
 Local Open Scope int63_scope.
 
+
 Lemma fun_const :
   forall f (g : int -> int -> bool) , (forall x, g (f x) 2) ->
                                       g (f 3) 2.
 Proof.
   intros f g Hf.
-  verit Hf.
+  verit_base Hf; vauto.
   exists Int63Native.eqb.
   apply Int63Properties.reflect_eqb.
 Qed.
@@ -29,6 +30,7 @@ Open Scope Z_scope.
 (* veriT vernacular commands *)
 
 Section Checker_Sat0.
+
   Verit_Checker "sat0.smt2" "sat0.vtlog".
 End Checker_Sat0.
 
@@ -953,35 +955,35 @@ Lemma taut1 :
   forall f, f 2 =? 0 -> f 2 =? 0.
 Proof.
   intros f p.
-  verit p.
+  verit_base p; vauto.
 Qed.
 
 Lemma taut2 :
   forall f, 0 =? f 2 -> 0 =?f 2.
 Proof.
   intros f p.
-  verit p.
+  verit_base p; vauto.
 Qed.
 
 Lemma taut3 :
   forall f, f 2 =? 0 -> f 3 =? 5 -> f 2 =? 0.
 Proof.
   intros f p1 p2.
-  verit p1.
+  verit_base p1 p2; vauto.
 Qed.
 
 Lemma taut4 :
   forall f, f 3 =? 5 -> f 2 =? 0 -> f 2 =? 0.
 Proof.
   intros f p1 p2.
-  verit p2.
+  verit_base p1 p2; vauto.
 Qed.
 
 Lemma taut5 :
   forall f, 0 =? f 2 -> f 2 =? 0.
 Proof.
   intros f p.
-  verit p.
+  verit_base p; vauto.
 Qed.
 
   
@@ -990,19 +992,19 @@ Lemma fun_const_Z :
              f 3 =? 2.
 Proof.
   intros f Hf.
-  verit Hf.
+  verit_base Hf; vauto.
 Qed.
 
 Lemma lid (A : bool) :  A -> A.
   intro a.
-  verit a.
+  verit_base a; vauto.
 Qed.
 
 Lemma lpartial_id A :
   (xorb A A) -> (xorb A A).
 Proof.
   intro xa.
-  verit xa.
+  verit_base xa; vauto.
 Qed.
 
 Lemma llia1 X Y Z:
@@ -1010,28 +1012,28 @@ Lemma llia1 X Y Z:
   (X + Y <=? 10) || (X + Z <=? 12).
 Proof.
   intro p.
-  verit p.
+  verit_base p; vauto.
 Qed.
 
 Lemma llia2 X:
   X - 3 =? 7 -> X >=? 10.
 Proof.
   intro p.
-  verit p.
+  verit_base p; vauto.
 Qed.
 
 Lemma llia3 X Y:
   X >? Y -> Y + 1 <=? X.
 Proof.
   intro p.
-  verit p.
+  verit_base p; vauto.
 Qed.
 
 Lemma llia6 X:
   andb ((X - 3) <=? 7) (7 <=? (X - 3)) -> X >=? 10.
 Proof.
   intro p.
-  verit p.
+  verit_base p; vauto.
 Qed.
 
 Lemma even_odd b1 b2 x1 x2:
@@ -1041,28 +1043,28 @@ Lemma even_odd b1 b2 x1 x2:
   ((implb b1 b2) && (implb b2 b1) && (x1 =? x2)).
 Proof.
   intro p.
-  verit p.
+  verit_base p; vauto.
 Qed.
 
 Lemma lcongr1 (a b : Z) (P : Z -> bool) f:
   (f a =? b) -> (P (f a)) -> P b.
 Proof.
   intros eqfab pfa.
-  verit eqfab pfa.
+  verit_base eqfab pfa; vauto.
 Qed.
 
 Lemma lcongr2 (f:Z -> Z -> Z) x y z:
   x =? y -> f z x =? f z y.
 Proof.
   intro p.
-  verit p.
+  verit_base p; vauto.
 Qed.
 
 Lemma lcongr3 (P:Z -> Z -> bool) x y z:
   x =? y -> P z x -> P z y.
 Proof.
   intros eqxy pzx.
-  verit eqxy pzx.
+  verit_base eqxy pzx; vauto.
 Qed.
 
 
@@ -1071,10 +1073,11 @@ Section fins_sat6.
   Variables a b c d : bool.
   Hypothesis andab : andb a b.
   Hypothesis orcd  : orb c d.
-
+  Add_lemmas andab orcd.
+  
   Lemma sat6 :  orb c (andb a (andb b d)).
-  Proof. verit andab orcd. Qed.
-
+  Proof. verit. Qed.
+  Clear_lemmas.
 End fins_sat6.
 
 
@@ -1085,24 +1088,28 @@ Section fins_lemma_multiple.
   Variable k : Z.
   Hypothesis g_k_linear : forall x, g (x + 1) =? (g x) + k.
   Hypothesis f'_equal_k : forall x, f' x =? k.
-
+  Add_lemmas g_k_linear f'_equal_k.
+  
   Lemma apply_lemma_multiple : forall x y, g (x + 1) =? g x + f' y.
-  Proof. verit g_k_linear f'_equal_k. Qed.
+  Proof. verit. Qed.
 
+  Clear_lemmas.
 End fins_lemma_multiple.
 
 
 Section fins_find_apply_lemma.
   Variable u : Z -> Z.
   Hypothesis u_is_constant : forall x y, u x =? u y.
+  Add_lemmas u_is_constant.
 
   Lemma apply_lemma : forall x, u x =? u 2.
-  Proof. verit u_is_constant. Qed.
+  Proof. verit. Qed.
 
   Lemma find_inst :
     implb (u 2 =? 5) (u 3 =? 5).
-  Proof. verit u_is_constant. Qed.
+  Proof. verit. Qed.
 
+  Clear_lemmas.
 End fins_find_apply_lemma.
 
 
@@ -1111,10 +1118,12 @@ Section mult3.
   Variable mult3 : Z -> Z.
   Hypothesis mult3_0 : mult3 0 =? 0.
   Hypothesis mult3_Sn : forall n, mult3 (n+1) =? mult3 n + 3.
-
+  Add_lemmas mult3_0 mult3_Sn.
+  
   Lemma mult3_21 : mult3 14 =? 42.
-  Proof. verit mult3_0 mult3_Sn. Qed.
+  Proof. verit. Qed.
 
+  Clear_lemmas.
 End mult3.
 
 
@@ -1136,13 +1145,13 @@ Section implicit_transform.
   Variable a1 a2 : Z.
   Hypothesis f_const : forall b, implb (f b) (f a2).
   Hypothesis f_a1 : f a1.
-
+  Add_lemmas f_const f_a1.
+  
   Lemma implicit_transform :
     f a2.
-  Proof.
-    verit f_const f_a1.
-  Qed.
-  (* Print Assumptions implicit_transform. *)
+  Proof. verit. Qed.
+
+  Clear_lemmas.
 End implicit_transform.
 
 Section list.
@@ -1157,8 +1166,7 @@ Section list.
   
   Hypothesis in_eq : forall a l, inlist a (a :: l).
   Hypothesis in_cons : forall a b l, implb (inlist a l) (inlist a (b::l)).
-
-  Add_lemma in_eq in_cons.
+  Add_lemmas in_eq in_cons.
   
   Lemma in_cons1 :
     inlist 1 (1::2::nil).
@@ -1208,7 +1216,7 @@ Section list.
   Hypothesis in_or_app : forall a l1 l2,
       implb (orb (inlist a l1) (inlist a l2))
             (inlist a (l1 ++ l2)).
-  Add_lemma in_or_app.
+  Add_lemmas in_or_app.
   
 
   Lemma in_app1 :
@@ -1252,22 +1260,79 @@ Section list.
     forall l1 l2 a b,
       Bool.eqb (inlist b (a :: (l1 ++ l2)))
                (inlist b ((a :: l1) ++ l2)).
-  Add_lemma in_nil in_inv inlist_app_comm_cons.
+  Add_lemmas in_nil in_inv inlist_app_comm_cons.
   
   Lemma coqhammer_example l1 l2 x y1 y2 y3:
     implb (orb (inlist x l1) (orb (inlist x l2) (orb (x =? y1) (inlist x (y2 ::y3::nil)))))
           (inlist x (y1::(l1 ++ (y2 :: (l2 ++ (y3 :: nil)))))).
   Proof.
     verit.
-  Abort.
-    
+  Qed.
 
   Clear_lemmas.
 End list.
 
 
 
+Section group.
+  Variable op : Z -> Z -> Z.
+  Variable inv : Z -> Z.
+  Variable e : Z.
 
+  Hypothesis associative_law :
+    forall a b c : Z, op a (op b c) =? op (op a b) c.
+  Hypothesis identity_left :
+    forall a : Z, op e a =? a.
+  Hypothesis identity_right :
+    forall a : Z, op a e =? a.
+  Hypothesis inverse_law :
+    forall a : Z, (op a (inv a) =? e) && (op (inv a) a =? e).
+  Clear_lemmas.
+  Add_lemmas associative_law identity_left identity_right inverse_law.
+
+  
+  Lemma unique_identity :
+    forall e', (forall z, op e' z =? z) ->
+               e' =? e.
+  Proof.
+    intros e' pe'.
+    verit_base.
+  Qed.
+
+  Print Z.eqb_sym.
+  Hint Rewrite Z.eqb_sym.
+
+  Lemma rew1 a b:
+    (a =? b) && (a =? b).
+  Proof.
+    rewrite Z.eqb_sym at 1 2.
+  Abort.
+  
+  Lemma rew2 a b c d :
+    (a =? b) && (c =? d) -> (b =? a) && (d =? c).
+  Proof.
+    intro.
+    verit H.
+    rewrite Z.eqb_sym at 2.
+    Check Z.eqb_sym.
+    (* autorewrite with core. *)
+    (* rewrite Z.eqb_sym at 1 2. *)
+    (* rewrite ? Z.eqb_sym. *)
+    
+
+    
+  Lemma simplification_right x1 x2 y:
+      op x1 y =? op x2 y -> x1 =? x2.
+  Proof.
+    intro H. verit H.
+
+    (* rewrite Z.eqb_sym at 2. *)
+    (* tacrew. *)
+    
+
+
+    
+End group.
 
 
 
