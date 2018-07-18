@@ -2,7 +2,7 @@ Require Import SMTCoq.
 Require Import Bool.
 Local Open Scope int63_scope.
 
-Open Scope Z_scope.
+Parameter f : Z -> Z.
 
 Lemma sym_zeq_bool x y :
   Zeq_bool x y = Zeq_bool y x.
@@ -16,13 +16,13 @@ Proof.
   rewrite H in H1. discriminate H1.
 Qed.
 
-Parameter f : Z -> Z.
-Axiom f1 : orb (Zeq_bool (f 1) (f 2)) (Zeq_bool (f 1) 3).
+Axiom f_spec : forall x, (f (x+1) =? f x + 1) && (f 0 =? 0).
 
-Lemma f23_f13 :
-  implb (Zeq_bool (f 2) 3) (Zeq_bool (f 1) 3).
-Proof.
-  verit f1.
-Qed.
+Lemma f_1 : f 1 =? 1.
 
-  
+Proof.  
+  verit_base f_spec; vauto; rewrite Z.eqb_sym; auto.
+Qed.  
+
+
+

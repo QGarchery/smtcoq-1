@@ -149,7 +149,8 @@ let used_clauses r =
   | True | False | BuildDef _ | BuildDef2 _ | BuildProj _ 
   | EqTr _ | EqCgr _ | EqCgrP _ 
   | LiaMicromega _ | LiaDiseq _   -> []
-                                       
+
+(* for debugging *)                                       
 let to_string r =
   match r with
             Root -> "Root"

@@ -19,18 +19,6 @@
   open SmtAtom
   open SmtForm
   open VeritSyntax
-
-  let apply_dec_atom f = function
-  | decl, Atom h -> decl, Atom (f decl h)
-  | _ -> assert false
-
-  let apply_bdec_atom f o1 o2 =
-    match o1, o2 with
-    | (decl1, Atom h1), (decl2, Atom h2) ->
-      let decl = decl1 && decl2 in
-      decl, Atom (f decl h1 h2)
-    | _ -> assert false
-
 %}
 
 
@@ -171,7 +159,7 @@ var_atvar:
   | ATVAR			                           { $1 }
 ;
 
-name_term:   /* returns a (SmtAtom.Form.pform or SmtAtom.hatom) option */
+name_term:   /* returns a bool * (SmtAtom.Form.pform or SmtAtom.hatom), the boolean indicates if we should declare the term or not */
   | SHARP INT                                              { get_solver $2 }
   | SHARP INT COLON LPAR term RPAR                         { let u = $5 in add_solver $2 u; u }
   | TRUE                                                   { true, Form Form.pform_true }
@@ -198,7 +186,7 @@ forall_decl:
   | FORALL LPAR var_decl_list RPAR name_term		   { clear_qvar (); false, Form (Fapp (Fforall $3, [|lit_of_atom_form_lit rf $5|])) }
 ; 
 
-term:   /* returns a (SmtAtom.Form.pform or SmtAtom.hatom) option */
+term:   /* returns a bool * (SmtAtom.Form.pform or SmtAtom.hatom), the boolean indicates if we should declare the term or not */
   | LPAR term RPAR                                         { $2 }
 
   /* Formulae */

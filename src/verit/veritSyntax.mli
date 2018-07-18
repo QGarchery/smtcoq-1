@@ -27,16 +27,23 @@ val to_add : (int * SmtAtom.Form.t list) list ref
 
 val mk_clause : SmtCertif.clause_id * typ * SmtAtom.Form.t list * SmtCertif.clause_id list -> SmtCertif.clause_id
 
-val apply_dec : ('a -> 'b) -> bool * 'a -> bool * 'b
-val list_dec : (bool * 'a) list -> bool * 'a list
-
-
 type atom_form_lit =
   | Atom of SmtAtom.Atom.t
   | Form of SmtAtom.Form.pform
   | Lit of SmtAtom.Form.t
 val lit_of_atom_form_lit : SmtAtom.Form.reify -> bool * atom_form_lit ->
                            SmtAtom.Form.t
+
+val apply_dec_atom : (bool -> SmtAtom.hatom -> SmtAtom.hatom) ->
+                     bool * atom_form_lit -> bool * atom_form_lit
+val apply_bdec_atom :
+  (bool -> SmtAtom.Atom.t -> SmtAtom.Atom.t -> SmtAtom.Atom.t) ->
+  bool * atom_form_lit -> bool * atom_form_lit -> bool * atom_form_lit
+
+val apply_dec : ('a -> 'b) -> bool * 'a -> bool * 'b
+val list_dec : (bool * 'a) list -> bool * 'a list
+
+
 val get_solver : int -> bool * atom_form_lit
 val add_solver : int -> bool * atom_form_lit -> unit
 

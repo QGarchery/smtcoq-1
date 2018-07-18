@@ -202,13 +202,15 @@ let get_clause id =
 let add_clause id cl = Hashtbl.add clauses id cl
 let clear_clauses () = Hashtbl.clear clauses
 
-(* Recognizing and modifying clauses depending on a forall_inst clause. *)
+
 (* <ref_cl> maps solver integers to id integers. *)
 let ref_cl : (int, int) Hashtbl.t = Hashtbl.create 17
 let get_ref i = Hashtbl.find ref_cl i
 let add_ref i j = Hashtbl.add ref_cl i j
 let clear_ref () = Hashtbl.clear ref_cl
-                             
+
+(* Recognizing and modifying clauses depending on a forall_inst clause. *)
+                                 
 let rec fins_lemma ids_params =
   match ids_params with
     [] -> raise Not_found
@@ -221,6 +223,7 @@ let rec find_remove_lemma lemma ids_params =
   let eq_lemma h = eq_clause lemma (get_clause h) in
   list_find_remove eq_lemma ids_params
 
+(* Removes the lemma in a list of ids containing an instance of this lemma *)                   
 let merge ids_params =
   try
     let lemma = fins_lemma ids_params in
@@ -369,6 +372,20 @@ let rec mk_clause (id,typ,value,ids_params) =
   if id > 1 then SmtTrace.link (get_clause (id-1)) cl;
   id
 
+type atom_form_lit =
+  | Atom of SmtAtom.Atom.t
+  | Form of SmtAtom.Form.pform
+  | Lit of SmtAtom.Form.t
+
+(* functions for applying on a pair with a boolean when the boolean indicates
+   if the entire term should be declared in the tables *)
+let lit_of_atom_form_lit rf = function
+  | decl, Atom a -> Form.get ~declare:decl rf (Fatom a)
+  | decl, Form f -> begin match f with
+                    | Fapp (Fforall _, _) when decl -> failwith "decl is true on a forall"
+                    | _ -> Form.get ~declare:decl rf f end
+  | decl, Lit l -> l
+
 let apply_dec f (decl, a) = decl, f a
 
 let rec list_dec = function
@@ -376,18 +393,18 @@ let rec list_dec = function
   | (decl_h, h) :: t ->
      let decl_t, l_t = list_dec t in
      decl_h && decl_t, h :: l_t
+    
+let apply_dec_atom f = function
+  | decl, Atom h -> decl, Atom (f decl h)
+  | _ -> assert false
 
-type atom_form_lit =
-  | Atom of SmtAtom.Atom.t
-  | Form of SmtAtom.Form.pform
-  | Lit of SmtAtom.Form.t
+let apply_bdec_atom f o1 o2 =
+  match o1, o2 with
+  | (decl1, Atom h1), (decl2, Atom h2) ->
+     let decl = decl1 && decl2 in
+     decl, Atom (f decl h1 h2)
+  | _ -> assert false
 
-let lit_of_atom_form_lit rf = function
-  | decl, Atom a -> Form.get ~declare:decl rf (Fatom a)
-  | decl, Form f -> begin match f with
-                    | Fapp (Fforall _, _) when decl -> failwith "decl is true on a forall"
-                    | _ -> Form.get ~declare:decl rf f end
-  | decl, Lit l -> l
 
 let solver : (int, (bool * atom_form_lit)) Hashtbl.t = Hashtbl.create 17
 let get_solver id =
@@ -420,7 +437,9 @@ let add_qvar s bt = Hashtbl.add qvar_tbl s bt
 let clear_qvar () = Hashtbl.clear qvar_tbl
 
 let string_hform = Form.to_string ~pi:true (Atom.to_string ~pi:true )
-                      
+
+(* Finding the index of a root in <lsmt> modulo the <re_hash> function. 
+   This function is used by SmtTrace.order_roots *)
 let init_index lsmt re_hash =
   let form_index_init_rank : (int, int) Hashtbl.t = Hashtbl.create 20 in
   let add = Hashtbl.add form_index_init_rank in

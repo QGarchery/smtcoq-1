@@ -136,7 +136,7 @@ let make_root ra rf t =
         let s' = string_of_symbol sym in
         Hashtbl.add hlets s' u') l;
       make_root_term t
-    | TermForAllTerm _ -> failwith "Smtlib2_genConstr.make_root_term: Forall not implemented yet"
+    | TermForAllTerm _ -> failwith "Smtlib2_genConstr.make_root_term: ForAll not implemented yet"
     | TermExistsTerm _ -> failwith "Smtlib2_genConstr.make_root_term: Exists not implemented yet"
     | TermExclimationPt (_,t,_) -> make_root_term t
 

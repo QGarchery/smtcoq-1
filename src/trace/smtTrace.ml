@@ -148,7 +148,7 @@ let rec get_pos c =
 let eq_clause c1 c2 = (repr c1).id = (repr c2).id
 
 
-(* Reorders the roots according to the order they were given in. *)
+(* Reorders the roots according to the order they were given in initially. *)
 let order_roots init_index first =
   let r = ref first in
   let acc = ref [] in
