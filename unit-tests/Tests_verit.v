@@ -1296,7 +1296,7 @@ Section group.
                e' =? e.
   Proof.
     intros e' pe'.
-    verit_base.
+    verit_base pe'; vauto.
   Qed.
 
   Print Z.eqb_sym.
@@ -1312,8 +1312,7 @@ Section group.
     (a =? b) && (c =? d) -> (b =? a) && (d =? c).
   Proof.
     intro.
-    verit H.
-    rewrite Z.eqb_sym at 2.
+    (* rewrite Z.eqb_sym at 2. *)
     Check Z.eqb_sym.
     (* autorewrite with core. *)
     (* rewrite Z.eqb_sym at 1 2. *)
@@ -1324,8 +1323,8 @@ Section group.
   Lemma simplification_right x1 x2 y:
       op x1 y =? op x2 y -> x1 =? x2.
   Proof.
-    intro H. verit H.
-
+    intro H. verit_base H; vauto.
+    
     (* rewrite Z.eqb_sym at 2. *)
     (* tacrew. *)
     

@@ -32,18 +32,17 @@ Qed.
 Hint Resolve impl_split.
 
 
-Lemma impl_or_split_right :
-  forall A B C,
+Lemma impl_or_split_right A B C:
   implb (A || B) C -> negb B || C.
 Proof.
-Admitted.
+  destruct A; destruct B; destruct C; intuition.
+Qed.
 
-Lemma impl_or_split_left :
-  forall A B C,
+Lemma impl_or_split_left A B C:
   implb (A || B) C -> negb A || C.
 Proof.
-Admitted.
-
+  destruct A; destruct B; destruct C; intuition.
+Qed.
 
 Ltac vauto :=
   try (let H := fresh "H" in

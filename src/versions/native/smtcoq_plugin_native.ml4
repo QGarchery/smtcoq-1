@@ -61,11 +61,11 @@ END
 let lemmas_list = ref []
 
 VERNAC COMMAND EXTEND Add_lemma
-| [ "Add_lemma" constr_list(lems) ] -> [ lemmas_list := lems @ !lemmas_list ]
+| [ "Add_lemmas" constr_list(lems) ] -> [ lemmas_list := lems @ !lemmas_list ]
 | [ "Clear_lemmas" ] -> [ lemmas_list := [] ]
 END
 
 
 TACTIC EXTEND Tactic_verit
-| [ "verit" constr_list(lpl) ] -> [ Verit.tactic lpl !lemmas_list ]
+| [ "verit_base" constr_list(lpl) ] -> [ Verit.tactic lpl !lemmas_list ]
 END
