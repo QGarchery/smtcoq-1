@@ -1,7 +1,7 @@
 *.annot
 *.cmt
 *.cmti
-*.vt*log
+*.vtlog
 examples/lia.cache
 unit-tests/lia.cache
 unit-tests/NTests_verit.cmi
