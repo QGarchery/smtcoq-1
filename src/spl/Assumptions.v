@@ -13,6 +13,8 @@
 (*                                                                        *)
 (**************************************************************************)
 
+Add Rec LoadPath "/users/vals/garchery/Documents/smtcoq-1/src" as SMTCoq.
+
 
 Require Import State SMT_terms.
 Require Import List Bool PArray Int63.
@@ -108,15 +110,14 @@ Section Checker_correct.
     rewrite <- (interp_check_clause _ _ H). now apply Hs.
   Qed.
 
-  Lemma valid_check_forall_inst pos (lemma : Prop) :
+  Lemma valid_check_forall_inst (lemma : Prop) :
     lemma ->
     forall concl,
     (lemma -> interp_uf rho concl) ->
-    S.valid rho (S.set_clause s pos concl).
+    C.valid rho concl.
 
   Proof.
     intros pl concl applemma.
-    apply S.valid_set_clause; auto.
     unfold C.valid. rewrite interp_equiv.
     now apply applemma.
   Qed.

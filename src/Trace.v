@@ -14,9 +14,11 @@
 (**************************************************************************)
 
 
+Add Rec LoadPath "/users/vals/garchery/Documents/smtcoq-1/src" as SMTCoq.
+
 Require Import Bool Int63 PArray.
 Require Structures.
-Require Import SMTCoq.Misc SMTCoq.State SMTCoq.SMT_terms Cnf Euf Lia Syntactic Arithmetic Operators SMTCoq.spl.Assumptions.
+Require Import Misc SMTCoq.State SMTCoq.SMT_terms Cnf Euf Lia Syntactic Arithmetic Operators SMTCoq.spl.Assumptions.
 
 Local Open Scope array_scope.
 Local Open Scope int63_scope.
@@ -372,7 +374,7 @@ Inductive step :=
       | SplArith pos orig res l => S.set_clause s pos (check_spl_arith t_form t_atom (S.get s orig) res l)
       | SplDistinctElim pos orig res => S.set_clause s pos (check_distinct_elim t_form t_atom (S.get s orig) res)
       | @Hole pos prem_id prem concl _ => S.set_clause s pos (check_hole s prem_id prem concl)
-      | ForallInst pos lemma _ concl  _ => S.set_clause s pos concl
+      | @ForallInst pos lemma _ concl  _ => S.set_clause s pos concl
     end.
 
   Lemma step_checker_correct :
@@ -383,7 +385,7 @@ Inductive step :=
         forall st : step, S.valid rho (step_checker s st).
 
   Proof.
-    intros rho H1 H2 H10 s Hs. destruct (Form.check_form_correct (Atom.interp_form_hatom t_i t_func t_atom) _ H1) as [[Ht1 Ht2] Ht3]. destruct (Atom.check_atom_correct _ H2) as [Ha1 Ha2]. intros [pos res|pos cid lf|pos|pos|pos l|pos l|pos l i|pos cid|pos cid|pos cid i|pos l fl|pos l fl|pos l1 l2 fl|pos cl c|pos l|pos orig res l|pos orig res|pos prem_id prem concl p | ]; simpl; try apply S.valid_set_clause; auto.
+    intros rho H1 H2 H10 s Hs. destruct (Form.check_form_correct (Atom.interp_form_hatom t_i t_func t_atom) _ H1) as [[Ht1 Ht2] Ht3]. destruct (Atom.check_atom_correct _ H2) as [Ha1 Ha2]. intros [pos res|pos cid lf|pos|pos|pos l|pos l|pos l i|pos cid|pos cid|pos cid i|pos l fl|pos l fl|pos l1 l2 fl|pos cl c|pos l|pos orig res l|pos orig res|pos prem_id prem concl p | pos lemma plemma concl p]; simpl; try apply S.valid_set_clause; auto.
     apply S.valid_set_resolve; auto.
     apply valid_check_flatten; auto; intros h1 h2 H.
     rewrite (Syntactic.check_hatom_correct_bool _ _ _ Ha1 Ha2 _ _ H); auto.
@@ -404,7 +406,7 @@ Inductive step :=
     apply valid_check_spl_arith; auto.
     apply valid_check_distinct_elim; auto.
     apply valid_check_hole; auto.
-    apply valid_check_forall_inst; auto.
+    apply valid_check_forall_inst with lemma; auto.
   Qed.
 
   Definition euf_checker (* t_atom t_form *) s t :=
