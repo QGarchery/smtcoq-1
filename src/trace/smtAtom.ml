@@ -570,10 +570,7 @@ module Atom =
         | CCeqb -> mk_teq Tbool args
         | CCeqbP -> mk_teq Tpositive args
         | CCeqbZ -> mk_teq TZ args
-	| CCunknown -> let ty = try Retyping.get_type_of env sigma h
-                                with Not_found -> Printer.pr_constr_env env h
-                                                  |> Pp.string_of_ppcmds
-                                                  |> failwith in
+	| CCunknown -> let ty = Retyping.get_type_of env sigma h in
                        mk_unknown c args ty
 
       and mk_cop op = get reify (Acop op)
@@ -605,7 +602,7 @@ module Atom =
                    let tres = SmtBtype.of_coq rt ty in
                    let os = if Term.isRel c
                             then let i = Term.destRel c in
-                                 let n, _, _ = Environ.lookup_rel i env in
+                                 let n = Structures.get_rel_name i env in
                                  Some (string_of_name n)
                             else None in
                    Op.declare ro c targs tres os in

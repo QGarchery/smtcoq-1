@@ -85,7 +85,7 @@ val core_tactic :
   SmtAtom.Atom.reify_tbl -> SmtAtom.Form.reify ->
   SmtAtom.Atom.reify_tbl -> SmtAtom.Form.reify ->
   Term.constr list -> Topconstr.constr_expr list ->
-  Environ.env -> Evd.evar_map -> Term.constr -> Proof_type.tactic
+  Environ.env -> Evd.evar_map -> Term.constr -> Structures.tactic
 val tactic :
   (SmtBtype.reify_tbl -> SmtAtom.Op.reify_tbl ->
    SmtAtom.Atom.reify_tbl -> SmtAtom.Form.reify ->
@@ -95,5 +95,5 @@ val tactic :
   SmtAtom.Op.reify_tbl ->
   SmtAtom.Atom.reify_tbl -> SmtAtom.Form.reify ->
   SmtAtom.Atom.reify_tbl -> SmtAtom.Form.reify ->
-  Term.constr list -> Topconstr.constr_expr list -> Proof_type.tactic
+  Term.constr list -> Topconstr.constr_expr list -> Structures.tactic
 
