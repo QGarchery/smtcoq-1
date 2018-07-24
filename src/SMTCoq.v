@@ -28,19 +28,30 @@ Open Scope Z_scope.
  instantiating a quantified theorem with <implb> *)
 Lemma impl_split a b:
   implb a b = true -> orb (negb a) b = true.
-Proof. intro H. now verit_base H. Qed.
+Proof.
+  intro H.
+  destruct a; destruct b; trivial.
+(* alternatively we could do <now verit_base H.> but it forces us to have veriT
+   installed when we compile SMTCoq. *)
+Qed.
 
 Hint Resolve impl_split.
 
 (* verit silently transforms an <implb (a || b) c> into a <or (not a) c> 
    or into a <or (not b) c> when instantiating such a quantified theorem *)
-Lemma impl_or_split_right A B C:
-  implb (A || B) C -> negb B || C.
-Proof. intro H. now verit_base H. Qed.
+Lemma impl_or_split_right a b c:
+  implb (a || b) c -> negb b || c.
+Proof.
+  intro H.
+  destruct a; destruct c; intuition. 
+Qed.
 
-Lemma impl_or_split_left A B C:
-  implb (A || B) C -> negb A || C.
-Proof. intro H. now verit_base H. Qed.
+Lemma impl_or_split_left a b c:
+  implb (a || b) c -> negb a || c.
+Proof.
+  intro H.
+  destruct a; destruct c; intuition.
+Qed.
 
 (* verit considers equality modulo its symmetry, so we have to recover the
    right direction in the instances of the theorems *)

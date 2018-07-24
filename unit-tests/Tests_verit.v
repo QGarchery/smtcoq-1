@@ -14,6 +14,8 @@ Proof.
   verit.
 Qed.
 
+
+(* doesn't work with standard coq *)
 (* Lemma fun_const : *)
 (*   forall f (g : int -> int -> bool), *)
 (*     (forall x, g (f x) 2) -> g (f 3) 2. *)
@@ -1116,7 +1118,7 @@ Section mult3.
   Add_lemmas mult3_0 mult3_Sn.
 
   Lemma mult3_21 : mult3 14 =? 42.
-  Proof. verit. Qed.
+  Proof. verit. Qed. (* very slow to verify with standard coq *)
 
   Clear_lemmas.
 End mult3.
