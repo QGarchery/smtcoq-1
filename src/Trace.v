@@ -14,11 +14,9 @@
 (**************************************************************************)
 
 
-Add Rec LoadPath "/users/vals/garchery/Documents/smtcoq-1/src" as SMTCoq.
-
 Require Import Bool Int63 PArray.
 Require Structures.
-Require Import Misc SMTCoq.State SMTCoq.SMT_terms Cnf Euf Lia Syntactic Arithmetic Operators SMTCoq.spl.Assumptions.
+Require Import SMTCoq.Misc SMTCoq.State SMTCoq.SMT_terms Cnf Euf Lia Syntactic Arithmetic Operators SMTCoq.spl.Assumptions.
 
 Local Open Scope array_scope.
 Local Open Scope int63_scope.

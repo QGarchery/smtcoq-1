@@ -42,6 +42,10 @@ type rel_decl = Context.Rel.Declaration.t
                                      
 val destruct_rel_decl : rel_decl -> Names.Name.t * Constr.t
 
+type constr_expr = Constrexpr.constr_expr
+
+val interp_constr : Environ.env -> Evd.evar_map -> Constrexpr.constr_expr -> Term.constr
+                 
 val tclTHEN :
   unit Proofview.tactic -> unit Proofview.tactic -> unit Proofview.tactic
 val tclTHENLAST :

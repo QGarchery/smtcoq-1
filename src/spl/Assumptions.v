@@ -13,8 +13,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-Add Rec LoadPath "/users/vals/garchery/Documents/smtcoq-1/src" as SMTCoq.
-
 
 Require Import State SMT_terms.
 Require Import List Bool PArray Int63.

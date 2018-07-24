@@ -139,7 +139,11 @@ type rel_decl = Context.Rel.Declaration.t
 
 let destruct_rel_decl r = Context.Rel.Declaration.get_name r,
                           Context.Rel.Declaration.get_type r
-             
+
+type constr_expr = Constrexpr.constr_expr
+                        
+let interp_constr env sigma t = Constrintern.interp_constr env sigma t |> fst
+                        
 let tclTHEN = Tacticals.New.tclTHEN
 let tclTHENLAST = Tacticals.New.tclTHENLAST
 let assert_before = Tactics.assert_before

@@ -13,7 +13,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-Add Rec LoadPath "/home/quentin/Documents/smtcoq-1/src" as SMTCoq.
 
 Require Export Int63 List PArray.
 Require Export SMTCoq.State SMTCoq.SMT_terms SMTCoq.Trace.
