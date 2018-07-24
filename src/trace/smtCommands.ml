@@ -408,8 +408,7 @@ let of_coq_lemma rt ro ra' rf' env sigma clemma =
 
 let core_tactic call_solver rt ro ra rf ra' rf' lcpl lcepl env sigma concl =
   let a, b = get_arguments concl in
-  let tlcepl, _ = List.map (Constrintern.interp_constr env sigma) lcepl
-                  |> List.split in
+  let tlcepl = List.map (Structures.interp_constr env sigma) lcepl in
   let lcpl = lcpl @ tlcepl in
   let lcl = List.map (Retyping.get_type_of env sigma) lcpl in
 
