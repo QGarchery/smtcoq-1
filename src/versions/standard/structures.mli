@@ -37,7 +37,11 @@ val extern_constr : Term.constr -> Constrexpr.constr_expr
 val vernacentries_interp : Constrexpr.constr_expr -> unit
 val pr_constr_env : Environ.env -> Term.constr -> Pp.std_ppcmds
 val lift : int -> Constr.constr -> Constr.constr
-val get_rel_name : int -> Environ.env -> Names.name
+
+type rel_decl = Context.Rel.Declaration.t                                     
+                                     
+val destruct_rel_decl : rel_decl -> Names.Name.t * Constr.t
+
 val tclTHEN :
   unit Proofview.tactic -> unit Proofview.tactic -> unit Proofview.tactic
 val tclTHENLAST :

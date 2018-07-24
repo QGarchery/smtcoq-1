@@ -135,8 +135,10 @@ let pr_constr_env env = Printer.pr_constr_env env Evd.empty
 
 let lift = Vars.lift
 
-let get_rel_name i env = Environ.lookup_rel i env
-                         |> Context.Rel.Declaration.get_name
+type rel_decl = Context.Rel.Declaration.t
+
+let destruct_rel_decl r = Context.Rel.Declaration.get_name r,
+                          Context.Rel.Declaration.get_type r
              
 let tclTHEN = Tacticals.New.tclTHEN
 let tclTHENLAST = Tacticals.New.tclTHENLAST
