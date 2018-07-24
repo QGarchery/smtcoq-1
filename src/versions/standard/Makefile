@@ -235,7 +235,6 @@ endif
 
 MLFILES:=versions/standard/structures.ml\
   trace/coqTerms.ml\
-  trace/smtBtype.ml\
   trace/satAtom.ml\
   trace/smtAtom.ml\
   trace/smtCertif.ml\
@@ -243,6 +242,7 @@ MLFILES:=versions/standard/structures.ml\
   trace/smtCommands.ml\
   trace/smtForm.ml\
   trace/smtMisc.ml\
+  trace/smtBtype.ml\
   trace/smtTrace.ml\
   smtlib2/smtlib2_parse.ml\
   smtlib2/smtlib2_lex.ml\
@@ -283,7 +283,6 @@ endif
 
 MLIFILES:=versions/standard/structures.mli\
   trace/coqTerms.mli\
-  trace/smtBtype.mli\
   trace/satAtom.mli\
   trace/smtAtom.mli\
   trace/smtCertif.mli\
@@ -291,6 +290,7 @@ MLIFILES:=versions/standard/structures.mli\
   trace/smtCommands.mli\
   trace/smtForm.mli\
   trace/smtMisc.mli\
+  trace/smtBtype.mli\
   trace/smtTrace.mli\
   smtlib2/smtlib2_parse.mli\
   smtlib2/smtlib2_lex.mli\
