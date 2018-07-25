@@ -14,20 +14,28 @@ Proof.
   verit.
 Qed.
 
-
-(* doesn't work with standard coq *)
+(* In standard coq we need decidability of Int31.digits *)
 (* Lemma fun_const : *)
 (*   forall f (g : int -> int -> bool), *)
 (*     (forall x, g (f x) 2) -> g (f 3) 2. *)
 (* Proof. *)
 (*   intros f g Hf. *)
 (*   verit_base Hf; vauto. *)
-(*   admit. *)
+(*   exists (fun x y => match (x, y) with (Int31.D0, Int31.D0) | (Int31.D1, Int31.D1) => true | _ => false end). *)
+(*   intros x y; destruct x, y; constructor; try reflexivity; try discriminate. *)
 (*   exists Int63Native.eqb. *)
 (*   apply Int63Properties.reflect_eqb. *)
 (* Qed. *)
 
 Open Scope Z_scope.
+
+Lemma fun_const2 :
+  forall f (g : Z -> Z -> bool),
+    (forall x, g (f x) 2) -> g (f 3) 2.
+Proof.
+  intros f g Hf.
+  verit_base Hf; vauto.
+Qed.
 
 (* veriT vernacular commands *)
 
