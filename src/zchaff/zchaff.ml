@@ -228,7 +228,7 @@ let theorems interp name fdimacs ftrace =
   let certif =
    mklApp cCertif [|mkInt (max_id + 1);tres;mkInt (get_pos confl)|] in
 
-  let theorem_concl = mklApp cnot [|mklApp cis_true [|interp d first last|] |] in
+  let theorem_concl = mklApp cis_true [|mklApp cnegb [|interp d first last|] |] in
   let vtype = Term.mkProd(Names.Anonymous, Lazy.force cint, Lazy.force cbool) in
   let theorem_type =
     Term.mkProd (mkName "v", vtype, theorem_concl) in

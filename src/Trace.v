@@ -164,7 +164,7 @@ Qed.
 
  Lemma checker_correct : forall d c,
     checker d c = true ->
-    forall rho, Valuation.wf rho -> ~valid rho d.
+    forall rho, Valuation.wf rho -> ~ valid rho d.
  Proof.
    unfold checker; intros d (nclauses, t, confl_id) Hc rho Hwf Hv.
    apply (resolution_checker_correct Hwf Hc).
@@ -183,9 +183,11 @@ Qed.
  Lemma theorem_checker :
    forall d c,
      checker d c = true ->
-     forall rho, ~valid (interp_var rho) d.
+     forall rho, negb (valid (interp_var rho) d).
  Proof.
-  intros d c H rho;apply checker_correct with c;trivial.
+   intros d c H rho.
+   apply negb_true_iff. apply neg_eq_true_eq_false.
+   apply checker_correct with c;trivial.
   split;compute;trivial;discriminate.
  Qed.
 
