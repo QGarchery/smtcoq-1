@@ -186,7 +186,7 @@ let theorem name (rt, ro, ra, rf, roots, max_id, confl) =
     List.iter (fun j -> res.(!i) <- mkInt (Form.to_lit j); incr i) roots;
     Structures.mkArray (Lazy.force cint, res) in
 
-  let theorem_concl = mklApp cnot [|mklApp cis_true [|interp_roots roots|]|] in
+  let theorem_concl = mklApp cis_true [|mklApp cnegb [|interp_roots roots|]|] in
   let theorem_proof_cast =
     Term.mkCast (
         Term.mkLetIn (nti, t_i, mklApp carray [|Lazy.force ctyp_eqb|],
