@@ -221,15 +221,17 @@ let rec fins_lemma ids_params =
 
 let rec find_remove_lemma lemma ids_params =
   let eq_lemma h = eq_clause lemma (get_clause h) in
-  list_find_remove eq_lemma ids_params
+  list_find_remove eq_lemma ids_params 
 
 (* Removes the lemma in a list of ids containing an instance of this lemma *)                   
-let merge ids_params =
-  try
-    let lemma = fins_lemma ids_params in
-    let _, rest = find_remove_lemma lemma ids_params in
-    rest
-  with Not_found -> ids_params
+let rec merge ids_params =
+  let rest_opt = try let lemma = fins_lemma ids_params in
+                     let _, rest = find_remove_lemma lemma ids_params in
+                     Some rest
+                 with Not_found -> None in
+  match rest_opt with
+    None -> ids_params
+  | Some r -> merge r
 
 let to_add = ref []
                      
