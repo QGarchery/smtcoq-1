@@ -1,0 +1,6 @@
+(set-logic UFLIA)
+(declare-fun f (Int) Int)
+(assert (not (= (f 3) (+ (f 2) 7))))
+(assert (forall ( (x Int) ) (= (f (+ x 1)) (+ (f x) 7))))
+(check-sat)
+(exit)
