@@ -23,8 +23,8 @@ Local Open Scope Z_scope.
 Ltac intro_lemma :=
   repeat match goal with
     | [ |- (?X -> _) -> _ ] => match type of X with
-                               | Type => intro
-                               | Set => intro end
+                               | Set => intro SET
+                               | Prop =>  intro PROP end
   end.
 
 
@@ -33,6 +33,7 @@ Ltac intro_lemma :=
 (*     (f: Z -> Z), *)
 (*     (forall x, f (x + 1) = f x + 1) -> f (x + 2) = f x + 2. *)
 (* Proof. *)
+(*   introduce. *)
 (*   intros x f. *)
 (*   intro_lemma. *)
 (*   prop2bool. *)
@@ -40,8 +41,40 @@ Ltac intro_lemma :=
 (* Qed. *)
 
 
+(* Lemma simple_apply1 : *)
+(*   forall (x y: Z) (f: Z -> Z), *)
+(*     (f x = f y -> f (x+1) = f y - 1) -> f x = f y -> f y = f (x+1) + 1. *)
+(* Proof. *)
+(*   intros x y f. *)
+(*   intro_lemma. *)
+(*   prop2bool. *)
 
+(* Goal forall *)
+(*     (x y: Z) *)
+(*     (f: Z -> Z), *)
+(*     f x = f y + 1 -> f y = f x - 1. *)
+(*   prop2bool. *)
+(*   intros x y f. *)
+(* intro_lemma. *)
 
+(* Lemma calc_lin1 : *)
+(*   forall (f : Z -> Z), *)
+(*     f 0 = 0 -> (forall x, f (x+1) = f x + 1) -> f 3 = 3. *)
+(* Proof. *)
+(*   introduce. *)
+
+Lemma calc_lin2 :
+  forall (f : Z -> Z),
+    (forall x, f (x+1) = f x + 1) -> f 0 = 0 -> f 3 = 3.
+Proof.
+  intro f.
+  assert (H :(forall x : Z, f (x + 1) = f x + 1) <-> (forall x : Z, f (x+1) =? f x + 1)).
+  -split.
+   +intros. rewrite H. apply Z.eqb_refl.
+   +intros. prop2bool. apply H.
+  -rewrite H. prop2bool.
+   verit_bool_base H0; vauto.
+Qed.
 
 (* Lemma simple_apply1 : *)
 (*   forall (x y: Z) (f: Z -> Z), *)
@@ -55,13 +88,6 @@ Ltac intro_lemma :=
 (* Proof. *)
 (*   prop2bool. *)
 
-Goal forall
-    (x y: Z)
-    (f: Z -> Z),
-    f x = f y + 1 -> f y = f x - 1.
-prop2bool. 
-  intros x y f.
-intro_lemma.
 
 Import BVList.BITVECTOR_LIST.
 Local Open Scope bv_scope.

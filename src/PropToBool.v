@@ -16,6 +16,28 @@ Require Import
         SMT_classes SMT_classes_instances ReflectFacts.
 Import BVList.BITVECTOR_LIST.
 
+Ltac introduce :=
+  repeat
+    match goal with
+    | [ |- bitvector _ -> _] => intro
+    | [ |- farray _ _ -> _] => intro
+    | [ |- (?X -> _) -> _] => match type of X with
+                              | Set => intro
+                              | Prop => let H := fresh "H" in
+                                        intro H; introduce; revert H end
+    | [ |- Z -> _] => intro
+    | [ |- bool -> _] => intro
+    | [ |- Type -> _] => intro
+    | [ p: (CompDec ?t) |-  context[ ?t -> _ ] ] => intro
+
+    | [ |- forall t : Type, CompDec t -> _  ] => intro
+    | [ |- CompDec _ -> _  ] => intro
+    | [ |- _ -> _ ] => let H := fresh "H" in
+                       intro H; introduce; revert H
+    end.
+
+
+
 Ltac prop2bool :=
   repeat
     match goal with
