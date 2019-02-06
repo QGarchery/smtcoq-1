@@ -20,6 +20,49 @@ Require Import Bool.
 
 Local Open Scope Z_scope.
 
+Ltac intro_lemma :=
+  repeat match goal with
+    | [ |- (?X -> _) -> _ ] => match type of X with
+                               | Type => intro
+                               | Set => intro end
+  end.
+
+
+(* Goal forall *)
+(*     (x: Z) *)
+(*     (f: Z -> Z), *)
+(*     (forall x, f (x + 1) = f x + 1) -> f (x + 2) = f x + 2. *)
+(* Proof. *)
+(*   intros x f. *)
+(*   intro_lemma. *)
+(*   prop2bool. *)
+(*   verit. *)
+(* Qed. *)
+
+
+
+
+
+(* Lemma simple_apply1 : *)
+(*   forall (x y: Z) (f: Z -> Z), *)
+(*     (f x = f y -> f (x+1) = f y - 1) -> f x = f y -> f y = f (x+1) + 1. *)
+(* Proof. *)
+(*   prop2bool. *)
+
+(* Lemma simple_apply2 : *)
+(*   forall (x y: Z) (f: Z -> Z), *)
+(*     f x = f y -> (f x = f y -> f (x+1) = f y - 1) -> f y = f (x+1) + 1. *)
+(* Proof. *)
+(*   prop2bool. *)
+
+Goal forall
+    (x y: Z)
+    (f: Z -> Z),
+    f x = f y + 1 -> f y = f x - 1.
+prop2bool. 
+  intros x y f.
+intro_lemma.
+
 Import BVList.BITVECTOR_LIST.
 Local Open Scope bv_scope.
 
@@ -97,6 +140,8 @@ Goal forall b1 b2 x1 x2,
 Proof.
   verit_bool.
 Qed.
+
+
 
 Goal forall
     (x y: Z)

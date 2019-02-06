@@ -9,11 +9,12 @@
 (*                                                                        *)
 (**************************************************************************)
 
+Add Rec LoadPath "~/Documents/smtcoq-1/src" as SMTCoq.
 
 Require Import
         Bool ZArith BVList Logic BVList FArray
         SMT_classes SMT_classes_instances ReflectFacts.
-Import BVList.BITVECTOR_LIST. 
+Import BVList.BITVECTOR_LIST.
 
 Ltac prop2bool :=
   repeat
@@ -58,7 +59,7 @@ Ltac prop2bool :=
       [ | apply orP]
 
     | [ |- context[?G0 = true -> ?G1 = true ] ] =>
-      rewrite (@reflect_iff (G0 = true -> G1 = true) (implb G0 G1)); 
+      rewrite (@reflect_iff (G0 = true -> G1 = true) (implb G0 G1));
       [ | apply implyP]
 
     | [ |- context[?G0 = true /\ ?G1 = true ] ] =>
@@ -68,7 +69,7 @@ Ltac prop2bool :=
     | [ |- context[?G0 = true <-> ?G1 = true ] ] =>
       rewrite (@reflect_iff (G0 = true <-> G1 = true) (Bool.eqb G0 G1));
       [ | apply iffP]
-          
+
     | [ |- context[ ~ ?G = true ] ] =>
       rewrite (@reflect_iff (~ G = true) (negb G));
       [ | apply negP]
