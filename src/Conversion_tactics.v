@@ -107,27 +107,24 @@ Definition Equal_by {term : T} {new_term : T} (peq : term = new_term) :=
 
 Definition Rewrite_add {X Y x3 y3 : T} (eqx : X = x3) (eqy : Y = y3)
            : add X Y = Z2T (T2Z (add x3 y3)).
-Proof. now rewrite T2Z_id, eqx, eqy. Qed.
+Proof. now rewrite eqx, eqy, T2Z_id. Qed.
 
 Ltac conv under_constant under_symbol term :=
   let U := type of term in
   lazymatch eval fold T in U with
-  | T => match eval fold add in term with
-         | add ?X ?Y =>
-           (* let x1 := conv false true X in *)
-           (* pose x1 as x2; destruct x2 as [x3 eqx]; *)
-           (* let y1 := conv false true Y in *)
-           (* pose y1 as y2; destruct y2 as [y3 eqy]; *)
-           (* (* assert (H : add X Y = Z2T (T2Z (add x3 y3))) by now rewrite T2Z_id, eqx, eqy; *) *)
-           (* (* constr:(Equal_by H) *) *)
-           (* constr:(Equal_by (Rewrite_add eqx eqy)) *)
-           idtac;
-           conv false true X
-
-         | _ => constr:(Equal_by (st2z_id term))
-         end
+  | T =>
+    match term with
+    | add ?X ?Y =>
+      let x1 := conv false true X in
+      match eval unfold Equal_by in x1 with
+      | existT _ ?x2 ?eqx =>
+        let y1 := conv false true Y in
+        match eval unfold Equal_by in y1 with
+        | existT _ ?y2 ?eqy =>
+          constr:(Equal_by (Rewrite_add eqx eqy)) end end
+    | _ => constr:(Equal_by (st2z_id term))
+    end
   end.
-
 
 (* Remplace tous les sous-termes x de type T par Z2T (T2Z p) *)
 Ltac converting :=

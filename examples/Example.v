@@ -92,6 +92,7 @@ Qed.
 Lemma nat_convert_bug x :
   (3 + x =? x + 3) %nat.
 Proof.
+
   fold nat_convert_type.add nat_convert_type.eqb.
   nat_convert_mod.converting.
   nat_convert_mod.rewriting.
@@ -107,15 +108,23 @@ Proof.
   verit.
 Qed.
 
+
+
+Import nat_convert_type nat_convert_mod.
+
+Lemma destruct_existT A P x p v:
+  v = @existT A P x p -> P x.
+auto. Qed.
+
 Lemma alt_convert x :
   (x =? x + 3) %nat.
 Proof.
-  fold nat_convert_type.add nat_convert_type.eqb.
-  let u := nat_convert_mod.conv false false (x + 3)%nat in
-  pose u as v.
-  unfold nat_convert_mod.Equal_by in v.
-  destruct v.
-  
+  fold add eqb.
+  let v := conv false false (add x 3)%nat in
+  pose v as u.
+  unfold Equal_by in u.
+  case_eq u. intros. unfold u in H.
+  inversion H. rewrite e, <- H1.
 
 
 
