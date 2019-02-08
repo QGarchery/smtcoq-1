@@ -89,6 +89,29 @@ Qed.
 (*   prop2bool. *)
 
 
+Lemma converting_stuff x :
+  (3 + x =? x + 3) %nat.
+Proof.
+  fold nat_convert_type.add nat_convert_type.eqb.
+  nat_convert_mod.converting.
+  nat_convert_mod.rewriting.
+  nat_convert_mod.renaming.
+  nat_convert_mod.renaming'.
+  repeat match goal with
+         | |- context C[nat_convert_type.inT ?X] =>
+           let inT_unfolded := eval red in (nat_convert_type.inT X) in
+               change (nat_convert_type.inT X) with inT_unfolded
+         | |- context C[nat_convert_type.T2Z ?X] =>
+           let T2Z_unfolded := eval compute in (nat_convert_type.T2Z X) in
+               change (nat_convert_type.T2Z X) with T2Z_unfolded end.
+  verit.
+Qed.
+
+
+(*   converting. *)
+
+
+
 Import BVList.BITVECTOR_LIST.
 Local Open Scope bv_scope.
 
@@ -223,14 +246,14 @@ Proof.
   smt.
 Qed.
 
-Goal forall (a b c d: farray Z Z),
-    b[0 <- 4] = c  ->
-    d = b[0 <- 4][1 <- 4]  ->
-    a = d[1 <- b[1]]  ->
-    a = c.
-Proof.
-  smt.
-Qed.
+(* Goal forall (a b c d: farray Z Z), *)
+(*     b[0 <- 4] = c  -> *)
+(*     d = b[0 <- 4][1 <- 4]  -> *)
+(*     a = d[1 <- b[1]]  -> *)
+(*     a = c. *)
+(* Proof. *)
+(*   smt. *)
+(* Qed. *)
 
 Goal forall (a b: farray Z Z) (v w x y z t: Z)
             (r s: bitvector 4)
@@ -337,7 +360,7 @@ Lemma const_fun_is_eq_val_0 :
     forall x, f x =? f 0.
 Proof.
   intros f Hf.
-  verit_base Hf; vauto.
+  verit_bool_base Hf; vauto.
 Qed.
 
 Section Without_lemmas.
@@ -356,7 +379,7 @@ Section With_lemmas.
 
   Lemma fSS2:
     forall x, f (x + 2) =? f x + 2 * k.
-  Proof. verit_base f_k_linear; vauto. Qed.
+  Proof. verit_bool_base f_k_linear; vauto. Qed.
 End With_lemmas.
 
 (* You can use <Add_lemmas H1 .. Hn> to permanently add the lemmas H1 .. Hn to
@@ -381,7 +404,7 @@ Section NonLinear.
     (mult (3 + a) b =? mult 3 b + mult a b).
   Proof.
     intro H.
-    verit_base H; vauto.
+    verit_bool_base H; vauto.
   Qed.
 End NonLinear.
 
@@ -408,14 +431,14 @@ Section group.
 
   Lemma unique_identity e':
     (forall z, op e' z =? z) -> e' =? e.
-  Proof. intros pe'. verit_base pe'; vauto. Qed.
+  Proof. intros pe'. verit_bool_base pe'; vauto. Qed.
   Lemma simplification_right x1 x2 y:
       op x1 y =? op x2 y -> x1 =? x2.
-  Proof. intro H. verit_base H; vauto. Qed.
+  Proof. intro H. verit_bool_base H; vauto. Qed.
 
   Lemma simplification_left x1 x2 y:
       op y x1 =? op y x2 -> x1 =? x2.
-  Proof. intro H. verit_base H; vauto. Qed.
+  Proof. intro H. verit_bool_base H; vauto. Qed.
 
   Clear_lemmas.
 End group.

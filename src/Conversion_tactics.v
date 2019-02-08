@@ -100,6 +100,21 @@ assert (T -> True) as H by
 (* is_not_constructor U sym réussit si et seulement si sym est un symbole de constructeur de U *)
 Ltac is_constructor U sym := inverse_tactic ltac:(is_not_constructor U sym).
 
+Lemma st2z_id : forall x, x = Z2T (T2Z x). symmetry. apply T2Z_id. Qed.
+
+Definition Equal_by {term : T} {new_term : T} (peq : term = new_term) :=
+  existT (fun t => term = t) new_term peq.
+
+Ltac conv under_constant under_symbol term :=
+  let U := type of term in
+  lazymatch eval fold T in U with
+  | T => match term with
+         | add ?X ?Y => idtac
+         | _ => constr:(Equal_by (st2z_id term))
+         end
+  end.
+
+
 (* Remplace tous les sous-termes x de type T par Z2T (T2Z p) *)
 Ltac converting :=
   (* Coeur de la tactique *)
