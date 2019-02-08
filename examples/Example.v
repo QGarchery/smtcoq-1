@@ -89,7 +89,7 @@ Qed.
 (*   prop2bool. *)
 
 
-Lemma converting_stuff x :
+Lemma nat_convert_bug x :
   (3 + x =? x + 3) %nat.
 Proof.
   fold nat_convert_type.add nat_convert_type.eqb.
@@ -106,6 +106,18 @@ Proof.
                change (nat_convert_type.T2Z X) with T2Z_unfolded end.
   verit.
 Qed.
+
+Lemma alt_convert x :
+  (x =? x + 3) %nat.
+Proof.
+  fold nat_convert_type.add nat_convert_type.eqb.
+  let u := nat_convert_mod.conv false false (x + 3)%nat in
+  pose u as v.
+  unfold nat_convert_mod.Equal_by in v.
+  destruct v.
+  
+
+
 
 
 (*   converting. *)
