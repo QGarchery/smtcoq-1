@@ -100,15 +100,13 @@ Proof.
   nat_convert_mod.renaming'.
   repeat match goal with
          | |- context C[nat_convert_type.inT ?X] =>
-           let inT_unfolded := eval red in (nat_convert_type.inT X) in
-               change (nat_convert_type.inT X) with inT_unfolded
+           let inT_unfold := eval red in (nat_convert_type.inT X) in
+               change (nat_convert_type.inT X) with inT_unfold
          | |- context C[nat_convert_type.T2Z ?X] =>
-           let T2Z_unfolded := eval compute in (nat_convert_type.T2Z X) in
-               change (nat_convert_type.T2Z X) with T2Z_unfolded end.
+           let T2Z_calc := eval compute in (nat_convert_type.T2Z X) in
+               change (nat_convert_type.T2Z X) with T2Z_calc end.
   verit.
 Qed.
-
-
 
 Import nat_convert_type nat_convert_mod.
 
